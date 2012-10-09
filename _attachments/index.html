@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>AlterMap</title>
+
+    <link rel="stylesheet" href="style/leaflet/leaflet.css" />
+    <!--[if lte IE 8]>
+        <link rel="stylesheet" href="style/leaflet/leaflet.ie.css" />
+    <![endif]-->
+
+    <script type="text/javascript" src="vendor/couchapp/loader.js"></script>
+    <script src="js/lib/leaflet.js"></script>
+    <script src="js/lib/json2.js"></script>
+    <script src="js/lib/underscore-min.js"></script>
+    <script src="js/lib//backbone-min.js"></script>
+    <script src="js/lib//backbone-couchdb.js"></script>
+    <script src="js/lib//toolbox.js"></script>
+
+    <style>
+html, body {height: 100%;}
+#map {
+    float:left;
+    width: 76%;
+    height: 80%;
+    border: 1px solid #ccc;
+}
+#sidebar {
+  border:4px solid #dfd;
+  padding:8px;
+  float:right;
+  width:20%;
+}
+    </style>
+
+  </head>
+
+  <body>
+
+    <h1 id="title">Network Map</h1>
+
+    <p id="shortdesc">
+      Mapa de la red
+    </p>
+
+    <div id="map"></div>
+    <div id="sidebar"></div>
+
+    <div id="detail"></div>
+    <div id="status"></div>
+
+    <div id="toolbox">
+    </div>
+
+<!-- Templates -->
+    <script type="text/template" id="node-row-template">
+    <a href="#nodes/{{_id}}">{{name}}</a>
+    </script>
+
+    <script type="text/template" id="node-summary-template">
+    <h2>{{name}}</h2>
+    <p>coords: {{coords.lon}}, {{coords.lat}}</p>
+    <div id="summary-toolbar">
+      <input type="button" id="mode-node" value="Move Node" />
+    </div>
+    </script>
+
+    <script type="text/template" id="new-node-template">
+      <input id="new-node-name" name="node_name" value=""></input>
+      <input type="button" id="add-node" value="Add Node" />
+    </script>
+
+<!-- End Templates -->
+
+    <script src="js/map.js"></script>
+    <script src="js/nodes.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>
+
+
