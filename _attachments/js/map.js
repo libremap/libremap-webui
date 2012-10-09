@@ -121,11 +121,20 @@ L.Marker.Draw = L.Handler.Draw.extend({
 var LeafletMap = Map.extend({
     drawMap: function draw_map(coords){
         this._map = L.map(this._el).setView([coords.lat, coords.lon], 15);
+        defaultLayer = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                           attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a></a>',
+                           maxZoom: 18
+                       }).addTo(this._map);
 
-        L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a></a>',
-            maxZoom: 18
-        }).addTo(this._map);
+        var layers = { 'OpenStreetMap': defaultLayer,
+                       'Google Satelite':
+                       L.tileLayer('http://mt1.google.com/vt/lyrs=s@121&hl=en&x={x}&y={y}&z={z}', {
+                           attribution: 'Map data © 2012 Google',
+                           maxZoom: 18
+                       })
+                     }
+
+	this._map.addControl(new L.Control.Layers(layers,'',{collapsed: true}));
     },
 
     _latlng: function (node){
