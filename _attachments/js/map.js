@@ -22,149 +22,192 @@ var Map = Toolbox.Base.extend({
 });
 
 
-/* LeafLet Map implementation */
-
-// Marker Draw code based on https://github.com/jacobtoye/Leaflet.draw/blob/master/dist/leaflet.draw-src.js
-
-L.Handler.Draw = L.Handler.extend({
-    includes: L.Mixin.Events,
-
-    initialize: function (map) {
-        this._map = map;
+var OLMap = Map.extend({
+    constructor: function (element_id) {
+//        this._el = element_id;
+        options = {
+                projection: new OpenLayers.Projection("EPSG:900913"),
+                displayProjection: new OpenLayers.Projection("EPSG:4326"),
+            }; 
+        this._map = new OpenLayers.Map(element_id, options);
     },
-
-    addHooks: function () {
-        if (this._map) {
-            L.DomUtil.disableTextSelection();
-            L.DomEvent.addListener(window, 'keyup', this._cancelDrawing, this);
-        }
-    },
-    removeHooks: function () {
-        if (this._map) {
-            L.DomUtil.enableTextSelection();
-            L.DomEvent.removeListener(window, 'keyup', this._cancelDrawing);
-        }
-    },
-    _cancelDrawing: function (e) {
-        if (e.keyCode === 27) {
-            this.disable();
-            delete(this);
-        }
-    }
-});
-
-L.Marker.Draw = L.Handler.Draw.extend({
-    options: {
-        icon: new L.Icon.Default(),
-        zIndexOffset: 2000 // This should be > than the highest z-index any markers
-    },
-    initialize: function (map, node) {
-        L.Handler.Draw.prototype.initialize.call(this, map);
-        this._map = map;
-        this.node = node;
-    },
-
-    addHooks: function () {
-        L.Handler.Draw.prototype.addHooks.call(this);
-
-        if (this._map) {
-            this._map.on('mousemove', this._onMouseMove, this);
-        }
-    },
-
-    removeHooks: function () {
-        L.Handler.Draw.prototype.removeHooks.call(this);
-
-        if (this._map) {
-            if (this._marker) {
-                this._marker.off('click', this._onClick);
-                this._map
-                    .off('click', this._onClick)
-                    .removeLayer(this._marker);
-                delete this._marker;
-            }
-
-            this._map.off('mousemove', this._onMouseMove);
-        }
-    },
-
-    _onMouseMove: function (e) {
-        var newPos = e.layerPoint,
-        latlng = e.latlng;
-
-        if (!this._marker) {
-            this._marker = new L.Marker(latlng, {
-                icon: this.options.icon,
-                zIndexOffset: this.options.zIndexOffset,
-                opacity: 0.5,
-            });
-            // Bind to both marker and map to make sure we get the click event.
-            this._marker.on('click', this._onClick, this);
-            this._map
-                .on('click', this._onClick, this)
-                .addLayer(this._marker);
-        }
-        else {
-            this._marker.setLatLng(latlng);
-        }
-    },
-
-    _onClick: function (e) {
-        coords = {lat: this._marker.getLatLng().lat, lon: this._marker.getLatLng().lng}
-        this.node.saveToCoords(coords)
-        this.disable();
-        delete(this);
-    }
-});
-
-
-var LeafletMap = Map.extend({
     drawMap: function draw_map(coords){
-        this._map = L.map(this._el).setView([coords.lat, coords.lon], 15);
-        defaultLayer = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                           attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a></a>',
-                           maxZoom: 18
-                       }).addTo(this._map);
+        center = new OpenLayers.LonLat(coords['lon'], coords['lat']);
+        zoom_level = 15;
 
-        var layers = { 'OpenStreetMap': defaultLayer,
-                       'Google Satelite':
-                       L.tileLayer('http://mt1.google.com/vt/lyrs=s@121&hl=en&x={x}&y={y}&z={z}', {
-                           attribution: 'Map data © 2012 Google',
-                           maxZoom: 18
-                       })
-                     }
+//        this._map = new OpenLayers.Map(this._el, options);
 
-	this._map.addControl(new L.Control.Layers(layers,'',{collapsed: true}));
+        map_layers = [ new OpenLayers.Layer.OSM("OpenStreetMap"),
+                       new OpenLayers.Layer.Google(
+                           "Google Hybrid",
+                           {type: google.maps.MapTypeId.HYBRID, numZoomLevels: 20}
+                       )
+                     ]
+        this._map.addLayers(map_layers);
+        this.nodesLayer = new OpenLayers.Layer.Vector(
+            "Nodes", {
+                eventListeners: {
+                    'featureselected': function(evt){
+                        marker = evt.feature;
+                        var node = marker.node;
+                        template = _.template($("#node-summary-template").html()),
+                        summary = template(node.toJSON());
+                        CURRENT_NODE = node;
+                        var popup = new OpenLayers.Popup.FramedCloud(
+                            "chicken", 
+                            marker.geometry.getBounds().getCenterLonLat(),
+                            new OpenLayers.Size(200,100),
+                            summary, null, true, null// this._onPopupClose
+                        );
+                        marker.popup = popup;
+                        this._map.addPopup(popup);
+
+                    },
+                    'featureunselected': function(evt){
+                        marker = evt.feature;
+                        this._map.removePopup(marker.popup);
+                        //        map._map.removePopup(marker.popup);
+                        marker.popup.destroy();
+                        delete marker.popup;
+                    },
+                    'scope': this,
+                }
+            })
+
+        this._map.addLayer(this.nodesLayer);
+
+        this.nodeSelector = new OpenLayers.Control.SelectFeature(
+            [this.nodesLayer],
+//            {geometryTypes: ['OpenLayers.Geometry.LineString']},
+            {clickout: true, toggle: true, multiple: false, hover: false}
+        );
+
+        this._map.addControl(this.nodeSelector);
+        this.nodeSelector.activate();
+
+        this._map.nodeDraw = new OpenLayers.Control.DrawFeature(
+            this.nodesLayer,
+            OpenLayers.Handler.Point)
+        this._map.nodeDraw.featureAdded = this.positionNodeMarker
+        this._map.addControl(this._map.nodeDraw);
+
+
+        this.wifiLinksLayer = new OpenLayers.Layer.Vector(
+            "WifiLinks", {
+                styleMap: new OpenLayers.StyleMap({'default':{
+                    strokeColor: "#0F0",
+                    strokeOpacity: 0.5,
+                    strokeWidth: 5,
+                    fillColor: "#55ff00",
+                    fillOpacity: 0.5,
+                    pointRadius: 6,
+                    pointerEvents: "visiblePainted",
+                }}),
+                renderers: OpenLayers.Layer.Vector.prototype.renderers,
+                eventListeners: {
+                    'featureselected': function(evt){
+                        line = evt.feature;
+                        var link = line.link;
+                        template = _.template($("#wifilink-summary-template").html()),
+                        summary = template(link.toJSON());
+                        //        CURRENT_LINK = link
+                        var popup = new OpenLayers.Popup.FramedCloud(
+                            "chicken", 
+                            line.geometry.getBounds().getCenterLonLat(),
+                            new OpenLayers.Size(200,100),
+                            summary, null, true, null// this._onPopupClose
+                        );
+                        line.popup = popup;
+                        this._map.addPopup(popup);
+
+                    },
+                    'featureunselected': function(evt){
+                        line = evt.feature;
+                        this._map.removePopup(line.popup);
+                        line.popup.destroy();
+                        delete line.popup;
+                    },
+                    'scope': this,
+                }
+            })
+
+        this._map.addLayer(this.wifiLinksLayer);
+        this.wifiLinkSelector = new OpenLayers.Control.SelectFeature(
+            [this.wifiLinksLayer],
+//            {geometryTypes: ['OpenLayers.Geometry.Point']},
+            {clickout: true, toggle: true, multiple: false, hover: false}
+        );
+
+        this._map.addControl(this.wifiLinkSelector);
+//        this.wifiLinkSelector.activate();
+
+        this._map.addControl(new OpenLayers.Control.LayerSwitcher());
+
+        this._map.setCenter(
+            center.transform(
+                this._map.displayProjection, this._map.projection
+            ), zoom_level
+        );
     },
 
-    _latlng: function (node){
-        return [node.get('coords').lat, node.get('coords').lon]
+    displayLinkLine: function(link){
+        var source_point = new OpenLayers.Geometry.Point(link.source_coords.lon, link.source_coords.lat).transform( this._map.displayProjection, this._map.projection);
+        var target_point = new OpenLayers.Geometry.Point(link.target_coords.lon, link.target_coords.lat).transform( this._map.displayProjection, this._map.projection);
+        var linestring = new OpenLayers.Geometry.LineString([source_point, target_point]);
+        var line = new OpenLayers.Feature.Vector(linestring);
+        line.link = link;
+        this.wifiLinksLayer.addFeatures([line]);
+        return line
     },
 
     displayNodeMarker: function(node){
-        template = _.template($("#node-summary-template").html()),
-        summary = template(node.toJSON())
-        coords = this._latlng(node)
-        marker = L.marker(coords, {title: node.get('name')}).addTo(this._map);
-        var popup = L.popup().setLatLng(coords).setContent(summary)
-        marker._popup = popup;
-        marker.on('click', marker.openPopup, marker);
-//        marker.on('click', node.setCurrent);
-        return marker;
+        var coords = node.get('coords');
+//        if (coords == undefined) coords = NETWORK_COORDS;
+        var point = new OpenLayers.Geometry.Point(coords.lon, coords.lat).transform( this._map.displayProjection, this._map.projection);
+        var marker = new OpenLayers.Feature.Vector(point);
+        marker.node = node;
+//        node.marker = marker
+        this.nodesLayer.addFeatures([marker]);
+        return marker
     },
 
-    positionNodeMarker: function(node){
-        var marker_handler = new L.Marker.Draw(this._map, node);
-        marker_handler.enable();
+    drawNodeMarker: function(node){
+        this._map.nodeDraw.activate();
     },
 
+    positionNodeMarker: function(feature){
+        var map = feature.layer.map;
+        var mouse_coords = feature.geometry.getBounds().getCenterLonLat()
+        coords = mouse_coords.transform(map.projection,
+                                         map.displayProjection);
+        if (CURRENT_NODE != null){
+            var floating_node = CURRENT_NODE;
+            floating_node.set({coords: coords});
+            
+            floating_node.save();
+            floating_node.marker = feature;
+            feature.destroy();
+            delete feature
+            //                app_router.navigate('#node/' + floating_node.id, {trigger: true})
+            floating_node = null;
+//            app_router.navigate('/', {trigger: true})
+        }
+        map.nodeDraw.deactivate();
+    },
+ 
     moveNodeMarker: function(node){
     },
 
-    selectNodeMarker: function(node){
-        node.marker.openPopup();
+    selectNodeMarker: function(marker){
+        this.nodeSelector.unselectAll();
+        this.nodeSelector.select(marker)
+    },
+
+    removeNodeMarker: function(marker){
+        this.nodesLayer.removeFeatures(marker, {silent: false});
     },
 
     drawLink: function(source_coords, dest_coords){
     }
 });
+

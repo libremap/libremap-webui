@@ -5,17 +5,17 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>AlterMap</title>
 
-    <link rel="stylesheet" href="style/leaflet/leaflet.css" />
-    <!--[if lte IE 8]>
-        <link rel="stylesheet" href="style/leaflet/leaflet.ie.css" />
-    <![endif]-->
-
     <script type="text/javascript" src="vendor/couchapp/loader.js"></script>
     <script src="js/lib/leaflet.js"></script>
+
+    <script src="http://openlayers.org/api/OpenLayers.js"></script>
+    <script src="http://maps.google.com/maps/api/js?v=3.2&sensor=false"></script>
+
     <script src="js/lib/json2.js"></script>
     <script src="js/lib/underscore-min.js"></script>
     <script src="js/lib//backbone-min.js"></script>
     <script src="js/lib//backbone-couchdb.js"></script>
+<!--    <script src="https://raw.github.com/jacwright/array-query/master/lib/query.js"></script>-->
     <script src="js/lib//toolbox.js"></script>
 
     <style>
@@ -61,14 +61,21 @@ html, body {height: 100%;}
     <script type="text/template" id="node-summary-template">
     <h2>{{name}}</h2>
     <p>coords: {{coords.lon}}, {{coords.lat}}</p>
+<!--
     <div id="summary-toolbar">
       <input type="button" id="mode-node" value="Move Node" />
     </div>
+-->
     </script>
 
     <script type="text/template" id="new-node-template">
       <input id="new-node-name" name="node_name" value=""></input>
       <input type="button" id="add-node" value="Add Node" />
+    </script>
+
+    <script type="text/template" id="wifilink-summary-template">
+    <h2>{{name}}</h2>
+    <p>channel: {{attributes.channel}}, signal: {{attributes.signal}}</p>
     </script>
 
 <!-- End Templates -->
