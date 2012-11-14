@@ -35,8 +35,6 @@ var OLMap = Map.extend({
         center = new OpenLayers.LonLat(coords['lon'], coords['lat']);
         zoom_level = 15;
 
-//        this._map = new OpenLayers.Map(this._el, options);
-
         map_layers = [ new OpenLayers.Layer.OSM("OpenStreetMap"),
                        new OpenLayers.Layer.Google(
                            "Google Hybrid",
@@ -66,7 +64,6 @@ var OLMap = Map.extend({
                     'featureunselected': function(evt){
                         marker = evt.feature;
                         this._map.removePopup(marker.popup);
-                        //        map._map.removePopup(marker.popup);
                         marker.popup.destroy();
                         delete marker.popup;
                     },
@@ -75,22 +72,6 @@ var OLMap = Map.extend({
             })
 
         this._map.addLayer(this.nodesLayer);
-
-        this.nodeSelector = new OpenLayers.Control.SelectFeature(
-            [this.nodesLayer],
-//            {geometryTypes: ['OpenLayers.Geometry.LineString']},
-            {clickout: true, toggle: true, multiple: false, hover: false}
-        );
-
-        this._map.addControl(this.nodeSelector);
-        this.nodeSelector.activate();
-
-        this._map.nodeDraw = new OpenLayers.Control.DrawFeature(
-            this.nodesLayer,
-            OpenLayers.Handler.Point)
-        this._map.nodeDraw.featureAdded = this.positionNodeMarker
-        this._map.addControl(this._map.nodeDraw);
-
 
         this.wifiLinksLayer = new OpenLayers.Layer.Vector(
             "WifiLinks", {
@@ -132,14 +113,22 @@ var OLMap = Map.extend({
             })
 
         this._map.addLayer(this.wifiLinksLayer);
-        this.wifiLinkSelector = new OpenLayers.Control.SelectFeature(
-            [this.wifiLinksLayer],
-//            {geometryTypes: ['OpenLayers.Geometry.Point']},
+
+        this.selector = new OpenLayers.Control.SelectFeature(
+            [this.nodesLayer, this.wifiLinksLayer],
+            {geometryTypes: ['OpenLayers.Geometry.LineString',
+                             'OpenLayers.Geometry.Point']},
             {clickout: true, toggle: true, multiple: false, hover: false}
         );
 
-        this._map.addControl(this.wifiLinkSelector);
-//        this.wifiLinkSelector.activate();
+        this._map.addControl(this.selector);
+        this.selector.activate();
+
+        this._map.nodeDraw = new OpenLayers.Control.DrawFeature(
+            this.nodesLayer,
+            OpenLayers.Handler.Point)
+        this._map.nodeDraw.featureAdded = this.positionNodeMarker
+        this._map.addControl(this._map.nodeDraw);
 
         this._map.addControl(new OpenLayers.Control.LayerSwitcher());
 
@@ -151,8 +140,12 @@ var OLMap = Map.extend({
     },
 
     displayLinkLine: function(link){
-        var source_point = new OpenLayers.Geometry.Point(link.source_coords.lon, link.source_coords.lat).transform( this._map.displayProjection, this._map.projection);
-        var target_point = new OpenLayers.Geometry.Point(link.target_coords.lon, link.target_coords.lat).transform( this._map.displayProjection, this._map.projection);
+        var source_point = new OpenLayers.Geometry.Point(
+            link.source_coords.lon, link.source_coords.lat).transform(
+                this._map.displayProjection, this._map.projection);
+        var target_point = new OpenLayers.Geometry.Point(
+            link.target_coords.lon, link.target_coords.lat).transform(
+                this._map.displayProjection, this._map.projection);
         var linestring = new OpenLayers.Geometry.LineString([source_point, target_point]);
         var line = new OpenLayers.Feature.Vector(linestring);
         line.link = link;
@@ -163,10 +156,10 @@ var OLMap = Map.extend({
     displayNodeMarker: function(node){
         var coords = node.get('coords');
 //        if (coords == undefined) coords = NETWORK_COORDS;
-        var point = new OpenLayers.Geometry.Point(coords.lon, coords.lat).transform( this._map.displayProjection, this._map.projection);
+        var point = new OpenLayers.Geometry.Point(coords.lon, coords.lat).transform(
+            this._map.displayProjection, this._map.projection);
         var marker = new OpenLayers.Feature.Vector(point);
         marker.node = node;
-//        node.marker = marker
         this.nodesLayer.addFeatures([marker]);
         return marker
     },
@@ -188,9 +181,7 @@ var OLMap = Map.extend({
             floating_node.marker = feature;
             feature.destroy();
             delete feature
-            //                app_router.navigate('#node/' + floating_node.id, {trigger: true})
-            floating_node = null;
-//            app_router.navigate('/', {trigger: true})
+            CURRENT_NODE = null;
         }
         map.nodeDraw.deactivate();
     },
@@ -199,8 +190,8 @@ var OLMap = Map.extend({
     },
 
     selectNodeMarker: function(marker){
-        this.nodeSelector.unselectAll();
-        this.nodeSelector.select(marker)
+        this.selector.unselectAll();
+        this.selector.select(marker)
     },
 
     removeNodeMarker: function(marker){

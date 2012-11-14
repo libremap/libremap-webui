@@ -2,10 +2,6 @@ Backbone.couch_connector.config.db_name = "altermap";
 Backbone.couch_connector.config.ddoc_name = "altermap";
 Backbone.couch_connector.config.global_changes = false;
 
-// setup array-query  / https://npmjs.org/package/array-query
-//Backbone.Collection.prototype.query = function(field) {
-//    return query.select(@models).where(field);
-//}
 
 // Enables Mustache.js-like templating.
 _.templateSettings = {
@@ -13,30 +9,7 @@ _.templateSettings = {
 };
 
 var CURRENT_NODE = null;
-/*
-var dispatcher = _.clone(Backbone.Events)
 
-dispatcher.on('setCurrentNode', function(node){
-    current_node = node
-    console.log('current'+ node.get('name'))
-})
-*/
-
-// var BatmanLink = Backbone.Model.extend({
-// });
-
-// var BatmanLinks = Backbone.Collection.extend({
-// //    url: "http://10.5.1.1:8000/ql_2012-10-13-T.json",
-//     model: BatmanLink,
-//     parse: function(response){
-//         response.each(function(row){
-//             console.log('row content'+ row[0]);
-//         });
-//     }
-// });
-
-//bl = new BatmanLinks();
-//bl.fetch();
 
 var WifiLink = Backbone.Model.extend({
     url : function() {
@@ -55,12 +28,12 @@ var WifiLinksCollection = Backbone.Collection.extend({
 var LinkLineView = Backbone.View.extend({
     initialize : function(){
         _.bindAll(this, 'render', 'remove', '_nodeFromMAC');
-        this.model.bind('remove', this.remove);
-        //            this.model.bind('change', this.render);
+        this.model.on('remove', this.remove);
     },
     _nodeFromMAC: function (macaddr){
         var iface = interfaces.where({'macaddr':macaddr})[0];
-        var device = devices.where({'_id': iface.get('device_id')})[0];
+        var device = devices.get(iface.get('device_id'));
+        console.log("Device id: "+ iface.get('device_id') + " | Device obj: "+ device);
         var node = nodes.where({'_id': device.get('node_id')})[0]
         return node;        
     },
@@ -75,15 +48,15 @@ var LinkLineView = Backbone.View.extend({
         }
     },
     remove: function(){
-        map.removeLinkLine(this.model.lilne);
+        map.removeLinkLine(this.model.line);
     },
 })
 
 var WifiLinksView =  Backbone.View.extend({
     initialize: function(collection){
         _.bindAll(this, 'addLine', 'refreshed');
-        wifilinks.bind("reset", this.refreshed, this);
-        wifilinks.bind("add", this.addLine);
+        wifilinks.on("reset", this.refreshed, this);
+        wifilinks.on("add", this.addLine);
     },
     addLine : function(wifilink){
         if (wifilink.line == undefined){
@@ -124,15 +97,6 @@ var Node = Backbone.Model.extend({
         // POST to '/nodes' and PUT to '/nodes/:id'
         return this.id ? '/nodes/' + this.id : '/nodes';
     },
-/*
-    initialize : function(){
-        _.bindAll(this, 'saveToCoords');
-    },
-    saveToCoords: function(coords){
-        this.set({coords: coords});
-        this.save({wait: true});
-    },
-*/
 });
 
 var NodesCollection = Backbone.Collection.extend({
@@ -141,11 +105,6 @@ var NodesCollection = Backbone.Collection.extend({
     },
     url: "/nodes",
     model: Node,
-    // byMac: function(mac) {
-    //     return this.filter(function(mac) {
-    //         return task.get('list') == null;
-    //     });
-    // },
 });
 
 var Device = Backbone.Model.extend({
@@ -187,8 +146,8 @@ var NodeRowView = Backbone.View.extend({
 
     initialize : function(){
         _.bindAll(this, 'render', 'selectNode', 'remove');
-        this.model.bind('change', this.render);
-        this.model.bind('remove', this.remove);
+        this.model.on('change', this.render);
+        this.model.on('remove', this.remove);
     },
     render: function(){
         var content = this.model.toJSON();
@@ -208,8 +167,8 @@ var NodesListView = Backbone.View.extend({
 
     initialize: function(collection){
         _.bindAll(this, 'refreshed', 'addRow');
-        nodes.bind("reset", this.refreshed);
-        nodes.bind("add", this.addRow);
+        nodes.on("reset", this.refreshed);
+        nodes.on("add", this.addRow);
         this._viewPointers = [];
     },
     addRow : function(node){
@@ -229,9 +188,9 @@ var NodesListView = Backbone.View.extend({
 var NodeMarkerView = Backbone.View.extend({
     initialize : function(){
         _.bindAll(this, 'render', 'remove');
-        this.model.bind('remove', this.remove);
+        this.model.on('remove', this.remove);
         
-        //            this.model.bind('change', this.render);
+        //            this.model.on('change', this.render);
     },
     render: function(){
         if (this.model.marker == undefined){
@@ -246,8 +205,8 @@ var NodeMarkerView = Backbone.View.extend({
 var NodeMarkersView =  Backbone.View.extend({
     initialize: function(collection){
         _.bindAll(this, 'addMarker', 'refreshed');
-        nodes.bind("reset", this.refreshed, this);
-        nodes.bind("add", this.addMarker);
+        nodes.on("reset", this.refreshed, this);
+        nodes.on("add", this.addMarker);
     },
     addMarker : function(node){
         if (node.marker == undefined){
@@ -306,7 +265,7 @@ var NodesAppRouter = Backbone.Router.extend({
                         interfaces.fetch({success: function(){
                             console.log('interfaces loaded');
                             wifilinks.fetch({success: function(){
-                                console.log('wifilinks '+wifilinks.models);
+                                console.log('wifilinks loaded');
                             }});
                         }});
                     }});
@@ -322,12 +281,5 @@ var NodesAppRouter = Backbone.Router.extend({
     },
     selectNode: function(node_id){
         console.log('select by URL');
-        // nodes.fetch({success: function(){
-        //     map.selectNodeMarker(node.marker);
-        // }});
-        // map.nodeSelector.unselectAll();
-        // var node = nodes.get(node_id);
-        // map.selectNodeMarker(node.marker);
-////        dispatcher.trigger('setCurrentNode', node);
     },
 });
