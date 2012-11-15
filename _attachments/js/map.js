@@ -100,7 +100,6 @@ var OLMap = Map.extend({
                         );
                         line.popup = popup;
                         this._map.addPopup(popup);
-
                     },
                     'featureunselected': function(evt){
                         line = evt.feature;
@@ -195,7 +194,13 @@ var OLMap = Map.extend({
     },
 
     removeNodeMarker: function(marker){
+        this.selector.unselectAll();
         this.nodesLayer.removeFeatures(marker, {silent: false});
+    },
+
+    removeLinkLine: function(line){
+        this.selector.unselectAll();
+        this.nodesLayer.removeFeatures(line, {silent: false});
     },
 
     drawLink: function(source_coords, dest_coords){

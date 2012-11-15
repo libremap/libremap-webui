@@ -31,20 +31,25 @@ var LinkLineView = Backbone.View.extend({
         this.model.on('remove', this.remove);
     },
     _nodeFromMAC: function (macaddr){
-        var iface = interfaces.where({'macaddr':macaddr})[0];
-        var device = devices.get(iface.get('device_id'));
-        console.log("Device id: "+ iface.get('device_id') + " | Device obj: "+ device);
-        var node = nodes.where({'_id': device.get('node_id')})[0]
-        return node;        
+        var iface = interfaces.where({'macaddr': macaddr})[0];
+        console.log("iface "+ iface +" | mac "+ macaddr);
+        if (iface != undefined ){
+            var device = devices.get(iface.get('device_id'));
+            var node = nodes.where({'_id': device.get('node_id')})[0]
+            return node;
+        }
     },
 
     render: function(){
         var source_node = this._nodeFromMAC(this.model.get('macaddr'));
         var target_node = this._nodeFromMAC(this.model.get('station'));
-        this.model.source_coords = source_node.get('coords');
-        this.model.target_coords = target_node.get('coords');
-        if (this.model.line == undefined){
-            this.model.line = map.displayLinkLine(this.model);
+        console.log("s "+ source_node +" | t "+target_node);
+        if (source_node != undefined && target_node != undefined){
+            this.model.source_coords = source_node.get('coords');
+            this.model.target_coords = target_node.get('coords');
+            if (this.model.line == undefined){
+                this.model.line = map.displayLinkLine(this.model);
+            }
         }
     },
     remove: function(){
@@ -108,15 +113,15 @@ var NodesCollection = Backbone.Collection.extend({
 });
 
 var Device = Backbone.Model.extend({
-    db : {
-      changes : true
-    },
     url : function() {
         return this.id ? '/devices/' + this.id : '/devices';
     },   
 });
 
 var DevicesCollection = Backbone.Collection.extend({
+    db : {
+      changes : true
+    },
     url: "/devices",
     model: Device,
 });
