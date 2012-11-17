@@ -2,14 +2,20 @@ Backbone.couch_connector.config.db_name = "altermap";
 Backbone.couch_connector.config.ddoc_name = "altermap";
 Backbone.couch_connector.config.global_changes = false;
 
+// must update backbone-couch connector to support these settings then delete per collection changes setting.
+//Backbone.couch_connector.config.single_feed = true;
+//Backbone.couch_connector.config.global_changes = true;
 
 // Enables Mustache.js-like templating.
 _.templateSettings = {
     interpolate : /\{\{(.+?)\}\}/g
 };
 
-var CURRENT_NODE = null;
+var DEBUG = true;
 
+var CURRENT_NODE = undefined;
+var CURRENT_NETWORK = undefined;
+var CURRENT_ZONE = undefined;
 
 var WifiLink = Backbone.Model.extend({
     url : function() {
@@ -32,7 +38,6 @@ var LinkLineView = Backbone.View.extend({
     },
     _nodeFromMAC: function (macaddr){
         var iface = interfaces.where({'macaddr': macaddr})[0];
-        console.log("iface "+ iface +" | mac "+ macaddr);
         if (iface != undefined ){
             var device = devices.get(iface.get('device_id'));
             var node = nodes.where({'_id': device.get('node_id')})[0]
@@ -43,7 +48,6 @@ var LinkLineView = Backbone.View.extend({
     render: function(){
         var source_node = this._nodeFromMAC(this.model.get('macaddr'));
         var target_node = this._nodeFromMAC(this.model.get('station'));
-        console.log("s "+ source_node +" | t "+target_node);
         if (source_node != undefined && target_node != undefined){
             this.model.source_coords = source_node.get('coords');
             this.model.target_coords = target_node.get('coords');
@@ -59,8 +63,8 @@ var LinkLineView = Backbone.View.extend({
 
 var WifiLinksView =  Backbone.View.extend({
     initialize: function(collection){
-        _.bindAll(this, 'addLine', 'refreshed');
-        wifilinks.on("reset", this.refreshed, this);
+        _.bindAll(this, 'addLine', 'refresh');
+        wifilinks.on("reset", this.refresh, this);
         wifilinks.on("add", this.addLine);
     },
     addLine : function(wifilink){
@@ -69,7 +73,7 @@ var WifiLinksView =  Backbone.View.extend({
             view.render();
         }
     },
-    refreshed: function(){
+    refresh: function(){
         wifilinks.each(this.addLine);
     }
 });
@@ -84,6 +88,45 @@ var Network = Backbone.Model.extend({
 var NetworksCollection = Backbone.Collection.extend({
     url: "/networks",
     model: Network,
+});
+
+
+var NetworkSelectView = Backbone.View.extend({
+    el: $('#network-select'),
+    template:  $("#network-selection-template").html(),
+    events: {
+        "change": "changeSelection"
+    },
+
+    initialize: function(collection){
+        _.bindAll(this, 'render', 'changeSelection');
+        this.collection = collection
+        this.collection.on("reset", this.render);
+        this.collection.on("add", this.render);
+    },
+
+    render: function(){
+        content = Mustache.to_html(this.template, {networks: this.collection.toJSON()});
+        $(this.el).html(content);
+    },
+    changeSelection: function(){
+        CURRENT_NET = this.collection.get($(this.el).val());
+        CURRENT_ZONE = zones.where({'network_id': CURRENT_NET.id})[0];
+        if (CURRENT_ZONE == undefined){
+            CURRENT_NET = undefined;
+            if (DEBUG == true ) {alert('Selected network has no zones defined');}
+        }
+        else {
+            console.log("CZ: "+ CURRENT_ZONE.id);
+            var zone_nodes = null;
+            nodes.fetch({success: function(){
+                zone_nodes = nodes.where({'zone_id': CURRENT_ZONE.id});
+                nodes.reset(zone_nodes);
+                wifilinks.fetch();
+            }});
+        }
+    }
+
 });
 
 var Zone = Backbone.Model.extend({
@@ -167,35 +210,32 @@ var NodeRowView = Backbone.View.extend({
     },
 })
 
-var NodesListView = Backbone.View.extend({
-    el: $('#sidebar'),
+var NodeListView = Backbone.View.extend({
+    el: $('#nodelist'),
 
     initialize: function(collection){
-        _.bindAll(this, 'refreshed', 'addRow');
-        nodes.on("reset", this.refreshed);
+        _.bindAll(this, 'refresh', 'addRow');
+        nodes.on("reset", this.refresh);
         nodes.on("add", this.addRow);
-        this._viewPointers = [];
     },
     addRow : function(node){
+        console.log("addrow "+ node);
         var view = new NodeRowView({model: node});
         var rendered = view.render().el;
-        this._viewPointers[node.cid] = view;
         $(this.el).append(rendered);
     },
 
-    refreshed: function(){
-        $("#sidebar").html("");
+    refresh: function(){
+        $("#nodelist").html("");
         nodes.each(this.addRow);
     }
 });
-
 
 var NodeMarkerView = Backbone.View.extend({
     initialize : function(){
         _.bindAll(this, 'render', 'remove');
         this.model.on('remove', this.remove);
-        
-        //            this.model.on('change', this.render);
+//            this.model.on('change', this.render);
     },
     render: function(){
         if (this.model.marker == undefined){
@@ -209,17 +249,23 @@ var NodeMarkerView = Backbone.View.extend({
 
 var NodeMarkersView =  Backbone.View.extend({
     initialize: function(collection){
-        _.bindAll(this, 'addMarker', 'refreshed');
-        nodes.on("reset", this.refreshed, this);
+        _.bindAll(this, 'addMarker', 'refresh');
+        nodes.on("reset", this.refresh);
         nodes.on("add", this.addMarker);
     },
-    addMarker : function(node){
+    addMarker: function(node){
         if (node.marker == undefined){
             var view = new NodeMarkerView({model: node});
             view.render();
         }
     },
-    refreshed: function(){
+    delMarker: function(node){
+        node.marker = undefined;
+    },
+
+    refresh: function(){
+        map.resetMarkers();
+        nodes.each(this.delMarker)
         nodes.each(this.addMarker);
     }
 });
@@ -239,7 +285,9 @@ var AddNodeView = Backbone.View.extend({
         "click input#add-node": 'addNewNode',
     },
     addNewNode: function(e){
-        new_node = new Node({name: $('#new-node-name').val()});
+        zone = zones.at(0);
+        if (DEBUG == true && zone == undefined){ alert("No zone is active"); return;}
+        new_node = new Node({name: $('#new-node-name').val(), zone_id: zone.id});
         CURRENT_NODE = new_node;
         map.drawNodeMarker(new_node);
     },
@@ -278,7 +326,8 @@ var NodesAppRouter = Backbone.Router.extend({
             }});
         }});
 
-        new NodesListView(nodes);
+        new NetworkSelectView(networks);
+        nodeListView = new NodeListView(nodes);
         new NodeMarkersView(nodes);
         new AddNodeView();
         new WifiLinksView(wifilinks);

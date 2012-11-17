@@ -172,7 +172,7 @@ var OLMap = Map.extend({
         var mouse_coords = feature.geometry.getBounds().getCenterLonLat()
         coords = mouse_coords.transform(map.projection,
                                          map.displayProjection);
-        if (CURRENT_NODE != null){
+        if (CURRENT_NODE != undefined){
             var floating_node = CURRENT_NODE;
             floating_node.set({coords: coords});
             
@@ -180,7 +180,7 @@ var OLMap = Map.extend({
             floating_node.marker = feature;
             feature.destroy();
             delete feature
-            CURRENT_NODE = null;
+            CURRENT_NODE = undefined;
         }
         map.nodeDraw.deactivate();
     },
@@ -201,6 +201,11 @@ var OLMap = Map.extend({
     removeLinkLine: function(line){
         this.selector.unselectAll();
         this.nodesLayer.removeFeatures(line, {silent: false});
+    },
+
+    resetMarkers: function(){
+        this.nodesLayer.removeAllFeatures();
+        this.wifiLinksLayer.removeAllFeatures();
     },
 
     drawLink: function(source_coords, dest_coords){

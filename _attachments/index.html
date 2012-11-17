@@ -13,6 +13,7 @@
 
     <script src="js/lib/json2.js"></script>
     <script src="js/lib/underscore-min.js"></script>
+    <script src="js/lib/mustache.js"></script>
     <script src="js/lib//backbone-min.js"></script>
     <script src="js/lib//backbone-couchdb.js"></script>
 <!--    <script src="https://raw.github.com/jacwright/array-query/master/lib/query.js"></script>-->
@@ -32,6 +33,9 @@ html, body {height: 100%;}
   float:right;
   width:20%;
 }
+#nodelist{
+  border: 1px gray solid;
+}
     </style>
 
   </head>
@@ -45,7 +49,15 @@ html, body {height: 100%;}
     </p>
 
     <div id="map"></div>
-    <div id="sidebar"></div>
+    <div id="sidebar">
+      <div>
+        <label>network:</label>
+        <select id="network-select">
+        </select>
+      </div>
+      <div id="zone-select"></div>
+      <div id="nodelist"></div>
+    </div>
 
     <div id="detail"></div>
     <div id="status"></div>
@@ -54,6 +66,13 @@ html, body {height: 100%;}
     </div>
 
 <!-- Templates -->
+
+    <script type="text/template" id="network-selection-template">
+        {{#networks}}
+        <option value="{{_id}}">{{name}}</option>
+        {{/networks}}
+    </script>
+
     <script type="text/template" id="node-row-template">
     <a href="#nodes/{{_id}}">{{name}}</a>
     </script>
