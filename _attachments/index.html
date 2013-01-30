@@ -34,8 +34,8 @@ html, body {height: 100%;}
       Mapa de la red
     </p>
 
+<!-- regions -->
     <div id="map"></div>
-
     <div id="sidebar">
       <div>
         <label>network:</label>
@@ -50,35 +50,6 @@ html, body {height: 100%;}
 
 <!-- Templates -->
 
-    <script type="text/template" id="network-selection-template">
-        {{#networks}}
-        <option value="{{_id}}">{{name}}</option>
-        {{/networks}}
-    </script>
-
-    <script type="text/template" id="node-row-template">
-    <a href="#nodes/{{_id}}">{{name}}</a>
-    </script>
-
-    <script type="text/template" id="node-summary-template">
-    <h2>{{name}}</h2>
-    <p>coords: {{coords.lon}}, {{coords.lat}}</p>
-<!--
-    <div id="summary-toolbar">
-      <input type="button" id="mode-node" value="Move Node" />
-    </div>
--->
-    </script>
-
-    <script type="text/template" id="new-node-template">
-      <input id="new-node-name" name="node_name" value=""></input>
-      <input type="button" id="add-node" value="Add Node" />
-    </script>
-
-    <script type="text/template" id="wifilink-summary-template">
-    <h2>{{name}}</h2>
-    <p>channel: {{attributes.channel}}, signal: {{attributes.signal}}</p>
-    </script>
 
 <!-- End Templates -->
 
@@ -98,12 +69,21 @@ html, body {height: 100%;}
     <script src="js/lib/backbone.marionette.min.js"></script>
     <script src="js/lib/backbone-couchdb.js"></script>
 
+    <script type="text/javascript" src="test/lib/jasmine-1.3.1/jasmine.js"></script>
+    <script src="js/lib/jasmine-jquery.js"></script>
+
+
     <script src="js/AlterMap.js"></script>
 
     <script>
-$(function(){
-  AlterMap.start();
-});
+  $(function(){
+// templates are in a separate file to facilitate testing
+// we load them and on success start the app.
+    $.get('templates.html', function(templates) {
+      $('body').append(templates);
+      AlterMap.start();
+    });
+  });
     </script>
 
 

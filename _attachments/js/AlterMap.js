@@ -8,6 +8,9 @@ AlterMap.addRegions({
   statusRegion: "#status",
 });
 
+
+////////////////////////////// Models
+
 AlterMap.Network = Backbone.Model.extend({
   url : function() {
     return this.id ? '/networks/' + this.id : '/networks';
@@ -64,6 +67,8 @@ AlterMap.Wifilink = Backbone.Model.extend({
   },
 });
 
+////////////////////////////// Collections
+
 AlterMap.NetworkCollection =  Backbone.Collection.extend({
   db : {
     changes : true
@@ -112,17 +117,59 @@ AlterMap.WifilinkCollection =  Backbone.Collection.extend({
   model: AlterMap.Wifilink,
 });
 
+////////////////////////////// Views 
+
+AlterMap.NodeRowView = Backbone.View.extend({
+    tagName: "div",
+    className: "node-row",
+    template : null,
+
+    initialize : function(){
+      this.template = _.template($("#node-row-template").html())
+        _.bindAll(this, 'render');
+        this.model.on('change', this.render);
+    },
+    render: function(){
+        var content = this.model.toJSON();
+        $(this.el).html(this.template(content));
+        return this;
+    },
+})
+
+AlterMap.NodeListView = Backbone.View.extend({
+    el: $('#nodelist'),
+
+    initialize: function(attrs){
+        _.bindAll(this, 'refresh', 'addRow');
+      this.collection = attrs.collection;
+      this.collection.on("reset", this.refresh);
+      this.collection.on("add", this.addRow);
+    },
+    addRow : function(node){
+        var view = new AlterMap.NodeRowView({model: node});
+        var rendered = view.render().el;
+        $(this.el).append(rendered);
+    },
+
+    refresh: function(){
+        $("#nodelist").html("");
+        this.collection.each(this.addRow);
+    }
+});
 
 AlterMap.Router = Backbone.Router.extend({
   routes: {
   }
 });
 
-
 AlterMap.addInitializer(function(options){
+  if (options!=undefined){
+    var db_name = options.db_name || 'altermap'
+  }
+  else var db_name = 'altermap';
 
-  Backbone.couch_connector.config.db_name = "altermap";
-  Backbone.couch_connector.config.ddoc_name = "altermap";
+  Backbone.couch_connector.config.db_name = db_name;
+  Backbone.couch_connector.config.ddoc_name = db_name;
   
   Backbone.couch_connector.config.single_feed = true;
   Backbone.couch_connector.config.global_changes = true;  
@@ -152,10 +199,13 @@ AlterMap.addInitializer(function(options){
 
   $("#node-list").html(nodeListView.el);
 */
+
+  var nodeListView = new AlterMap.NodeListView({collection: nodes})
+
   var router = new AlterMap.Router({
     collection: nodes
   });
-
+  nodes.fetch();
 });
 
 AlterMap.on("initialize:after", function(){

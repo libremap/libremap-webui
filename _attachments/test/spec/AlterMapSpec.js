@@ -1,11 +1,17 @@
 describe('AlterMap', function(){
 
-  var test_db = "altermap_test";
+  var test_db = 'altermap_test';
   Backbone.couch_connector.config.db_name = test_db;
   Backbone.couch_connector.config.ddoc_name = test_db;
   Backbone.couch_connector.config.single_feed = true;
   Backbone.couch_connector.config.global_changes = true;
-  var delete_req_settings = {async: false, url: "/"+ test_db, type: 'DELETE',
+
+  // Enables Mustache.js-like templating.
+  _.templateSettings = {
+    interpolate : /\{\{(.+?)\}\}/g
+  }
+
+  var delete_req_settings = {async: false, url: '/'+ test_db, type: 'DELETE',
     statusCode: {
       404: function(){console.log('database already deleted or not created yet')}
     }
@@ -15,7 +21,7 @@ describe('AlterMap', function(){
     beforeEach(function(){
       // these are the data generator tests, so we clean the database before each set
       $.ajax(delete_req_settings);
-      $.ajax({async: false, url: "/"+ test_db, type: 'PUT'});
+      $.ajax({async: false, url: '/'+ test_db, type: 'PUT'});
     });
 
     describe('Generated Network', function() {
@@ -165,5 +171,75 @@ describe('AlterMap', function(){
     });
   });
 
+  describe('AlterMap Views', function(){
+    var node_count = 10;
+    beforeEach(function(){
+      $.ajax(delete_req_settings);
+      $.ajax({async: false, url: '/'+ test_db, type: 'PUT'});
+      this.fixture = DataGen.generateFixture({ node_count: node_count });
+//      AlterMap.start({db_name: test_db});
+//        nodes.fetch();
+
+    });
+
+    describe('NodeListView', function(){
+      beforeEach(function(){
+//        $.ajax(delete_req_settings);
+//        $.ajax({async: false, url: '/'+ test_db, type: 'PUT'});
+//        this.fixture = DataGen.generateFixture({ node_count: node_count });
+        runs(function(){
+          var nodes = new AlterMap.NodeCollection();
+          var nodeListView = new AlterMap.NodeListView({collection: nodes})
+        });
+        // wait for the views to render
+        waits(2000);
+      });
+
+      it('shows a list of the existing nodes', function(){
+        runs(function(){
+          expect($('#nodelist .node-row').length).toEqual(node_count);
+        });
+      });
+
+      it('adds a list row when a new node is added', function(){
+        runs(function(){
+          DataGen.generateNode({name: 'mynode'})
+        });
+        waits(1000);
+        runs(function(){
+          expect($('#nodelist div.node-row a').last()).toHaveText('mynode');
+        });
+      });
+    });
+
+/*
+    describe('NetworkSelectView', function(){
+      beforeEach(function(){
+        runs(function(){
+          var networks = new AlterMap.NetworkCollection();
+          var networkSelectView = new AlterMap.NetworkSelectView({collection: networks})
+        });
+        // wait for the views to render
+        waits(2000);
+      });
+
+      it('shows a select of existing networks', function(){
+        runs(function(){
+          expect($('#network-select option').length).toEqual(1);
+        });
+      });
+      it('adds a select option when a new network is added', function(){
+        runs(function(){
+          DataGen.generateNetwork({name: 'mynetwork'})
+        });
+        // wait for the view to react
+        waits(1000);
+        runs(function(){
+          expect($('#network-select option').last()).toHaveText('mynetwork');
+        });
+      });
+*/  
+    });
+  });
 });
 

@@ -8,8 +8,10 @@
   <link rel="stylesheet" type="text/css" href="lib/jasmine-1.3.1/jasmine.css">
   <script type="text/javascript" src="lib/jasmine-1.3.1/jasmine.js"></script>
   <script type="text/javascript" src="lib/jasmine-1.3.1/jasmine-html.js"></script>
+  <script type="text/javascript" src="../js/lib/jasmine-jquery.js"></script>
 
-  <!-- include source files here... -->
+
+  <!-- source files and their requirements ... -->
 
 <!--
     <script src="http://maps.google.com/maps/api/js?v=3.2&sensor=false"></script>
@@ -28,44 +30,74 @@
     <script src="../js/lib/backbone.marionette.min.js"></script>
     <script src="../js/lib/backbone-couchdb.js"></script>
 
-    <script src="../js/AlterMap.js"></script>
-    <script src="datagen.js"></script>
 
 
-  <!-- include spec files here... -->
-  <script type="text/javascript" src="spec/GeneratorSpec.js"></script>  
-
-  <script type="text/javascript">
-    (function() {
-      var jasmineEnv = jasmine.getEnv();
-      jasmineEnv.updateInterval = 1000;
-
-      var htmlReporter = new jasmine.HtmlReporter();
-
-      jasmineEnv.addReporter(htmlReporter);
-
-      jasmineEnv.specFilter = function(spec) {
-        return htmlReporter.specFilter(spec);
-      };
-
-      var currentWindowOnload = window.onload;
-
-      window.onload = function() {
-        if (currentWindowOnload) {
-          currentWindowOnload();
-        }
-        execJasmine();
-      };
-
-      function execJasmine() {
-        jasmineEnv.execute();
-      }
-
-    })();
-  </script>
 
 </head>
 
 <body>
+<!-- regions -->
+<!-- must be the same as the app''s index.html region containers for view tests to pass -->
+    <div id="map"></div>
+    <div id="sidebar">
+      <div>
+        <label>network:</label>
+        <select id="network-select">
+        </select>
+      </div>
+      <div id="zone-select"></div>
+      <div id="nodelist"></div>
+    </div>
+
+    <div id="status"></div>
+
+<!-- templates -->
+
+
+  <!-- scripts to be tested --> 
+  <script src="../js/AlterMap.js"></script>
+  <script src="datagen.js"></script>
+
+
+  <!-- spec files ... -->
+  <script type="text/javascript" src="spec/AlterMapSpec.js"></script>  
+
+
+  <!-- run jasmine tests -->
+
+  <script type="text/javascript">
+  (function() {
+    var jasmineEnv = jasmine.getEnv();
+    jasmineEnv.updateInterval = 1000;
+
+    var htmlReporter = new jasmine.HtmlReporter();
+
+    jasmineEnv.addReporter(htmlReporter);
+
+    jasmineEnv.specFilter = function(spec) {
+      return htmlReporter.specFilter(spec);
+    };
+
+    var currentWindowOnload = window.onload;
+
+    window.onload = function() {
+      if (currentWindowOnload) {
+        currentWindowOnload();
+      }
+//      execJasmine();
+    };
+
+// we load the app templates before running the tests
+    $.get('../templates.html', function(templates) {
+      $('body').append(templates);
+      execJasmine();  
+    });
+    function execJasmine() {
+      jasmineEnv.execute();
+    }
+
+  })();
+  </script>
+
 </body>
 </html>
