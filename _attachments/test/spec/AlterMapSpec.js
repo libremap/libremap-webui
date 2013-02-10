@@ -1,28 +1,32 @@
 describe('AlterMap', function(){
 
+/*
   var test_db = 'altermap_test';
   Backbone.couch_connector.config.db_name = test_db;
   Backbone.couch_connector.config.ddoc_name = test_db;
   Backbone.couch_connector.config.single_feed = true;
   Backbone.couch_connector.config.global_changes = true;
 
-  // Enables Mustache.js-like templating.
-  _.templateSettings = {
-    interpolate : /\{\{(.+?)\}\}/g
-  }
-
   var delete_req_settings = {async: false, url: '/'+ test_db, type: 'DELETE',
     statusCode: {
       404: function(){console.log('database already deleted or not created yet')}
     }
   }
+*/
+
+  // Enables Mustache.js-like templating.
+  _.templateSettings = {
+    interpolate : /\{\{(.+?)\}\}/g
+  }
 
   describe('AlterMap test-data generator', function(){
+/*
     beforeEach(function(){
-      // these are the data generator tests, so we clean the database before each set
+      // delete the couchdb database before each test and create an empty one
       $.ajax(delete_req_settings);
       $.ajax({async: false, url: '/'+ test_db, type: 'PUT'});
     });
+*/
 
     describe('Generated Network', function() {
       beforeEach(function(){
@@ -155,10 +159,17 @@ describe('AlterMap', function(){
         expect(this.wifilink.get('station')).not.toBeUndefined();
       });
     });
-
     describe('Generated network fixture', function(){
       beforeEach(function(){
         this.fixture = DataGen.generateFixture({ node_count: 10 });
+      });
+      it('has the expected number of networks', function(){
+        expect(this.fixture.networks).not.toBeUndefined();
+        expect(this.fixture.networks.length).toBe(1);
+      });
+      it('has the expected number of zones', function(){
+        expect(this.fixture.zones).not.toBeUndefined();
+        expect(this.fixture.zones.length).toBe(1);
       });
       it('has the expected number of nodes', function(){
         expect(this.fixture.nodes).not.toBeUndefined();
@@ -173,73 +184,74 @@ describe('AlterMap', function(){
 
   describe('AlterMap Views', function(){
     var node_count = 10;
-    beforeEach(function(){
-      $.ajax(delete_req_settings);
-      $.ajax({async: false, url: '/'+ test_db, type: 'PUT'});
-      this.fixture = DataGen.generateFixture({ node_count: node_count });
-//      AlterMap.start({db_name: test_db});
-//        nodes.fetch();
 
+    beforeEach(function(){
+      runs(function(){
+        this.fixture = DataGen.generateFixture({ node_count: node_count });
+      });
+      waits(500);
+    });
+
+    afterEach(function() {
+      // reset collections data
+      this.fixture.networks.reset();
+      this.fixture.zones.reset();
+      this.fixture.nodes.reset();
+      this.fixture.wifilinks.reset();
     });
 
     describe('NodeListView', function(){
       beforeEach(function(){
-//        $.ajax(delete_req_settings);
-//        $.ajax({async: false, url: '/'+ test_db, type: 'PUT'});
-//        this.fixture = DataGen.generateFixture({ node_count: node_count });
-        runs(function(){
-          var nodes = new AlterMap.NodeCollection();
-          var nodeListView = new AlterMap.NodeListView({collection: nodes})
-        });
-        // wait for the views to render
-        waits(2000);
+        this.nodeListView = new AlterMap.NodeListView({collection: this.fixture.nodes})
+      });
+
+      afterEach(function() {
+//        this.nodeListView.close();
+//        $('#sidebar').append('<ul id="nodelist"></ul>');
+//        this.nodeListView.remove();
       });
 
       it('shows a list of the existing nodes', function(){
-        runs(function(){
-          expect($('#nodelist .node-row').length).toEqual(node_count);
-        });
+        expect($('#nodelist .node-row').length).toEqual(node_count);
       });
 
       it('adds a list row when a new node is added', function(){
-        runs(function(){
-          DataGen.generateNode({name: 'mynode'})
-        });
-        waits(1000);
-        runs(function(){
-          expect($('#nodelist div.node-row a').last()).toHaveText('mynode');
-        });
+          var node = DataGen.generateNode({name: 'mynode'});
+          this.fixture.nodes.add(node);
+          last_item = $('#nodelist li.node-row a').last()
+          expect(last_item).toHaveText('mynode');
       });
     });
 
-/*
     describe('NetworkSelectView', function(){
       beforeEach(function(){
-        runs(function(){
-          var networks = new AlterMap.NetworkCollection();
-          var networkSelectView = new AlterMap.NetworkSelectView({collection: networks})
-        });
-        // wait for the views to render
-        waits(2000);
+          this.networkSelectView = new AlterMap.NetworkSelectView({collection: this.fixture.networks});
       });
 
       it('shows a select of existing networks', function(){
-        runs(function(){
-          expect($('#network-select option').length).toEqual(1);
-        });
+        expect($('#network-select option').length).toEqual(1);
       });
       it('adds a select option when a new network is added', function(){
-        runs(function(){
-          DataGen.generateNetwork({name: 'mynetwork'})
-        });
-        // wait for the view to react
-        waits(1000);
-        runs(function(){
-          expect($('#network-select option').last()).toHaveText('mynetwork');
-        });
+        var network = DataGen.generateNetwork({name: 'mynetwork'})
+        this.fixture.networks.add(network);
       });
-*/  
+      // wait for the view to react
+      waits(500);
+      runs(function(){
+        expect($('#network-select option').last()).toHaveText('mynetwork');
+      });
+/*
+      it('filters the node list when a network is selected'), function(){
+        var network = DataGen.generateNetwork({name: 'anetwork'})
+        this.fixture.networks.add(network);
+        var zone = DataGen.generateZone({network_id: network.get('_id')})
+        var node = DataGen.generateNode({name: 'anode'; zone_id: zone.get('_id')})
+        this.fixture.nodes.add(node);
+        expect()
+      }
+*/      
     });
   });
+
 });
 

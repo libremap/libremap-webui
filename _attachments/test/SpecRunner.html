@@ -8,7 +8,7 @@
   <link rel="stylesheet" type="text/css" href="lib/jasmine-1.3.1/jasmine.css">
   <script type="text/javascript" src="lib/jasmine-1.3.1/jasmine.js"></script>
   <script type="text/javascript" src="lib/jasmine-1.3.1/jasmine-html.js"></script>
-  <script type="text/javascript" src="../js/lib/jasmine-jquery.js"></script>
+  <script type="text/javascript" src="lib/jasmine-jquery.js"></script>
 
 
   <!-- source files and their requirements ... -->
@@ -28,14 +28,11 @@
     <script src="../js/lib/backbone.wreqr.min.js"></script>
     <script src="../js/lib/backbone.babysitter.min.js"></script>
     <script src="../js/lib/backbone.marionette.min.js"></script>
-    <script src="../js/lib/backbone-couchdb.js"></script>
-
-
-
-
+<!--    <script src="../js/lib/backbone-couchdb.js"></script> -->
 </head>
 
 <body>
+
 <!-- regions -->
 <!-- must be the same as the app''s index.html region containers for view tests to pass -->
     <div id="map"></div>
@@ -50,9 +47,6 @@
     </div>
 
     <div id="status"></div>
-
-<!-- templates -->
-
 
   <!-- scripts to be tested --> 
   <script src="../js/AlterMap.js"></script>
@@ -84,7 +78,6 @@
       if (currentWindowOnload) {
         currentWindowOnload();
       }
-//      execJasmine();
     };
 
 // we load the app templates before running the tests
@@ -92,6 +85,7 @@
       $('body').append(templates);
       execJasmine();  
     });
+
     function execJasmine() {
       jasmineEnv.execute();
     }

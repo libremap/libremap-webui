@@ -47,7 +47,7 @@ var DataGen = {
       coords: coords
     }
     var network = new AlterMap.Network(completed_attrs);
-    network.save();
+//    network.save();
     return network;
   },
 
@@ -60,7 +60,7 @@ var DataGen = {
       name: zone_name,
       network_id: network_id,
     });
-    zone.save()
+//    zone.save()
     return zone;
   },
 
@@ -77,7 +77,7 @@ var DataGen = {
       zone_id: zone_id,
     }
     var node = new AlterMap.Node(completed_attrs);
-    node.save()
+//    node.save()
     return node;
   },
 
@@ -88,7 +88,7 @@ var DataGen = {
       _id: _.uniqueId('device_').toString(),
       node_id: node_id
     });
-    device.save();
+//    device.save();
     return device;
   },
 
@@ -104,7 +104,7 @@ var DataGen = {
       medium: 'wireless',
       device_id: device_id,
     });
-    iface.save();
+//    iface.save();
     return iface;
   },
 
@@ -121,18 +121,26 @@ var DataGen = {
       station: attrs.station,
       attributes: { signal: randomSignal(), channel: 11 }
     });
-    wifilink.save();
+//    wifilink.save();
     return wifilink;
   },
 
   generateFixture: function(attrs){
     var node_count = attrs.node_count || 10;
-    var network = this.generateNetwork();
-    var zone = this.generateZone({network_id: network.get('_id')});
+
+    var networks = new AlterMap.NetworkCollection();
+    var zones = new AlterMap.ZoneCollection();
     var nodes = new AlterMap.NodeCollection();
     var devices = new AlterMap.DeviceCollection();
     var interfaces = new AlterMap.InterfaceCollection();
     var wifilinks = new AlterMap.WifilinkCollection();
+
+    var network = this.generateNetwork();
+    var zone = this.generateZone({network_id: network.get('_id')});
+
+    networks.add(network);
+    zones.add(zone);
+
     for (var i=1; i<=node_count; i++){
       var node = this.generateNode({zone_id: zone.get('_id')});
       nodes.add(node);
@@ -151,7 +159,7 @@ var DataGen = {
         wifilinks.add(wifilink);
       }
     }
-    return {network: network, zone: zone, nodes: nodes, wifilinks: wifilinks};
+    return {networks: networks, zones: zones, nodes: nodes, wifilinks: wifilinks};
   },
 
 }

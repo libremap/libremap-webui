@@ -119,48 +119,67 @@ AlterMap.WifilinkCollection =  Backbone.Collection.extend({
 
 ////////////////////////////// Views 
 
-AlterMap.NodeRowView = Backbone.View.extend({
-    tagName: "div",
-    className: "node-row",
-    template : null,
+AlterMap.NetworkOptionView = Backbone.Marionette.ItemView.extend({
+  tagName: "option",
+  className: "network-option",
+  template : null,
 
-    initialize : function(){
-      this.template = _.template($("#node-row-template").html())
-        _.bindAll(this, 'render');
-        this.model.on('change', this.render);
-    },
-    render: function(){
-        var content = this.model.toJSON();
-        $(this.el).html(this.template(content));
-        return this;
-    },
+  initialize : function(){
+    // we load the template here because they aren't ready at page load
+    // because we get them through an ajax request
+    this.template = _.template($("#network-option-template").html())
+    _.bindAll(this, 'render');
+  },
+  render: function(){
+    var content = this.model.toJSON();
+    $(this.el).html(this.template(content));
+  },
 })
 
-AlterMap.NodeListView = Backbone.View.extend({
-    el: $('#nodelist'),
+AlterMap.NetworkSelectView = Backbone.Marionette.CollectionView.extend({
+  itemView: AlterMap.NetworkOptionView,
+  el: $('#network-select'),
 
-    initialize: function(attrs){
-        _.bindAll(this, 'refresh', 'addRow');
-      this.collection = attrs.collection;
-      this.collection.on("reset", this.refresh);
-      this.collection.on("add", this.addRow);
-    },
-    addRow : function(node){
-        var view = new AlterMap.NodeRowView({model: node});
-        var rendered = view.render().el;
-        $(this.el).append(rendered);
-    },
-
-    refresh: function(){
-        $("#nodelist").html("");
-        this.collection.each(this.addRow);
-    }
+  initialize : function(){
+    this.render();
+  }
 });
+
+
+AlterMap.NodeRowView = Backbone.Marionette.ItemView.extend({
+  tagName: "li",
+  className: "node-row",
+  template : null,
+
+  initialize : function(){
+    // we load the template here because they aren't ready at page load
+    // because we get them through an ajax request
+    this.template = _.template($("#node-row-template").html())
+    _.bindAll(this, 'render');
+  },
+  render: function(){
+    var content = this.model.toJSON();
+    $(this.el).html(this.template(content));
+    return this;
+  },
+})
+
+AlterMap.NodeListView = Backbone.Marionette.CollectionView.extend({
+  itemView: AlterMap.NodeRowView,
+  el: $('#nodelist'),
+
+  initialize : function(){
+    this.render();
+  },
+});
+
+////////////////////////////// 
 
 AlterMap.Router = Backbone.Router.extend({
   routes: {
   }
 });
+
 
 AlterMap.addInitializer(function(options){
   if (options!=undefined){
@@ -181,33 +200,41 @@ AlterMap.addInitializer(function(options){
 
 
   var nodes = new AlterMap.NodeCollection();
-
-/*
-  nodes.on("add", function(node){
+  var networks = new AlterMap.NetworkCollection();
+  
+  /*
+    nodes.on("add", function(node){
     AlterMap.addNode(node);
-  });
+    });
 
-  AlterMap.vent.on("node:selected", function(node){
+    AlterMap.vent.on("node:selected", function(node){
     AlterMap.showNode(node);
     router.navigate("nodes/" + node.id);
-  });
+    });
 
-  var nodeListView = new AlterMap.NodeListView({
+    var nodeListView = new AlterMap.NodeListView({
     collection: nodes
-  });
-  nodeListView.render();
+    });
+    nodeListView.render();
 
-  $("#node-list").html(nodeListView.el);
-*/
+    $("#node-list").html(nodeListView.el);
+  */
 
+  var networkSelectView = new AlterMap.NetworkSelectView({collection: networks})
   var nodeListView = new AlterMap.NodeListView({collection: nodes})
 
-  var router = new AlterMap.Router({
+  var node_router = new AlterMap.Router({
     collection: nodes
   });
-  nodes.fetch();
+//  nodes.fetch();
+
+  var network_router = new AlterMap.Router({
+    collection: networks
+  });
+//  networks.fetsch();
+
 });
 
 AlterMap.on("initialize:after", function(){
-//  Backbone.history.start();
+  //  Backbone.history.start();
 });

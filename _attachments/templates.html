@@ -1,33 +1,38 @@
-    <script type="text/template" id="network-selection-template">
-        {{#networks}}
-        <option value="{{_id}}">{{name}}</option>
-        {{/networks}}
-    </script>
+<script type="text/template" id="network-option-template">
+  {{name}}
+</script>
 
-    <script type="text/template" id="node-row-template">
-    <a href="#nodes/{{_id}}">{{name}}</a>
-    </script>
-
-    <script type="text/template" id="node-summary-template">
-    <h2>{{name}}</h2>
-    <p>coords: {{coords.lon}}, {{coords.lat}}</p>
 <!--
-    <div id="summary-toolbar">
-      <input type="button" id="mode-node" value="Move Node" />
-    </div>
--->
+    <script type="text/template" id="network-selection-templateKK">
+      {{#networks}}
+      <option value="{{_id}}">{{name}}</option>
+      {{/networks}}
     </script>
+    -->
+<script type="text/template" id="node-row-template">
+  <a href="#nodes/{{_id}}">{{name}}</a>
+</script>
 
-    <script type="text/template" id="new-node-template">
-      <input id="new-node-name" name="node_name" value=""></input>
-      <input type="button" id="add-node" value="Add Node" />
-    </script>
+<script type="text/template" id="node-summary-template">
+  <h2>{{name}}</h2>
+  <p>coords: {{coords.lon}}, {{coords.lat}}</p>
+  <!--
+      <div id="summary-toolbar">
+        <input type="button" id="mode-node" value="Move Node" />
+      </div>
+      -->
+</script>
 
-    <script type="text/template" id="wifilink-summary-template">
-    <h2>{{name}}</h2>
-    <p>channel: {{attributes.channel}}, signal: {{attributes.signal}}</p>
-    </script>
+<script type="text/template" id="new-node-template">
+  <input id="new-node-name" name="node_name" value=""></input>
+  <input type="button" id="add-node" value="Add Node" />
+</script>
 
-    <script>
-      console.log('templates loaded');
-    </script>
+<script type="text/template" id="wifilink-summary-template">
+  <h2>{{name}}</h2>
+  <p>channel: {{attributes.channel}}, signal: {{attributes.signal}}</p>
+</script>
+
+<script>
+  console.log('templates loaded');
+</script>
