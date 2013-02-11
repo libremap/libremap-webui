@@ -28,24 +28,26 @@
     <script src="../js/lib/backbone.wreqr.min.js"></script>
     <script src="../js/lib/backbone.babysitter.min.js"></script>
     <script src="../js/lib/backbone.marionette.min.js"></script>
-<!--    <script src="../js/lib/backbone-couchdb.js"></script> -->
+    <script src="../js/lib/backbone-couchdb.js"></script>
+
 </head>
 
 <body>
 
 <!-- regions -->
-<!-- must be the same as the app''s index.html region containers for view tests to pass -->
+<!-- must be the same as the app''s index.html region containers for view tests to work correctly -->
     <div id="map"></div>
-    <div id="sidebar">
-      <div>
+    <div id="sidebar">      
+      <div id="sidebar-top">
         <label>network:</label>
         <select id="network-select">
         </select>
+        <div id="zone-select"></div>
       </div>
-      <div id="zone-select"></div>
-      <div id="nodelist"></div>
+      <div id="sidebar-main">
+        <ul id="nodelist"></div>
+      </div>
     </div>
-
     <div id="status"></div>
 
   <!-- scripts to be tested --> 

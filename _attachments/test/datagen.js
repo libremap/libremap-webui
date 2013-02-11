@@ -47,20 +47,20 @@ var DataGen = {
       coords: coords
     }
     var network = new AlterMap.Network(completed_attrs);
-//    network.save();
+    network.save();
     return network;
   },
 
   generateZone: function(attrs){
     attrs = attrs || {};
     var zone_name = attrs.name || '';
-    var network_id = attrs.network_id || this.generateNetwork().get('_id');
+    var network_id = attrs.network_id || this.generateNetwork().id;
     var zone = new AlterMap.Zone({
       _id: _.uniqueId('zone_').toString(),
       name: zone_name,
       network_id: network_id,
     });
-//    zone.save()
+    zone.save()
     return zone;
   },
 
@@ -68,7 +68,7 @@ var DataGen = {
     attrs = attrs || {};
     var coords = attrs.coords || randomCoords();
     var node_name = attrs.name || randomString()+'_node';
-    var zone_id = attrs.zone_id || this.generateZone().get('_id');
+    var zone_id = attrs.zone_id || this.generateZone().id;
     var completed_attrs = {
       _id: _.uniqueId('node_').toString(),
       name: node_name,
@@ -77,24 +77,24 @@ var DataGen = {
       zone_id: zone_id,
     }
     var node = new AlterMap.Node(completed_attrs);
-//    node.save()
+    node.save()
     return node;
   },
 
   generateDevice: function(attrs){
     attrs = attrs || {};
-    var node_id = attrs.node_id || this.generateNode().get('_id');
+    var node_id = attrs.node_id || this.generateNode().id;
     var device = new AlterMap.Device({
       _id: _.uniqueId('device_').toString(),
       node_id: node_id
     });
-//    device.save();
+    device.save();
     return device;
   },
 
   generateInterface: function(attrs){
     attrs = attrs || {};
-    var device_id = attrs.device_id || this.generateDevice().get('_id');
+    var device_id = attrs.device_id || this.generateDevice().id;
     var iface = new AlterMap.Interface({
       _id: _.uniqueId('interface_').toString(),
       name: 'wlan0',
@@ -104,7 +104,7 @@ var DataGen = {
       medium: 'wireless',
       device_id: device_id,
     });
-//    iface.save();
+    iface.save();
     return iface;
   },
 
@@ -121,7 +121,7 @@ var DataGen = {
       station: attrs.station,
       attributes: { signal: randomSignal(), channel: 11 }
     });
-//    wifilink.save();
+    wifilink.save();
     return wifilink;
   },
 
@@ -136,21 +136,21 @@ var DataGen = {
     var wifilinks = new AlterMap.WifilinkCollection();
 
     var network = this.generateNetwork();
-    var zone = this.generateZone({network_id: network.get('_id')});
+    var zone = this.generateZone({network_id: network.id});
 
     networks.add(network);
     zones.add(zone);
 
     for (var i=1; i<=node_count; i++){
-      var node = this.generateNode({zone_id: zone.get('_id')});
+      var node = this.generateNode({zone_id: zone.id});
       nodes.add(node);
-      var device = this.generateDevice({node_id: node.get('_id')});
+      var device = this.generateDevice({node_id: node.id});
       devices.add(device);
-      var iface = this.generateInterface({device_id: device.get('_id')})
+      var iface = this.generateInterface({device_id: device.id})
       interfaces.add(iface);
       if (i>1){
-        prev_node_id = nodes.at(i-2).get('_id');
-        prev_device_id = devices.where({node_id: prev_node_id})[0].get('_id');
+        prev_node_id = nodes.at(i-2).id;
+        prev_device_id = devices.where({node_id: prev_node_id})[0].id;
         prev_iface = interfaces.where({device_id: prev_device_id})[0];
         var wifilink = this.generateWifilink({
           macaddr: prev_iface.get('macaddr'),

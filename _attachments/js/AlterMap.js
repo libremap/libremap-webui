@@ -1,9 +1,13 @@
 var AlterMap = new Backbone.Marionette.Application();
 
+AlterMap.currentNetwork = null;
+AlterMap.currentZone = null;
 
 AlterMap.addRegions({
   mapRegion: "#map",
   sidebarRegion: "#sidebar",
+  sidebarTopRegion: "#sidebar-top",
+  sidebarMainRegion: "#sidebar-main",
   detailRegion: "#detail",
   statusRegion: "#status",
 });
@@ -15,8 +19,19 @@ AlterMap.Network = Backbone.Model.extend({
   url : function() {
     return this.id ? '/networks/' + this.id : '/networks';
   },
+  initialize : function(){
+    _.bindAll(this, 'select');
+  },
 
   nodeCount: function(){
+  },
+
+  select: function(){
+    if (this.selected!=true){
+//      this.set({selected: true}, {silent: true});
+      AlterMap.currentNetwork = this;
+      AlterMap.vent.trigger("network:selected", this);
+    }
   }
 });
 
@@ -74,7 +89,7 @@ AlterMap.NetworkCollection =  Backbone.Collection.extend({
     changes : true
   },
   url: "/networks",
-  model: AlterMap.Network,
+  model: AlterMap.Network
 });
 
 AlterMap.ZoneCollection =  Backbone.Collection.extend({
@@ -91,6 +106,29 @@ AlterMap.NodeCollection =  Backbone.Collection.extend({
   },
   url: "/nodes",
   model: AlterMap.Node,
+
+  initialize : function(){
+    _.bindAll(this, 'resetToNetwork');
+  },
+
+  resetToNetwork: function(network){
+    // temporary hack until zone selection is implemented
+    var zone = AlterMap.zones.where({network_id: AlterMap.currentNetwork.id})[0];
+    AlterMap.currentZone = AlterMap.zones.where({network_id: AlterMap.currentNetwork.id})[0];
+    if (AlterMap.currentZone == undefined){
+      AlterMap.currentNetwork = null;
+      console.error('Selected network has no zones defined');
+      this.reset();
+    }
+    else {
+      this.fetch({
+        success: function(nodes){
+          zone_nodes = nodes.where({'zone_id': AlterMap.currentZone.id});
+          nodes.reset(zone_nodes);
+        },
+      });
+    }  
+  }
 });
 
 AlterMap.DeviceCollection =  Backbone.Collection.extend({
@@ -122,26 +160,30 @@ AlterMap.WifilinkCollection =  Backbone.Collection.extend({
 AlterMap.NetworkOptionView = Backbone.Marionette.ItemView.extend({
   tagName: "option",
   className: "network-option",
-  template : null,
 
   initialize : function(){
-    // we load the template here because they aren't ready at page load
-    // because we get them through an ajax request
-    this.template = _.template($("#network-option-template").html())
     _.bindAll(this, 'render');
   },
   render: function(){
-    var content = this.model.toJSON();
-    $(this.el).html(this.template(content));
+    $(this.el).html(this.model.get('name'));
+    $(this.el).attr('value', this.model.id);
   },
 })
 
 AlterMap.NetworkSelectView = Backbone.Marionette.CollectionView.extend({
   itemView: AlterMap.NetworkOptionView,
   el: $('#network-select'),
-
+  events: {
+    'change': 'select'
+  },
   initialize : function(){
+    _.bindAll(this, 'select');
     this.render();
+  },
+  select: function(){
+    network_id = $(this.el).val();
+    var network = AlterMap.networks.where({'_id': network_id})[0];
+    network.select();
   }
 });
 
@@ -149,7 +191,6 @@ AlterMap.NetworkSelectView = Backbone.Marionette.CollectionView.extend({
 AlterMap.NodeRowView = Backbone.Marionette.ItemView.extend({
   tagName: "li",
   className: "node-row",
-  template : null,
 
   initialize : function(){
     // we load the template here because they aren't ready at page load
@@ -158,9 +199,9 @@ AlterMap.NodeRowView = Backbone.Marionette.ItemView.extend({
     _.bindAll(this, 'render');
   },
   render: function(){
-    var content = this.model.toJSON();
-    $(this.el).html(this.template(content));
-    return this;
+      var content = this.model.toJSON();
+      $(this.el).html(this.template(content));
+      return this;
   },
 })
 
@@ -175,11 +216,14 @@ AlterMap.NodeListView = Backbone.Marionette.CollectionView.extend({
 
 ////////////////////////////// 
 
-AlterMap.Router = Backbone.Router.extend({
-  routes: {
-  }
-});
 
+AlterMap.showNetwork = function(network){
+  AlterMap.nodes.resetToNetwork(network);
+  var nodeListView = new AlterMap.NodeListView({
+    collection: AlterMap.nodes
+  });
+  AlterMap.sidebarMainRegion.show(nodeListView);
+}
 
 AlterMap.addInitializer(function(options){
   if (options!=undefined){
@@ -198,10 +242,10 @@ AlterMap.addInitializer(function(options){
     interpolate : /\{\{(.+?)\}\}/g
   }
 
+  AlterMap.networks = new AlterMap.NetworkCollection();
+  AlterMap.zones = new AlterMap.ZoneCollection();
+  AlterMap.nodes = new AlterMap.NodeCollection();
 
-  var nodes = new AlterMap.NodeCollection();
-  var networks = new AlterMap.NetworkCollection();
-  
   /*
     nodes.on("add", function(node){
     AlterMap.addNode(node);
@@ -211,30 +255,21 @@ AlterMap.addInitializer(function(options){
     AlterMap.showNode(node);
     router.navigate("nodes/" + node.id);
     });
-
-    var nodeListView = new AlterMap.NodeListView({
-    collection: nodes
-    });
-    nodeListView.render();
-
-    $("#node-list").html(nodeListView.el);
   */
 
-  var networkSelectView = new AlterMap.NetworkSelectView({collection: networks})
-  var nodeListView = new AlterMap.NodeListView({collection: nodes})
-
-  var node_router = new AlterMap.Router({
-    collection: nodes
+  AlterMap.vent.bind("network:selected", function(network){
+    AlterMap.showNetwork(network);
   });
-//  nodes.fetch();
 
-  var network_router = new AlterMap.Router({
-    collection: networks
-  });
-//  networks.fetsch();
+  var networkSelectView = new AlterMap.NetworkSelectView({collection: AlterMap.networks})
+//  var nodeListView = new AlterMap.NodeListView({collection: AlterMap.nodes})
+
+  AlterMap.networks.fetch();
+  AlterMap.zones.fetch();
+  AlterMap.nodes.fetch();
 
 });
 
 AlterMap.on("initialize:after", function(){
-  //  Backbone.history.start();
+//    Backbone.history.start();
 });
