@@ -13,10 +13,9 @@
 
   <!-- source files and their requirements ... -->
 
-<!--
     <script src="http://maps.google.com/maps/api/js?v=3.2&sensor=false"></script>
--->
-    <script src="../js/lib/OpenLayers.js"></script>
+    <script src="http://openlayers.org/api/OpenLayers.js"></script>
+
     <script src="../js/lib/json2.js"></script>
     <script src="../js/lib/underscore-min.js"></script>
     <script src="../js/lib/jquery-1.8.1.min.js"></script>
@@ -30,12 +29,35 @@
     <script src="../js/lib/backbone.marionette.min.js"></script>
     <script src="../js/lib/backbone-couchdb.js"></script>
 
+
+    <style>
+html, body {height: 100%;}
+#container{height:20%;}
+#map {
+    float:left;
+    width: 76%;
+    height: 100%;
+    border: 1px solid #ccc;
+}
+#sidebar {
+  border:4px solid #dfd;
+  padding:8px;
+  float:right;
+  width:20%;
+}
+#nodelist{
+  border: 1px gray solid;
+}
+    </style>
+
 </head>
 
 <body>
 
 <!-- regions -->
 <!-- must be the same as the app''s index.html region containers for view tests to work correctly -->
+<div id="container">
+
     <div id="map"></div>
     <div id="sidebar">      
       <div id="sidebar-top">
@@ -45,14 +67,16 @@
         <div id="zone-select"></div>
       </div>
       <div id="sidebar-main">
-        <ul id="nodelist"></div>
+        <ul id="nodelist"></ul>
       </div>
     </div>
     <div id="status"></div>
+</div>
 
   <!-- scripts to be tested --> 
   <script src="../js/AlterMap.js"></script>
-  <script src="datagen.js"></script>
+  <script src="../js/AlterMap.Map.js"></script>
+  <script src="AlterMap.DataGen.js"></script>
 
 
   <!-- spec files ... -->

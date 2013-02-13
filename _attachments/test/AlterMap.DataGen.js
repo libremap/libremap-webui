@@ -1,46 +1,48 @@
-var CENTER_COORDS = {
-  'lat': -31.803275545018444,
-  'lon': -64.43404197692871
-}
 
-var randomString = function() {
-  var result = [];
-  var strLength = 13;
-  var charSet = 'ABCDEF0123456789';
-  while (--strLength) {
-    result.push(charSet.charAt(Math.floor(Math.random() * charSet.length)));
-  }
-  return result.join('');
-}
+AlterMap.DataGen = {
 
-var randomMAC = function() {
-  return randomString().match(/.{2}/g).join(':');
-}
+  CENTER_COORDS: {
+    'lat': -31.803275545018444,
+    'lon': -64.43404197692871
+  },
 
-var randomCoords = function(coords) {
-  var coords = coords || CENTER_COORDS;
-  var lon_str = coords.lon.toString();
-  var lat_str = coords.lat.toString();
-  var lon_base = lon_str.slice(0, lon_str.indexOf('.')+3);
-  var lat_base = lat_str.slice(0, lat_str.indexOf('.')+3);
-  var lon_variation = Math.floor(Math.random()*8999999+1000000).toString();
-  var lat_variation = Math.floor(Math.random()*8999999+1000000).toString();
-  var rand_lon = parseFloat(lon_base+lon_variation);
-  var rand_lat = parseFloat(lat_base+lat_variation);
-  var coords = {lon: rand_lon, lat: rand_lat};
-  return coords
-}
+  _randomString: function() {
+    var result = [];
+    var strLength = 13;
+    var charSet = 'ABCDEF0123456789';
+    while (--strLength) {
+      result.push(charSet.charAt(Math.floor(Math.random() * charSet.length)));
+    }
+    return result.join('');
+  },
+  
+  _randomMAC: function() {
+    return randomString().match(/.{2}/g).join(':');
+  },
 
-var randomSignal = function(){
-  return -Math.floor(Math.random()*100)
-}
+  _randomCoords: function(coords) {
+    var coords = coords || this.CENTER_COORDS;
+    var lon_str = coords.lon.toString();
+    var lat_str = coords.lat.toString();
+    var lon_base = lon_str.slice(0, lon_str.indexOf('.')+3);
+    var lat_base = lat_str.slice(0, lat_str.indexOf('.')+3);
+    var lon_variation = Math.floor(Math.random()*8999999+1000000).toString();
+    var lat_variation = Math.floor(Math.random()*8999999+1000000).toString();
+    var rand_lon = parseFloat(lon_base+lon_variation);
+    var rand_lat = parseFloat(lat_base+lat_variation);
+    var coords = {lon: rand_lon, lat: rand_lat};
+    return coords
+  },
 
-var DataGen = {
+  _randomSignal: function(){
+    return -Math.floor(Math.random()*100)
+  },
+
   generateNetwork: function(attrs){
     attrs = attrs || {};
     var id = attrs.id || _.uniqueId('network_').toString();
-    var network_name = attrs.name || randomString()+'Libre';
-    var coords = attrs.coords || CENTER_COORDS;
+    var network_name = attrs.name || this._randomString()+'Libre';
+    var coords = attrs.coords || this.CENTER_COORDS;
     var completed_attrs = {
       _id: id,
       name: network_name,
@@ -66,8 +68,8 @@ var DataGen = {
 
   generateNode: function(attrs){
     attrs = attrs || {};
-    var coords = attrs.coords || randomCoords();
-    var node_name = attrs.name || randomString()+'_node';
+    var coords = attrs.coords || this._randomCoords();
+    var node_name = attrs.name || this._randomString()+'_node';
     var zone_id = attrs.zone_id || this.generateZone().id;
     var completed_attrs = {
       _id: _.uniqueId('node_').toString(),
@@ -99,7 +101,7 @@ var DataGen = {
       _id: _.uniqueId('interface_').toString(),
       name: 'wlan0',
       phydev: 'phy0',
-      macaddr: randomMAC(),
+      macaddr: this._randomMAC(),
       mode: 'adhoc',
       medium: 'wireless',
       device_id: device_id,
@@ -119,7 +121,7 @@ var DataGen = {
       _id: _.uniqueId('wifilink_').toString(),
       macaddr: attrs.macaddr,
       station: attrs.station,
-      attributes: { signal: randomSignal(), channel: 11 }
+      attributes: { signal: this._randomSignal(), channel: 11 }
     });
     wifilink.save();
     return wifilink;

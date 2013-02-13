@@ -2,6 +2,7 @@ var AlterMap = new Backbone.Marionette.Application();
 
 AlterMap.currentNetwork = null;
 AlterMap.currentZone = null;
+AlterMap.collections = {};
 
 AlterMap.addRegions({
   mapRegion: "#map",
@@ -199,9 +200,9 @@ AlterMap.NodeRowView = Backbone.Marionette.ItemView.extend({
     _.bindAll(this, 'render');
   },
   render: function(){
-      var content = this.model.toJSON();
-      $(this.el).html(this.template(content));
-      return this;
+    var content = this.model.toJSON();
+    $(this.el).html(this.template(content));
+//    return this;
   },
 })
 
@@ -212,6 +213,19 @@ AlterMap.NodeListView = Backbone.Marionette.CollectionView.extend({
   initialize : function(){
     this.render();
   },
+  onItemAdded: function(itemView){
+    itemView.model.marker = AlterMap.Map.displayNodeMarker(itemView.model);
+  },
+/*
+  onItemRemoved: function(itemView){
+    console.log('removing............');
+    AlterMap.Map.removeNodeMarker(itemView.model);
+  },
+  onClose: function(){
+    console.log('resetting ............');
+    AlterMap.Map.resetMarkers();
+  }
+*/
 });
 
 ////////////////////////////// 
@@ -225,17 +239,24 @@ AlterMap.showNetwork = function(network){
   AlterMap.sidebarMainRegion.show(nodeListView);
 }
 
+AlterMap.addNodeMarker = function(node){
+  console.log('added node '+ node.get('name'));
+}
+
+AlterMap.setupCouch = function(db_name){
+  Backbone.couch_connector.config.db_name = db_name;
+  Backbone.couch_connector.config.ddoc_name = db_name;
+  Backbone.couch_connector.config.single_feed = true;
+  Backbone.couch_connector.config.global_changes = true;
+}
+
 AlterMap.addInitializer(function(options){
   if (options!=undefined){
     var db_name = options.db_name || 'altermap'
   }
   else var db_name = 'altermap';
 
-  Backbone.couch_connector.config.db_name = db_name;
-  Backbone.couch_connector.config.ddoc_name = db_name;
-  
-  Backbone.couch_connector.config.single_feed = true;
-  Backbone.couch_connector.config.global_changes = true;  
+  AlterMap.setupCouch(db_name);
 
   // Enables Mustache.js-like templating.
   _.templateSettings = {
@@ -246,9 +267,17 @@ AlterMap.addInitializer(function(options){
   AlterMap.zones = new AlterMap.ZoneCollection();
   AlterMap.nodes = new AlterMap.NodeCollection();
 
+  var networkSelectView = new AlterMap.NetworkSelectView({collection: AlterMap.networks})
+  var nodeListView = new AlterMap.NodeListView({collection: AlterMap.nodes})
+  AlterMap.sidebarMainRegion.show(nodeListView);
+
+  AlterMap.vent.bind("network:selected", function(network){
+    AlterMap.showNetwork(network);
+  });
+
   /*
-    nodes.on("add", function(node){
-    AlterMap.addNode(node);
+    AlterMap.nodes.on("add", function(node){
+    AlterMap.addNodeMarker(node);
     });
 
     AlterMap.vent.on("node:selected", function(node){
@@ -256,13 +285,6 @@ AlterMap.addInitializer(function(options){
     router.navigate("nodes/" + node.id);
     });
   */
-
-  AlterMap.vent.bind("network:selected", function(network){
-    AlterMap.showNetwork(network);
-  });
-
-  var networkSelectView = new AlterMap.NetworkSelectView({collection: AlterMap.networks})
-//  var nodeListView = new AlterMap.NodeListView({collection: AlterMap.nodes})
 
   AlterMap.networks.fetch();
   AlterMap.zones.fetch();
