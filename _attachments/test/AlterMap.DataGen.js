@@ -1,10 +1,12 @@
 
 AlterMap.DataGen = {
 
-  CENTER_COORDS: {
+  default_coords: {
     'lat': -31.803275545018444,
     'lon': -64.43404197692871
   },
+
+  PERSIST: false,
 
   _randomString: function() {
     var result = [];
@@ -15,13 +17,15 @@ AlterMap.DataGen = {
     }
     return result.join('');
   },
-  
-  _randomMAC: function() {
-    return randomString().match(/.{2}/g).join(':');
+
+  _save: function(model_instance){
+    if(this.PERSIST==true){
+      model_instance.save()
+    }
   },
 
   _randomCoords: function(coords) {
-    var coords = coords || this.CENTER_COORDS;
+    var coords = coords || this.default_coords;
     var lon_str = coords.lon.toString();
     var lat_str = coords.lat.toString();
     var lon_base = lon_str.slice(0, lon_str.indexOf('.')+3);
@@ -38,18 +42,23 @@ AlterMap.DataGen = {
     return -Math.floor(Math.random()*100)
   },
 
+  
+  randomMAC: function() {
+    return this._randomString().match(/.{2}/g).join(':');
+  },
+
   generateNetwork: function(attrs){
     attrs = attrs || {};
     var id = attrs.id || _.uniqueId('network_').toString();
     var network_name = attrs.name || this._randomString()+'Libre';
-    var coords = attrs.coords || this.CENTER_COORDS;
+    var coords = attrs.coords || this.default_coords;
     var completed_attrs = {
       _id: id,
       name: network_name,
       coords: coords
     }
     var network = new AlterMap.Network(completed_attrs);
-    network.save();
+    this._save(network);
     return network;
   },
 
@@ -62,7 +71,7 @@ AlterMap.DataGen = {
       name: zone_name,
       network_id: network_id,
     });
-    zone.save()
+    this._save(zone);
     return zone;
   },
 
@@ -79,7 +88,7 @@ AlterMap.DataGen = {
       zone_id: zone_id,
     }
     var node = new AlterMap.Node(completed_attrs);
-    node.save()
+    this._save(node);
     return node;
   },
 
@@ -90,7 +99,7 @@ AlterMap.DataGen = {
       _id: _.uniqueId('device_').toString(),
       node_id: node_id
     });
-    device.save();
+    this._save(device);
     return device;
   },
 
@@ -101,12 +110,12 @@ AlterMap.DataGen = {
       _id: _.uniqueId('interface_').toString(),
       name: 'wlan0',
       phydev: 'phy0',
-      macaddr: this._randomMAC(),
+      macaddr: this.randomMAC(),
       mode: 'adhoc',
       medium: 'wireless',
       device_id: device_id,
     });
-    iface.save();
+    this._save(iface);
     return iface;
   },
 
@@ -123,7 +132,7 @@ AlterMap.DataGen = {
       station: attrs.station,
       attributes: { signal: this._randomSignal(), channel: 11 }
     });
-    wifilink.save();
+    this._save(wifilink);
     return wifilink;
   },
 
