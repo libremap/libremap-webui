@@ -309,17 +309,17 @@ describe('AlterMap', function(){
         runs(function(){
           start_persistance();
           this.fixture = AlterMap.DataGen.generateFixture({ node_count: node_count });
+          this.nodeListView = new AlterMap.NodeListView({collection: this.fixture.nodes});
+          AlterMap.sidebarMainRegion.show(this.nodeListView);
         });
       });
 
       afterEach(function() {
+        AlterMap.sidebarMainRegion.close();
         stop_persistance();
       });
 
       it('displays a node marker for each node in the database', function(){
-        runs(function(){
-          AlterMap.start({db_name: 'altermap_test'});
-        });
         waits(1000);
         runs(function(){
           expect(AlterMap.Map.nodesLayer.features.length).toEqual(node_count);
