@@ -9,7 +9,7 @@ describe('AlterMap', function(){
   var test_db = 'altermap_test';
   AlterMap.setupCouch(test_db);
 
-  var start_persistance = function(){
+  var startPersistance = function(){
     var couch_view = {
       "language": "javascript",
       "views": {
@@ -18,8 +18,9 @@ describe('AlterMap', function(){
         }
       }
     }
+    // create the database
     $.ajax({async: false, url: '/'+ test_db, type: 'PUT'});
-    // add byCollection view needed by backbone-couchdb
+    // add the byCollection view needed by backbone-couchdb
     $.ajax({
       async: false,
       type: "PUT",
@@ -30,15 +31,37 @@ describe('AlterMap', function(){
     AlterMap.DataGen.PERSIST = true;
   }
 
-  var stop_persistance = function(){
+  var stopPersistance = function(){
     var delete_req_settings = {
       async: false, url: '/'+ test_db, type: 'DELETE',
       statusCode: {
         404: function(){console.log('database already deleted or not created yet')}
       }
     }
+    // delete the database
     $.ajax(delete_req_settings);
     AlterMap.DataGen.PERSIST = false;
+  }
+
+  var addOneNodeNetToFixture = function(fixture){
+    var network = AlterMap.DataGen.generateNetwork();
+    fixture.networks.add(network);
+    var zone = AlterMap.DataGen.generateZone({network_id: network.id});
+    fixture.zones.add(zone);
+    var node = AlterMap.DataGen.generateNode({name: 'anode', zone_id: zone.id});
+    fixture.nodes.add(node);
+  }
+
+  var fakeInit = function(fixture){
+    // fakes some necessary initialization steps normally run by AlterMap.start()
+    AlterMap.vent.bind("network:selected", function(network_id){
+      AlterMap.selectNetwork(network_id);
+    });
+    AlterMap.networks = fixture.networks;
+    AlterMap.zones = fixture.zones;
+    AlterMap.nodes = fixture.nodes;
+    AlterMap.currentNetwork = null;
+    AlterMap.currentZone = null;
   }
 
   describe('AlterMap test-data generator', function(){
@@ -203,17 +226,16 @@ describe('AlterMap', function(){
 
     beforeEach(function(){
       runs(function(){
-        start_persistance();
+//        startPersistance();
         this.fixture = AlterMap.DataGen.generateFixture({ node_count: node_count });
         // the NodeListView calls map methods so we draw it
         AlterMap.Map.draw(AlterMap.DataGen.default_coords);
       });
-//      waits(500);
     });
 
     afterEach(function() {
       AlterMap.Map.destroy();
-      stop_persistance();
+//      stopPersistance();
     });
 
     describe('NodeListView', function(){
@@ -223,7 +245,7 @@ describe('AlterMap', function(){
       });
 
       afterEach(function() {
-        AlterMap.sidebarMainRegion.close();
+        AlterMap.sidebarMainRegion.reset();
       });
 
       it('shows a list of the existing nodes', function(){
@@ -245,12 +267,13 @@ describe('AlterMap', function(){
       });
 
       afterEach(function() {
-        AlterMap.sidebarTopRegion.close();
+        AlterMap.sidebarTopRegion.reset();
       });
 
       it('shows a select of existing networks', function(){
         expect($('#network-select option').length).toEqual(1);
       });
+
       it('adds a select option when a new network is added', function(){
         runs(function(){
           var network = AlterMap.DataGen.generateNetwork({name: 'mynetwork'})
@@ -261,28 +284,18 @@ describe('AlterMap', function(){
           expect($('#network-select option').last()).toHaveText('mynetwork');
         });
       });
+
       it('filters the node list when a network is selected', function(){
         runs(function(){
-          AlterMap.vent.bind("network:selected", function(network){
-            AlterMap.showNetwork(network);
-          });
-          var network = AlterMap.DataGen.generateNetwork({name: 'anetwork'});
-          this.fixture.networks.add(network);
-          var zone = AlterMap.DataGen.generateZone({network_id: network.id});
-          this.fixture.zones.add(zone);
-          var node = AlterMap.DataGen.generateNode({name: 'anode', zone_id: zone.id});
-          this.fixture.nodes.add(node);
-          AlterMap.networks = this.fixture.networks;
-          AlterMap.zones = this.fixture.zones;
-          AlterMap.nodes = this.fixture.nodes;
+          addOneNodeNetToFixture(this.fixture);
+          fakeInit(this.fixture);
           $("#network-select option:last").attr('selected','selected').change();
         });
-        waits(1000);
+        waits(500);
         runs(function(){
           expect($('#nodelist li.node-row').length).toEqual(1);
           last_item = $('#nodelist li.node-row a').last()
           expect(last_item).toHaveText('anode');
-          AlterMap.sidebarMainRegion.close();
         });
       });  
     });
@@ -302,27 +315,45 @@ describe('AlterMap', function(){
     it('shows the OpenLayers Map', function(){
       expect($('.olMapViewport')).toExist();
     });
+
     describe('Network Features', function(){
       var node_count = 10;
 
       beforeEach(function(){
         runs(function(){
-          start_persistance();
+//          startPersistance();
           this.fixture = AlterMap.DataGen.generateFixture({ node_count: node_count });
+          // the map features render is connected to the NodeListView
           this.nodeListView = new AlterMap.NodeListView({collection: this.fixture.nodes});
           AlterMap.sidebarMainRegion.show(this.nodeListView);
+          this.networkSelectView = new AlterMap.NetworkSelectView({collection: this.fixture.networks});
+          AlterMap.sidebarTopRegion.show(this.networkSelectView);
         });
       });
 
       afterEach(function() {
-        AlterMap.sidebarMainRegion.close();
-        stop_persistance();
+        AlterMap.sidebarMainRegion.reset();
+        AlterMap.sidebarTopRegion.reset();
+//        stopPersistance();
       });
 
-      it('displays a node marker for each node in the database', function(){
-        waits(1000);
+      it('displays a node marker for each node', function(){
         runs(function(){
           expect(AlterMap.Map.nodesLayer.features.length).toEqual(node_count);
+        });
+      });
+
+      it('filters displayed node markers when a network is selected', function(){        
+        runs(function(){
+          addOneNodeNetToFixture(this.fixture);
+          fakeInit(this.fixture);
+          $("#network-select option:first").attr('selected','selected').change();
+          // TODO: the event is not triggering, so we force the trigger. fix this
+          AlterMap.vent.trigger("network:selected", this.fixture.networks.models[1].id)
+        });
+        waits(500);
+        runs(function(){
+          expect(AlterMap.Map.nodesLayer.features.length).toEqual(1);
         });
       });
     });

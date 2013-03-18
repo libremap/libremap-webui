@@ -36,18 +36,16 @@ AlterMap.Map = {
     var marker = new OpenLayers.Feature.Vector(point);
     marker.node = node;
     this.nodesLayer.addFeatures([marker]);
-    console.log('displaying marker....');
     return marker
   },
 /*
-  resetMarkers: function(){
-    this.nodesLayer.removeAllFeatures();
-  },
-
   removeNodeMarker: function(node){
     this.nodesLayer.removeFeatures(node.marker, {silent: false});
   },
 */
+  resetMarkers: function(){
+    this.nodesLayer.removeAllFeatures();
+  },
   destroy: function(){this._map.destroy()}
 }
 

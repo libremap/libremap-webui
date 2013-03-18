@@ -2,7 +2,6 @@ var AlterMap = new Backbone.Marionette.Application();
 
 AlterMap.currentNetwork = null;
 AlterMap.currentZone = null;
-AlterMap.collections = {};
 
 AlterMap.addRegions({
   mapRegion: "#map",
@@ -13,27 +12,14 @@ AlterMap.addRegions({
   statusRegion: "#status",
 });
 
-
 ////////////////////////////// Models
 
 AlterMap.Network = Backbone.Model.extend({
   url : function() {
     return this.id ? '/networks/' + this.id : '/networks';
   },
-  initialize : function(){
-    _.bindAll(this, 'select');
-  },
-
   nodeCount: function(){
   },
-
-  select: function(){
-    if (this.selected!=true){
-//      this.set({selected: true}, {silent: true});
-      AlterMap.currentNetwork = this;
-      AlterMap.vent.trigger("network:selected", this);
-    }
-  }
 });
 
 AlterMap.Zone = Backbone.Model.extend({
@@ -46,6 +32,18 @@ AlterMap.Node = Backbone.Model.extend({
   url : function() {
     // POST to '/nodes' and PUT to '/nodes/:id'
     return this.id ? '/nodes/' + this.id : '/nodes';
+  },
+
+  initialize : function(){
+    _.bindAll(this, 'isInCurrentZone');
+  },
+
+  isInCurrentZone: function(){
+    if (AlterMap.currentZone != null){
+      if (this.get('zone_id') == AlterMap.currentZone.id){
+        return true;
+      }
+    }
   },
 
   /*
@@ -90,7 +88,25 @@ AlterMap.NetworkCollection =  Backbone.Collection.extend({
     changes : true
   },
   url: "/networks",
-  model: AlterMap.Network
+  model: AlterMap.Network,
+
+  initialize : function(){
+    _.bindAll(this, 'select');
+  },
+
+  select: function(network_id){
+    // temporary hack until zone selection is implemented
+    var network = AlterMap.networks.where({'_id': network_id})[0];
+    var selected_zone = AlterMap.zones.where({'network_id': network_id})[0];
+    if (selected_zone == undefined){
+      AlterMap.currentNetwork = null;
+      console.error('Selected network has no zones defined');
+    }
+    else {
+      AlterMap.currentNetwork = network;
+      AlterMap.currentZone = selected_zone;
+    }  
+  }
 });
 
 AlterMap.ZoneCollection =  Backbone.Collection.extend({
@@ -107,29 +123,6 @@ AlterMap.NodeCollection =  Backbone.Collection.extend({
   },
   url: "/nodes",
   model: AlterMap.Node,
-
-  initialize : function(){
-    _.bindAll(this, 'resetToNetwork');
-  },
-
-  resetToNetwork: function(network){
-    // temporary hack until zone selection is implemented
-    var zone = AlterMap.zones.where({network_id: AlterMap.currentNetwork.id})[0];
-    AlterMap.currentZone = AlterMap.zones.where({network_id: AlterMap.currentNetwork.id})[0];
-    if (AlterMap.currentZone == undefined){
-      AlterMap.currentNetwork = null;
-      console.error('Selected network has no zones defined');
-      this.reset();
-    }
-    else {
-      this.fetch({
-        success: function(nodes){
-          zone_nodes = nodes.where({'zone_id': AlterMap.currentZone.id});
-          nodes.reset(zone_nodes);
-        },
-      });
-    }  
-  }
 });
 
 AlterMap.DeviceCollection =  Backbone.Collection.extend({
@@ -179,15 +172,12 @@ AlterMap.NetworkSelectView = Backbone.Marionette.CollectionView.extend({
   },
   initialize : function(){
     _.bindAll(this, 'select');
-    this.render();
   },
   select: function(){
     network_id = $(this.el).val();
-    var network = AlterMap.networks.where({'_id': network_id})[0];
-    network.select();
+    AlterMap.vent.trigger("network:selected", network_id)
   }
 });
-
 
 AlterMap.NodeRowView = Backbone.Marionette.ItemView.extend({
   tagName: "li",
@@ -202,7 +192,6 @@ AlterMap.NodeRowView = Backbone.Marionette.ItemView.extend({
   render: function(){
     var content = this.model.toJSON();
     $(this.el).html(this.template(content));
-//    return this;
   },
 })
 
@@ -210,37 +199,47 @@ AlterMap.NodeListView = Backbone.Marionette.CollectionView.extend({
   itemView: AlterMap.NodeRowView,
   el: $('#nodelist'),
 
-  initialize : function(){
-    this.render();
-  },
   onItemAdded: function(itemView){
-    itemView.model.marker = AlterMap.Map.displayNodeMarker(itemView.model);
+    // only show nodes for the currently selected zone
+    if (AlterMap.currentZone == null || itemView.model.isInCurrentZone()){
+      itemView.model.marker = AlterMap.Map.displayNodeMarker(itemView.model);
+    }
+  },
+  appendHtml: function(collectionView, itemView, index){
+    // only show nodes for the currently selected zone
+    if (AlterMap.currentZone == null || itemView.model.isInCurrentZone()){
+        collectionView.$el.append(itemView.el);
+    }
   },
 /*
   onItemRemoved: function(itemView){
-    console.log('removing............');
     AlterMap.Map.removeNodeMarker(itemView.model);
   },
+*/
   onClose: function(){
-    console.log('resetting ............');
     AlterMap.Map.resetMarkers();
   }
-*/
 });
 
 ////////////////////////////// 
 
 
-AlterMap.showNetwork = function(network){
-  AlterMap.nodes.resetToNetwork(network);
-  var nodeListView = new AlterMap.NodeListView({
-    collection: AlterMap.nodes
-  });
-  AlterMap.sidebarMainRegion.show(nodeListView);
+AlterMap.selectNetwork = function(network_id){
+  AlterMap.networks.select(network_id)
+  if (AlterMap.sidebarMainRegion.currentView instanceof AlterMap.NodeListView){
+    // a new network has been selected, so we refresh the view
+    AlterMap.sidebarMainRegion.show(AlterMap.sidebarMainRegion.currentView);
+  }
+  else{
+    var nodeListView = new AlterMap.NodeListView({
+      collection: AlterMap.nodes
+    });
+    AlterMap.sidebarMainRegion.show(nodeListView);
+  }
 }
 
 AlterMap.addNodeMarker = function(node){
-  console.log('added node '+ node.get('name'));
+  console.log('added node marker for '+ node.get('name'));
 }
 
 AlterMap.setupCouch = function(db_name){
@@ -271,8 +270,8 @@ AlterMap.addInitializer(function(options){
   var nodeListView = new AlterMap.NodeListView({collection: AlterMap.nodes})
   AlterMap.sidebarMainRegion.show(nodeListView);
 
-  AlterMap.vent.bind("network:selected", function(network){
-    AlterMap.showNetwork(network);
+  AlterMap.vent.bind("network:selected", function(network_id){
+    AlterMap.selectNetwork(network_id);
   });
 
   /*
