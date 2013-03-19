@@ -119,14 +119,14 @@ AlterMap.DataGen = {
     return iface;
   },
 
-  generateWifilink: function(attrs){
+  generateWifiLink: function(attrs){
     if (attrs.macaddr==undefined || attrs.station==undefined){
-      throw ('generateWifilink: missing macaddr or station');
+      throw ('generateWifiLink: missing macaddr or station');
     }
     if (attrs.macaddr == attrs.station){
-      throw ('generateWifilink: macaddr and station cannot be the same');
+      throw ('generateWifiLink: macaddr and station cannot be the same');
     }
-    var wifilink = new AlterMap.Wifilink({
+    var wifilink = new AlterMap.WifiLink({
       _id: _.uniqueId('wifilink_').toString(),
       macaddr: attrs.macaddr,
       station: attrs.station,
@@ -144,7 +144,7 @@ AlterMap.DataGen = {
     var nodes = new AlterMap.NodeCollection();
     var devices = new AlterMap.DeviceCollection();
     var interfaces = new AlterMap.InterfaceCollection();
-    var wifilinks = new AlterMap.WifilinkCollection();
+    var wifilinks = new AlterMap.WifiLinkCollection();
 
     var network = this.generateNetwork();
     var zone = this.generateZone({network_id: network.id});
@@ -163,14 +163,15 @@ AlterMap.DataGen = {
         prev_node_id = nodes.at(i-2).id;
         prev_device_id = devices.where({node_id: prev_node_id})[0].id;
         prev_iface = interfaces.where({device_id: prev_device_id})[0];
-        var wifilink = this.generateWifilink({
+        var wifilink = this.generateWifiLink({
           macaddr: prev_iface.get('macaddr'),
           station: iface.get('macaddr')
         });
         wifilinks.add(wifilink);
       }
     }
-    return {networks: networks, zones: zones, nodes: nodes, wifilinks: wifilinks};
+    return {networks: networks, zones: zones, nodes: nodes, devices: devices,
+            interfaces: interfaces, wifilinks: wifilinks};
   },
 
 }

@@ -75,7 +75,7 @@ AlterMap.Interface = Backbone.Model.extend({
   },
 });
 
-AlterMap.Wifilink = Backbone.Model.extend({
+AlterMap.WifiLink = Backbone.Model.extend({
   url : function() {
     return this.id ? '/wifilinks/' + this.id : '/wifilinks';
   },
@@ -141,12 +141,12 @@ AlterMap.InterfaceCollection =  Backbone.Collection.extend({
   model: AlterMap.Interface,
 });
 
-AlterMap.WifilinkCollection =  Backbone.Collection.extend({
+AlterMap.WifiLinkCollection =  Backbone.Collection.extend({
   db : {
     changes : true
   },
   url: "/wifilinks",
-  model: AlterMap.Wifilink,
+  model: AlterMap.WifiLink,
 });
 
 ////////////////////////////// Views 
@@ -221,6 +221,50 @@ AlterMap.NodeListView = Backbone.Marionette.CollectionView.extend({
   }
 });
 
+AlterMap.LinkLineView = Backbone.Marionette.ItemView.extend({
+  initialize : function(){
+    _.bindAll(this, '_nodeFromMAC');
+  },
+  _nodeFromMAC: function (macaddr){
+    var iface = AlterMap.interfaces.where({'macaddr': macaddr})[0];
+    if (iface != undefined ){
+      var device = AlterMap.devices.get(iface.get('device_id'));
+      var node = AlterMap.nodes.where({'_id': device.get('node_id')})[0]
+      return node;
+    }
+  },
+
+  render: function(){
+    var source_node = this._nodeFromMAC(this.model.get('macaddr'));
+    var target_node = this._nodeFromMAC(this.model.get('station'));
+    if (source_node != undefined && target_node != undefined){
+      if (AlterMap.currentZone == null ||
+          (source_node.isInCurrentZone() || target_node.isInCurrentZone())
+         ){
+        
+        this.model.source_coords = source_node.get('coords');
+        this.model.target_coords = target_node.get('coords');
+        if (this.model.line == undefined){
+          this.model.line = AlterMap.Map.displayLinkLine(this.model);
+        }
+      }
+    }
+  },
+})
+
+AlterMap.WifiLinksView = Backbone.Marionette.CollectionView.extend({
+  itemView: AlterMap.LinkLineView,
+/*
+  onItemRemoved: function(itemView){
+    AlterMap.Map.removeLinkLine(itemView.model);
+  },
+*/
+  onClose: function(){
+    AlterMap.Map.resetLinkLines();
+  }
+});
+
+
 ////////////////////////////// 
 
 
@@ -236,6 +280,9 @@ AlterMap.selectNetwork = function(network_id){
     });
     AlterMap.sidebarMainRegion.show(nodeListView);
   }
+  AlterMap.Map.resetLinkLines();
+  AlterMap.wifilinks.fetch();
+  AlterMap.Map.zoomToNodes();
 }
 
 AlterMap.addNodeMarker = function(node){
@@ -265,10 +312,15 @@ AlterMap.addInitializer(function(options){
   AlterMap.networks = new AlterMap.NetworkCollection();
   AlterMap.zones = new AlterMap.ZoneCollection();
   AlterMap.nodes = new AlterMap.NodeCollection();
+  AlterMap.devices = new AlterMap.DeviceCollection();
+  AlterMap.interfaces = new AlterMap.InterfaceCollection();
+  AlterMap.wifilinks = new AlterMap.WifiLinkCollection();
 
   var networkSelectView = new AlterMap.NetworkSelectView({collection: AlterMap.networks})
   var nodeListView = new AlterMap.NodeListView({collection: AlterMap.nodes})
   AlterMap.sidebarMainRegion.show(nodeListView);
+  
+  AlterMap.wifiLinksView = new AlterMap.WifiLinksView({collection: AlterMap.wifilinks});
 
   AlterMap.vent.bind("network:selected", function(network_id){
     AlterMap.selectNetwork(network_id);
@@ -285,9 +337,19 @@ AlterMap.addInitializer(function(options){
     });
   */
 
-  AlterMap.networks.fetch();
-  AlterMap.zones.fetch();
-  AlterMap.nodes.fetch();
+  AlterMap.networks.fetch({success: function(){
+    AlterMap.zones.fetch({success: function(){
+      AlterMap.nodes.fetch({success: function(){
+        AlterMap.devices.fetch({success: function(){
+          AlterMap.interfaces.fetch({success: function(){
+            AlterMap.wifilinks.fetch({success: function(){
+              AlterMap.Map.zoomToNodes();
+            }});
+          }});
+        }});
+      }});
+    }});
+  }});
 
 });
 

@@ -19,6 +19,30 @@ AlterMap.Map = {
     this.nodesLayer = new OpenLayers.Layer.Vector("Nodes");
     this._map.addLayer(this.nodesLayer);
 
+    this.wifiLinksLayer = new OpenLayers.Layer.Vector(
+      "WifiLinks",
+      {
+        styleMap: new OpenLayers.StyleMap({'default':{
+          strokeColor: "#0F0",
+          strokeOpacity: 0.5,
+          strokeWidth: 5,
+          fillColor: "#55ff00",
+          fillOpacity: 0.5,
+          pointRadius: 6,
+          pointerEvents: "visiblePainted",
+        }})
+      });
+    this._map.addLayer(this.wifiLinksLayer);
+
+    this.selector = new OpenLayers.Control.SelectFeature(
+      [this.nodesLayer, this.wifiLinksLayer],
+      {geometryTypes: ['OpenLayers.Geometry.LineString',
+                       'OpenLayers.Geometry.Point']},
+      {clickout: true, toggle: true, multiple: false, hover: false}
+    );
+    this._map.addControl(this.selector);
+    this.selector.activate();
+
     this._map.addControl(new OpenLayers.Control.MousePosition());
     this._map.addControl(new OpenLayers.Control.LayerSwitcher());
 
@@ -46,6 +70,34 @@ AlterMap.Map = {
   resetMarkers: function(){
     this.nodesLayer.removeAllFeatures();
   },
-  destroy: function(){this._map.destroy()}
+
+  displayLinkLine: function(link){
+    var source_point = new OpenLayers.Geometry.Point(
+      link.source_coords.lon, link.source_coords.lat).transform(
+        this._map.displayProjection, this._map.projection);
+    var target_point = new OpenLayers.Geometry.Point(
+      link.target_coords.lon, link.target_coords.lat).transform(
+        this._map.displayProjection, this._map.projection);
+    var linestring = new OpenLayers.Geometry.LineString([source_point, target_point]);
+    var line = new OpenLayers.Feature.Vector(linestring);
+//    line.link = link;
+    this.wifiLinksLayer.addFeatures([line]);
+    return line
+  }, 
+
+  resetLinkLines: function(){
+    this.wifiLinksLayer.removeAllFeatures();
+  },
+
+  destroy: function(){
+    this._map.destroy();
+  },
+
+  zoomToNodes: function(){
+    console.log('------------------');
+    if (this.nodesLayer.features.length >1){
+      this._map.zoomToExtent(this.nodesLayer.getDataExtent());
+    }
+  }
 }
 
