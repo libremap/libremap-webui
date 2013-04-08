@@ -1,14 +1,9 @@
-<script type="text/template" id="network-option-template">
-  {{name}}
+<script type="text/template" id="network-select">
+  <h3 class="toolbox-title">GLOBAL</h3>
+  <select id="network-select" class="control"></select>
 </script>
 
-<!--
-    <script type="text/template" id="network-selection-templateKK">
-      {{#networks}}
-      <option value="{{_id}}">{{name}}</option>
-      {{/networks}}
-    </script>
-    -->
+
 <script type="text/template" id="node-row-template">
   <a href="#nodes/{{_id}}">{{name}}</a>
 </script>
@@ -23,9 +18,21 @@
       -->
 </script>
 
-<script type="text/template" id="new-node-template">
-  <input id="new-node-name" name="node_name" value=""></input>
-  <input type="button" id="add-node" value="Add Node" />
+<script type="text/template" id="network-toolbox">
+  <h3 class="toolbox-title">{{ network_name }}</h3>
+  <span class="control">
+    <a id="add-node-link" href="#add-node?network_id={{ network_id }}">add node</a>
+  </span>
+</script>
+
+<script type="text/template" id="node-add-template">
+  <h4 class="modal-title">Add node</h4>
+  <a class="close" data-dismiss="modal">x</a>
+  <form id="new-node-form" class="modal-form">
+    <input type="hidden" name="network_id" value="{{network.id}}"></input>
+    <label>node name:</label><input id="node_name" name="node_name" value=""></input>
+    <input type="button" id="pick-coords" class="control bottom-right" value="pick coords >" />
+  </form>
 </script>
 
 <script type="text/template" id="wifilink-summary-template">

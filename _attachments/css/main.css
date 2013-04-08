@@ -1,0 +1,124 @@
+
+html, body {
+ height: 100%;
+ display: block;
+ font-family: "Liberation Sans", Arial, sans-serif;
+ margin: 0;
+ padding: 0;
+ background-color: #f2efe9;
+}
+#toolbar {
+ position: absolute;
+ top: 0;
+ right: 180px;
+ left: 0px;
+ background-color: black;
+ height: 40px;
+ overflow: hidden;
+}
+#map {
+ position: absolute;
+ top: 40px;
+ bottom: 0px;
+ left: 0;
+ right: 180px;
+ border: 1px solid #ccc;
+}
+#sidebar {
+ position: absolute;
+ padding:0;
+ margin: 0;
+ right: 0;
+ top: 0;
+/* float:right;*/
+ width:180px;
+ overflow:auto;
+ bottom: 0px;
+ background-color: #CFA;
+}
+#sidebar-main {
+ height: 100%;
+ padding:0;
+ margin: 0;
+}
+#nodelist {
+ margin: 0;
+ padding: 0;
+/* height: 80%;*/
+}
+.node-row{
+ list-style-type: none;
+ margin: 0;
+ padding: 0;
+}
+.node-row a{
+ color: #555;
+}
+.node-row a:hover{
+ color: #000;
+}
+#detail {
+ z-index:10000; 
+}
+.modal {
+ padding: 0;
+ bottom: 0;
+ right: 0;
+ max-height: 50%;
+ min-height: 20%;
+}
+.modal-title{
+ padding: 5px;
+ margin: 0;
+ background-color: #963;
+// height: 20px;
+}
+.modal-form{
+// margin-top: 15px;
+ padding: 20px;
+}
+.toolbox{
+ height: 40px;
+}
+.toolbox-title{
+ padding: 10px;
+ margin: 0;
+ display: inline-block;
+ background-color: #963;
+ height: 40px;
+}
+.control{
+ border: 2px #AC6 outset;
+ background-color: #AC6;
+ border-radius: 4px;
+// margin: 0 0 0.5em 0;
+margin: 5px;
+ font-size: 11pt;
+ cursor: pointer;
+}
+.control a{
+ color: black;
+// padding: 3px 5px;
+ text-decoration: none;
+}
+a.close {
+ font-size: 1.4em;
+ position: absolute;
+ right: 15px;
+ top: 0;
+ cursor: pointer;
+ color: #000;
+ font-weight: bold;
+}
+.region {
+// border: thin red solid;
+}
+#nodelist {
+ margin-left: 10px;
+ font-size: 10pt;
+}
+.bottom-right{
+ position: absolute;
+ right: 5px;
+ bottom: 5px;
+}

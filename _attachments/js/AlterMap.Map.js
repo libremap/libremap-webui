@@ -43,6 +43,11 @@ AlterMap.Map = {
     this._map.addControl(this.selector);
     this.selector.activate();
 
+    this._map.nodeDraw = new OpenLayers.Control.DrawFeature(
+      this.nodesLayer, OpenLayers.Handler.Point)
+    this._map.nodeDraw.featureAdded = this._positionNodeMarker
+    this._map.addControl(this._map.nodeDraw);
+
     this._map.addControl(new OpenLayers.Control.MousePosition());
     this._map.addControl(new OpenLayers.Control.LayerSwitcher());
 
@@ -67,6 +72,22 @@ AlterMap.Map = {
     this.nodesLayer.removeFeatures(node.marker, {silent: false});
   },
 */
+
+  drawNodeMarker: function(){
+    this._map.nodeDraw.activate();
+  },
+
+  _positionNodeMarker: function(feature){
+    var map = feature.layer.map;
+    var mouse_coords = feature.geometry.getBounds().getCenterLonLat()
+    coords = mouse_coords.transform(map.projection,
+                                    map.displayProjection);
+    map.nodeDraw.deactivate();
+    feature.destroy();
+    delete feature;
+    AlterMap.vent.trigger('node:save-current-to-coords', coords)
+  },
+
   resetMarkers: function(){
     this.nodesLayer.removeAllFeatures();
   },
@@ -94,7 +115,6 @@ AlterMap.Map = {
   },
 
   zoomToNodes: function(){
-    console.log('------------------');
     if (this.nodesLayer.features.length >1){
       this._map.zoomToExtent(this.nodesLayer.getDataExtent());
     }

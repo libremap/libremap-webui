@@ -1,15 +1,42 @@
+// see http://lostechies.com/derickbailey/2012/04/17/managing-a-modal-dialog-with-backbone-and-marionette/
+var ModalRegion = Backbone.Marionette.Region.extend({
+  el: "#modal",
+
+  constructor: function(){
+    _.bindAll(this);
+    Backbone.Marionette.Region.prototype.constructor.apply(this, arguments);
+    this.on("show", this.showModal, this);
+  },
+
+  getEl: function(selector){
+    var $el = $(selector);
+    $el.on("hidden", this.close);
+    return $el;
+  },
+
+  showModal: function(view){
+    view.on("close", this.hideModal, this);
+    this.$el.modal('show');
+  },
+
+  hideModal: function(){
+    this.$el.modal('hide');
+  }
+});
+
 var AlterMap = new Backbone.Marionette.Application();
 
 AlterMap.currentNetwork = null;
-AlterMap.currentZone = null;
+AlterMap.currentNode = null;
 
 AlterMap.addRegions({
   mapRegion: "#map",
   sidebarRegion: "#sidebar",
   sidebarTopRegion: "#sidebar-top",
   sidebarMainRegion: "#sidebar-main",
-  detailRegion: "#detail",
+  toolbarRegion: "#toolbar",
   statusRegion: "#status",
+  modalRegion: ModalRegion,
 });
 
 ////////////////////////////// Models
@@ -22,12 +49,6 @@ AlterMap.Network = Backbone.Model.extend({
   },
 });
 
-AlterMap.Zone = Backbone.Model.extend({
-  url : function() {
-    return this.id ? '/zones/' + this.id : '/zones';
-  },
-});
-
 AlterMap.Node = Backbone.Model.extend({
   url : function() {
     // POST to '/nodes' and PUT to '/nodes/:id'
@@ -35,12 +56,12 @@ AlterMap.Node = Backbone.Model.extend({
   },
 
   initialize : function(){
-    _.bindAll(this, 'isInCurrentZone');
+    _.bindAll(this, 'isInCurrentNetwork');
   },
 
-  isInCurrentZone: function(){
-    if (AlterMap.currentZone != null){
-      if (this.get('zone_id') == AlterMap.currentZone.id){
+  isInCurrentNetwork: function(){
+    if (AlterMap.currentNetwork != null){
+      if (this.get('network_id') == AlterMap.currentNetwork.id){
         return true;
       }
     }
@@ -95,26 +116,9 @@ AlterMap.NetworkCollection =  Backbone.Collection.extend({
   },
 
   select: function(network_id){
-    // temporary hack until zone selection is implemented
     var network = AlterMap.networks.where({'_id': network_id})[0];
-    var selected_zone = AlterMap.zones.where({'network_id': network_id})[0];
-    if (selected_zone == undefined){
-      AlterMap.currentNetwork = null;
-      console.error('Selected network has no zones defined');
-    }
-    else {
-      AlterMap.currentNetwork = network;
-      AlterMap.currentZone = selected_zone;
-    }  
+    AlterMap.currentNetwork = network;
   }
-});
-
-AlterMap.ZoneCollection =  Backbone.Collection.extend({
-  db : {
-    changes : true
-  },
-  url: "/zones",
-  model: AlterMap.Zone,
 });
 
 AlterMap.NodeCollection =  Backbone.Collection.extend({
@@ -164,18 +168,40 @@ AlterMap.NetworkOptionView = Backbone.Marionette.ItemView.extend({
   },
 })
 
-AlterMap.NetworkSelectView = Backbone.Marionette.CollectionView.extend({
+AlterMap.NetworkSelectView = Backbone.Marionette.CompositeView.extend({
   itemView: AlterMap.NetworkOptionView,
-  el: $('#network-select'),
+  itemViewContainer: "select",
   events: {
     'change': 'select'
   },
   initialize : function(){
+    this.template = _.template($('#network-select').html());
     _.bindAll(this, 'select');
   },
   select: function(){
-    network_id = $(this.el).val();
+    network_id = $('#network-select', this.el).val();
     AlterMap.vent.trigger("network:selected", network_id)
+  }
+});
+
+AlterMap.NetworkToolboxView = Backbone.Marionette.ItemView.extend({
+  id: 'network-toolbox',
+  className: 'toolbox',
+  events: {
+    'click #add-node-link': 'addNode'
+  },
+  initialize : function(){
+    this.template = _.template($('#network-toolbox').html());
+    _.bindAll(this, 'addNode');
+  },
+  addNode: function(evt){
+//    evt.preventDefault();
+    AlterMap.vent.trigger('node:add-new', AlterMap.currentNetwork.id);
+  },
+  render: function(){
+    $(this.el).html(this.template(
+      {'network_id': AlterMap.currentNetwork.id,
+       'network_name': AlterMap.currentNetwork.get('name')}));
   }
 });
 
@@ -197,17 +223,24 @@ AlterMap.NodeRowView = Backbone.Marionette.ItemView.extend({
 
 AlterMap.NodeListView = Backbone.Marionette.CollectionView.extend({
   itemView: AlterMap.NodeRowView,
-  el: $('#nodelist'),
+  tagName: 'ul',
+  id: 'nodelist',
 
   onItemAdded: function(itemView){
-    // only show nodes for the currently selected zone
-    if (AlterMap.currentZone == null || itemView.model.isInCurrentZone()){
-      itemView.model.marker = AlterMap.Map.displayNodeMarker(itemView.model);
+    // only show node markers for the currently selected network
+    var node = itemView.model
+    if (AlterMap.currentNetwork == null || node.isInCurrentNetwork()){
+      if(node.get('coords')!=undefined){
+        node.marker = AlterMap.Map.displayNodeMarker(node);
+      }
+      else{
+        console.log('unpositioned node '+ node.get('name') +', id: '+ node.id);
+      }
     }
   },
   appendHtml: function(collectionView, itemView, index){
-    // only show nodes for the currently selected zone
-    if (AlterMap.currentZone == null || itemView.model.isInCurrentZone()){
+    // only show nodes for the currently selected network
+    if (AlterMap.currentNetwork == null || itemView.model.isInCurrentNetwork()){
         collectionView.$el.append(itemView.el);
     }
   },
@@ -220,6 +253,30 @@ AlterMap.NodeListView = Backbone.Marionette.CollectionView.extend({
     AlterMap.Map.resetMarkers();
   }
 });
+
+AlterMap.NodeAddView = Backbone.Marionette.ItemView.extend({
+  className: "modal",
+  events: {
+    'click #pick-coords': 'pickCoords'
+  },
+
+  initialize: function(){
+    this.template = _.template($("#node-add-template").html());
+    _.bindAll(this, 'pickCoords');
+  },
+  pickCoords: function(){
+    nodeName = $('#new-node-form #node_name').val();
+    if (nodeName!=""){
+      AlterMap.currentNode = new AlterMap.Node({'name': nodeName, 'network_id': AlterMap.currentNetwork.id});
+      this.close();
+      AlterMap.Map.drawNodeMarker();
+    };
+  },
+  render: function(){
+    $(this.el).html(this.template({'network': AlterMap.currentNetwork}));
+  }
+});
+
 
 AlterMap.LinkLineView = Backbone.Marionette.ItemView.extend({
   initialize : function(){
@@ -238,8 +295,9 @@ AlterMap.LinkLineView = Backbone.Marionette.ItemView.extend({
     var source_node = this._nodeFromMAC(this.model.get('macaddr'));
     var target_node = this._nodeFromMAC(this.model.get('station'));
     if (source_node != undefined && target_node != undefined){
-      if (AlterMap.currentZone == null ||
-          (source_node.isInCurrentZone() || target_node.isInCurrentZone())
+      // only show links for the currently selected network
+      if (AlterMap.currentNetwork == null ||
+          (source_node.isInCurrentNetwork() || target_node.isInCurrentNetwork())
          ){
         
         this.model.source_coords = source_node.get('coords');
@@ -258,10 +316,10 @@ AlterMap.WifiLinksView = Backbone.Marionette.CollectionView.extend({
   onItemRemoved: function(itemView){
     AlterMap.Map.removeLinkLine(itemView.model);
   },
-*/
   onClose: function(){
     AlterMap.Map.resetLinkLines();
   }
+*/
 });
 
 
@@ -269,24 +327,34 @@ AlterMap.WifiLinksView = Backbone.Marionette.CollectionView.extend({
 
 
 AlterMap.selectNetwork = function(network_id){
-  AlterMap.networks.select(network_id)
-  if (AlterMap.sidebarMainRegion.currentView instanceof AlterMap.NodeListView){
-    // a new network has been selected, so we refresh the view
-    AlterMap.sidebarMainRegion.show(AlterMap.sidebarMainRegion.currentView);
-  }
-  else{
-    var nodeListView = new AlterMap.NodeListView({
-      collection: AlterMap.nodes
-    });
-    AlterMap.sidebarMainRegion.show(nodeListView);
-  }
+  AlterMap.networks.select(network_id);
+  // a new network has been selected, so we re-render the view
+  AlterMap.sidebarMainRegion.close();
+  var nodeListView = new AlterMap.NodeListView({
+    collection: AlterMap.nodes
+  });
+  AlterMap.sidebarMainRegion.show(nodeListView);
+
   AlterMap.Map.resetLinkLines();
+  // TODO: this should be refactored to avoid fetching the whole links collection
   AlterMap.wifilinks.fetch();
+
   AlterMap.Map.zoomToNodes();
+  var networkToolboxView = new AlterMap.NetworkToolboxView();
+  AlterMap.toolbarRegion.show(networkToolboxView);
 }
 
-AlterMap.addNodeMarker = function(node){
-  console.log('added node marker for '+ node.get('name'));
+AlterMap.addNewNode = function(network_id){
+  nodeAddView = new AlterMap.NodeAddView();
+  AlterMap.modalRegion.show(nodeAddView);
+}
+
+AlterMap.saveNodeToCoords = function(node, coords){
+  node.set({coords: coords});
+  node.save();
+  if (node == AlterMap.currentNode){
+    AlterMap.currentNode = null;
+  }
 }
 
 AlterMap.setupCouch = function(db_name){
@@ -310,13 +378,13 @@ AlterMap.addInitializer(function(options){
   }
 
   AlterMap.networks = new AlterMap.NetworkCollection();
-  AlterMap.zones = new AlterMap.ZoneCollection();
   AlterMap.nodes = new AlterMap.NodeCollection();
   AlterMap.devices = new AlterMap.DeviceCollection();
   AlterMap.interfaces = new AlterMap.InterfaceCollection();
   AlterMap.wifilinks = new AlterMap.WifiLinkCollection();
 
   var networkSelectView = new AlterMap.NetworkSelectView({collection: AlterMap.networks})
+  AlterMap.toolbarRegion.show(networkSelectView);
   var nodeListView = new AlterMap.NodeListView({collection: AlterMap.nodes})
   AlterMap.sidebarMainRegion.show(nodeListView);
   
@@ -324,6 +392,14 @@ AlterMap.addInitializer(function(options){
 
   AlterMap.vent.bind("network:selected", function(network_id){
     AlterMap.selectNetwork(network_id);
+  });
+
+  AlterMap.vent.bind("node:add-new", function(network_id){
+    AlterMap.addNewNode(network_id);
+  });
+
+  AlterMap.vent.bind("node:save-current-to-coords", function(coords){
+    AlterMap.saveNodeToCoords(AlterMap.currentNode, coords);
   });
 
   /*
@@ -338,19 +414,16 @@ AlterMap.addInitializer(function(options){
   */
 
   AlterMap.networks.fetch({success: function(){
-    AlterMap.zones.fetch({success: function(){
-      AlterMap.nodes.fetch({success: function(){
-        AlterMap.devices.fetch({success: function(){
-          AlterMap.interfaces.fetch({success: function(){
-            AlterMap.wifilinks.fetch({success: function(){
-              AlterMap.Map.zoomToNodes();
-            }});
+    AlterMap.nodes.fetch({success: function(){
+      AlterMap.devices.fetch({success: function(){
+        AlterMap.interfaces.fetch({success: function(){
+          AlterMap.wifilinks.fetch({success: function(){
+            AlterMap.Map.zoomToNodes();
           }});
         }});
       }});
     }});
   }});
-
 });
 
 AlterMap.on("initialize:after", function(){

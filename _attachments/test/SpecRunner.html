@@ -20,7 +20,8 @@
     <script src="../js/lib/underscore-min.js"></script>
     <script src="../js/lib/jquery-1.8.1.min.js"></script>
     <script src="../js/lib/jquery.couch.js"></script>
-    <script src="../js/lib/mustache.js"></script>
+<!--    <script src="../js/lib/mustache.js"></script>-->
+    <script src="../js/lib/bootstrap-modal.js"></script>
     <script src="../js/lib/backbone-min.js"></script>
 
     <script src="../js/lib/backbone.eventbinder.min.js"></script>
@@ -58,20 +59,14 @@ html, body {height: 100%;}
 <!-- regions -->
 <!-- must be the same as the app''s index.html region containers for view tests to work correctly -->
 <div id="container">
-
-    <div id="map"></div>
-    <div id="sidebar">      
-      <div id="sidebar-top">
-        <label>network:</label>
-        <select id="network-select">
-        </select>
-        <div id="zone-select"></div>
-      </div>
-      <div id="sidebar-main">
-        <ul id="nodelist"></ul>
-      </div>
-    </div>
-    <div id="status"></div>
+  <div id="toolbar"></div>
+  <div id="map"></div>
+  <div id="sidebar">      
+    <div id="sidebar-top"></div>
+    <div id="sidebar-main"></div>
+  </div>
+  <div id="status"></div>
+  <div id="modal"></div>
 </div>
 
   <!-- scripts to be tested --> 

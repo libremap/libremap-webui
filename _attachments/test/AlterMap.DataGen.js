@@ -62,30 +62,17 @@ AlterMap.DataGen = {
     return network;
   },
 
-  generateZone: function(attrs){
-    attrs = attrs || {};
-    var zone_name = attrs.name || '';
-    var network_id = attrs.network_id || this.generateNetwork().id;
-    var zone = new AlterMap.Zone({
-      _id: _.uniqueId('zone_').toString(),
-      name: zone_name,
-      network_id: network_id,
-    });
-    this._save(zone);
-    return zone;
-  },
-
   generateNode: function(attrs){
     attrs = attrs || {};
     var coords = attrs.coords || this._randomCoords();
     var node_name = attrs.name || this._randomString()+'_node';
-    var zone_id = attrs.zone_id || this.generateZone().id;
+    var network_id = attrs.network_id || this.generateNetwork().id;
     var completed_attrs = {
       _id: _.uniqueId('node_').toString(),
       name: node_name,
       coords: coords,
       elevation: 50,
-      zone_id: zone_id,
+      network_id: network_id,
     }
     var node = new AlterMap.Node(completed_attrs);
     this._save(node);
@@ -140,20 +127,16 @@ AlterMap.DataGen = {
     var node_count = attrs.node_count || 10;
 
     var networks = new AlterMap.NetworkCollection();
-    var zones = new AlterMap.ZoneCollection();
     var nodes = new AlterMap.NodeCollection();
     var devices = new AlterMap.DeviceCollection();
     var interfaces = new AlterMap.InterfaceCollection();
     var wifilinks = new AlterMap.WifiLinkCollection();
 
     var network = this.generateNetwork();
-    var zone = this.generateZone({network_id: network.id});
-
     networks.add(network);
-    zones.add(zone);
 
     for (var i=1; i<=node_count; i++){
-      var node = this.generateNode({zone_id: zone.id});
+      var node = this.generateNode({network_id: network.id});
       nodes.add(node);
       var device = this.generateDevice({node_id: node.id});
       devices.add(device);
@@ -170,7 +153,7 @@ AlterMap.DataGen = {
         wifilinks.add(wifilink);
       }
     }
-    return {networks: networks, zones: zones, nodes: nodes, devices: devices,
+    return {networks: networks, nodes: nodes, devices: devices,
             interfaces: interfaces, wifilinks: wifilinks};
   },
 
