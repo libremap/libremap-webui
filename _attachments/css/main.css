@@ -66,6 +66,10 @@ html, body {
  right: 0;
  max-height: 50%;
  min-height: 20%;
+ opacity: 0.5; 
+ background-color: black;
+ border: 2px white solid;
+ color: white;
 }
 .modal-title{
  padding: 5px;
@@ -73,10 +77,11 @@ html, body {
  background-color: #963;
 // height: 20px;
 }
-.modal-form{
+.modal-content{
 // margin-top: 15px;
  padding: 20px;
 }
+
 .toolbox{
  height: 40px;
 }

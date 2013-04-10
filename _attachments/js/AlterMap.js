@@ -127,6 +127,15 @@ AlterMap.NodeCollection =  Backbone.Collection.extend({
   },
   url: "/nodes",
   model: AlterMap.Node,
+
+  initialize : function(){
+    _.bindAll(this, 'select');
+  },
+
+  select: function(node){
+    AlterMap.currentNode = node;
+  }
+
 });
 
 AlterMap.DeviceCollection =  Backbone.Collection.extend({
@@ -208,17 +217,24 @@ AlterMap.NetworkToolboxView = Backbone.Marionette.ItemView.extend({
 AlterMap.NodeRowView = Backbone.Marionette.ItemView.extend({
   tagName: "li",
   className: "node-row",
-
+  events: {
+    "click": "selectNode"
+  },
   initialize : function(){
     // we load the template here because they aren't ready at page load
     // because we get them through an ajax request
     this.template = _.template($("#node-row-template").html())
-    _.bindAll(this, 'render');
+    _.bindAll(this, 'selectNode');
+
   },
   render: function(){
     var content = this.model.toJSON();
     $(this.el).html(this.template(content));
   },
+  selectNode: function(evt){
+//    evt.preventDefault();
+    AlterMap.vent.trigger('node:selected', this.model.id);
+  }
 })
 
 AlterMap.NodeListView = Backbone.Marionette.CollectionView.extend({
@@ -271,9 +287,26 @@ AlterMap.NodeAddView = Backbone.Marionette.ItemView.extend({
       this.close();
       AlterMap.Map.drawNodeMarker();
     };
+  }
+/*
+render: function(){
+    $(this.el).html(this.template({'network': AlterMap.currentNetwork}));
+  }
+*/
+});
+
+AlterMap.NodeDetailView = Backbone.Marionette.ItemView.extend({
+  className: "modal",
+  initialize: function(){
+    this.template = _.template($("#node-detail-template").html());
   },
   render: function(){
-    $(this.el).html(this.template({'network': AlterMap.currentNetwork}));
+    $(this.el).html(this.template({'node': this.model.toJSON()}));
+  },
+  onClose: function(){
+// TODO: this view is getting instantiated and closed more than once. Need to investigate
+//    AlterMap.currentNode = null;
+//    AlterMap.Map.unselectNodeMarker(this.model);
   }
 });
 
@@ -299,7 +332,6 @@ AlterMap.LinkLineView = Backbone.Marionette.ItemView.extend({
       if (AlterMap.currentNetwork == null ||
           (source_node.isInCurrentNetwork() || target_node.isInCurrentNetwork())
          ){
-        
         this.model.source_coords = source_node.get('coords');
         this.model.target_coords = target_node.get('coords');
         if (this.model.line == undefined){
@@ -342,6 +374,14 @@ AlterMap.selectNetwork = function(network_id){
   AlterMap.Map.zoomToNodes();
   var networkToolboxView = new AlterMap.NetworkToolboxView();
   AlterMap.toolbarRegion.show(networkToolboxView);
+}
+
+AlterMap.selectNode = function(node_id){
+  var node = AlterMap.nodes.where({'_id': node_id})[0];
+  AlterMap.nodes.select(node);
+  var nodeDetail = new AlterMap.NodeDetailView({model: node});
+  AlterMap.Map.selectNodeMarker(node);
+  AlterMap.modalRegion.show(nodeDetail);
 }
 
 AlterMap.addNewNode = function(network_id){
@@ -390,18 +430,22 @@ AlterMap.addInitializer(function(options){
   
   AlterMap.wifiLinksView = new AlterMap.WifiLinksView({collection: AlterMap.wifilinks});
 
-  AlterMap.vent.bind("network:selected", function(network_id){
+  AlterMap.vent.on("network:selected", function(network_id){
     AlterMap.selectNetwork(network_id);
   });
 
-  AlterMap.vent.bind("node:add-new", function(network_id){
+  AlterMap.vent.on("node:selected", function(node_id){
+    AlterMap.selectNode(node_id);
+  });
+
+  AlterMap.vent.on("node:add-new", function(network_id){
     AlterMap.addNewNode(network_id);
   });
 
-  AlterMap.vent.bind("node:save-current-to-coords", function(coords){
+  AlterMap.vent.on("node:save-current-to-coords", function(coords){
     AlterMap.saveNodeToCoords(AlterMap.currentNode, coords);
   });
-
+  
   /*
     AlterMap.nodes.on("add", function(node){
     AlterMap.addNodeMarker(node);

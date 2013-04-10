@@ -16,7 +16,21 @@ AlterMap.Map = {
                  ]
     this._map.addLayers(map_layers);
 
-    this.nodesLayer = new OpenLayers.Layer.Vector("Nodes");
+
+    this.nodesLayer = new OpenLayers.Layer.Vector(
+      "Nodes", {
+        eventListeners: {
+          'featureselected': function(evt){
+            var marker = evt.feature;
+            var node = marker.node;
+            AlterMap.vent.trigger('node:selected', node.id);
+          },
+          'featureunselected': function(evt){
+          },
+          'scope': this,
+        }
+      })
+
     this._map.addLayer(this.nodesLayer);
 
     this.wifiLinksLayer = new OpenLayers.Layer.Vector(
@@ -88,6 +102,18 @@ AlterMap.Map = {
     AlterMap.vent.trigger('node:save-current-to-coords', coords)
   },
 
+  selectNodeMarker: function(node){
+    if (this.nodesLayer.selectedFeatures.indexOf(node.marker)<0){
+      this.selector.unselectAll();
+      this.selector.select(node.marker);
+    }
+    var center = node.marker.geometry.getBounds().getCenterLonLat()
+    this._map.setCenter(center, 18);
+  },
+  
+  unselectNodeMarker: function(node){
+      this.selector.unselect(node.marker);
+  },
   resetMarkers: function(){
     this.nodesLayer.removeAllFeatures();
   },

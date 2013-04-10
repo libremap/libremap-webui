@@ -3,21 +3,15 @@
   <select id="network-select" class="control"></select>
 </script>
 
-
 <script type="text/template" id="node-row-template">
   <a href="#nodes/{{_id}}">{{name}}</a>
 </script>
 
-<script type="text/template" id="node-summary-template">
-  <h2>{{name}}</h2>
-  <p>coords: {{coords.lon}}, {{coords.lat}}</p>
-  <!--
-      <div id="summary-toolbar">
-        <input type="button" id="mode-node" value="Move Node" />
-      </div>
-      -->
+<script type="text/template" id="node-detail-template">
+  <h4 class="modal-title">{{node.name}}</h4>
+  <a class="close" data-dismiss="modal">x</a>
+  <p class="modal-content">coords: {{node.coords.lon}}, {{node.coords.lat}}</p>
 </script>
-
 <script type="text/template" id="network-toolbox">
   <h3 class="toolbox-title">{{ network_name }}</h3>
   <span class="control">
@@ -28,7 +22,7 @@
 <script type="text/template" id="node-add-template">
   <h4 class="modal-title">Add node</h4>
   <a class="close" data-dismiss="modal">x</a>
-  <form id="new-node-form" class="modal-form">
+  <form id="new-node-form" class="modal-content">
     <input type="hidden" name="network_id" value="{{network.id}}"></input>
     <label>node name:</label><input id="node_name" name="node_name" value=""></input>
     <input type="button" id="pick-coords" class="control bottom-right" value="pick coords >" />
