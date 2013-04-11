@@ -8,6 +8,7 @@ describe('AlterMap', function(){
 
   var test_db = 'altermap_test';
   AlterMap.setupCouch(test_db);
+  $.ajax({async: false, url: '/'+ test_db, type: 'PUT'});
 
   var startPersistance = function(){
     var couch_view = {
@@ -18,7 +19,7 @@ describe('AlterMap', function(){
         }
       }
     }
-    // create the database
+    // create the database if it does not exist
     $.ajax({async: false, url: '/'+ test_db, type: 'PUT'});
     // add the byCollection view needed by backbone-couchdb
     $.ajax({
@@ -279,13 +280,12 @@ describe('AlterMap', function(){
       it('activates node positioning when the form is submitted', function(){
       });
       it('saves the node location', function(){
+        $(".olMapViewport").trigger("click");
       });
 /*
       it('has the correct form fields and some default values pre-set', function(){
       });
       it('prevents posting the form with missing required values', function(){
-      });
-      it('saves the node location', function(){
       });
 */
     });

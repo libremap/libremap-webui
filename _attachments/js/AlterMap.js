@@ -442,7 +442,7 @@ AlterMap.addInitializer(function(options){
     AlterMap.addNewNode(network_id);
   });
 
-  AlterMap.vent.on("node:save-current-to-coords", function(coords){
+  AlterMap.vent.on("node:coords-picked", function(coords){
     AlterMap.saveNodeToCoords(AlterMap.currentNode, coords);
   });
   

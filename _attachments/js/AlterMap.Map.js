@@ -97,9 +97,10 @@ AlterMap.Map = {
     coords = mouse_coords.transform(map.projection,
                                     map.displayProjection);
     map.nodeDraw.deactivate();
+    // a feature will be drawn when the node is saved
     feature.destroy();
     delete feature;
-    AlterMap.vent.trigger('node:save-current-to-coords', coords)
+    AlterMap.vent.trigger('node:coords-picked', coords)
   },
 
   selectNodeMarker: function(node){
