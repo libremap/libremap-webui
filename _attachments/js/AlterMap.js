@@ -183,9 +183,16 @@ AlterMap.NetworkSelectView = Backbone.Marionette.CompositeView.extend({
   events: {
     'change': 'select'
   },
-  initialize : function(){
+  initialize: function(){
     this.template = _.template($('#network-select').html());
     _.bindAll(this, 'select');
+  },
+  onRender: function(){
+    if (!$('.empty-network-option', this.el).length>0){
+      empty_option = new Option('----','',true,true);
+      $(empty_option).addClass('empty-network-option');
+      $('#network-select', this.el).prepend(empty_option);
+    }
   },
   select: function(){
     network_id = $('#network-select', this.el).val();
@@ -318,9 +325,12 @@ AlterMap.LinkLineView = Backbone.Marionette.ItemView.extend({
   _nodeFromMAC: function (macaddr){
     var iface = AlterMap.interfaces.where({'macaddr': macaddr})[0];
     if (iface != undefined ){
-      var device = AlterMap.devices.get(iface.get('device_id'));
-      var node = AlterMap.nodes.where({'_id': device.get('node_id')})[0]
-      return node;
+	try{
+          var device = AlterMap.devices.get(iface.get('device_id'));
+          var node = AlterMap.nodes.where({'_id': device.get('node_id')})[0]
+          return node;
+	}
+	catch(e){console.log('bad interface '+ macaddr);}
     }
   },
 
