@@ -1,13 +1,10 @@
 AlterMap.Map = {
   _map: null,
-  draw: function(coords){
+  draw: function(){
     this._map = new OpenLayers.Map('map', {
       projection: new OpenLayers.Projection("EPSG:900913"),
       displayProjection: new OpenLayers.Projection("EPSG:4326"),
     });
-    var center = new OpenLayers.LonLat(coords['lon'], coords['lat']);
-    var zoom_level = 15;
-
     var map_layers = [ new OpenLayers.Layer.OSM("OpenStreetMap"),
                    new OpenLayers.Layer.Google(
                      "Google Hybrid",
@@ -38,10 +35,7 @@ AlterMap.Map = {
       {
         styleMap: new OpenLayers.StyleMap({'default':{
           strokeColor: "#0F0",
-          strokeOpacity: 0.5,
-          strokeWidth: 5,
           fillColor: "#55ff00",
-          fillOpacity: 0.5,
           pointRadius: 6,
           pointerEvents: "visiblePainted",
         }})
@@ -64,12 +58,6 @@ AlterMap.Map = {
 
     this._map.addControl(new OpenLayers.Control.MousePosition());
     this._map.addControl(new OpenLayers.Control.LayerSwitcher());
-
-    this._map.setCenter(
-      center.transform(
-        this._map.displayProjection, this._map.projection
-      ), zoom_level
-    );
   },
 
   displayNodeMarker: function(node){
@@ -81,11 +69,10 @@ AlterMap.Map = {
     this.nodesLayer.addFeatures([marker]);
     return marker
   },
-/*
+
   removeNodeMarker: function(node){
     this.nodesLayer.removeFeatures(node.marker, {silent: false});
   },
-*/
 
   drawNodeMarker: function(){
     this._map.nodeDraw.activate();
@@ -127,11 +114,25 @@ AlterMap.Map = {
       link.target_coords.lon, link.target_coords.lat).transform(
         this._map.displayProjection, this._map.projection);
     var linestring = new OpenLayers.Geometry.LineString([source_point, target_point]);
-    var line = new OpenLayers.Feature.Vector(linestring);
+    var line = new OpenLayers.Feature.Vector(linestring)
+    var signal = link.get('attributes')['signal']
+    if (signal>-65){
+      signal_factor = 1/2
+    }
+    else{
+      signal_factor = (100+signal)/100/2
+    }
+    opacity = 1000/(100-link.get('attributes')['signal']*20)
+    line.style = {strokeColor: "#0F0", strokeWidth: 3, strokeOpacity: signal_factor};
 //    line.link = link;
     this.wifiLinksLayer.addFeatures([line]);
     return line
   }, 
+
+  removeLinkLine: function(line){
+    this.selector.unselectAll();
+    this.wifiLinksLayer.removeFeatures(line, {silent: false});
+  },
 
   resetLinkLines: function(){
     this.wifiLinksLayer.removeAllFeatures();

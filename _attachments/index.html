@@ -10,7 +10,11 @@
 
   <body>
 <!-- regions -->
-    <div class="region" id="toolbar"></div>
+    <div class="region" id="toolbar">
+      <div class="region toolbox" id="global-toolbox"></div>
+      <div class="region toolbox" id="network-toolbox"></div>
+      <div class="region toolbox" id="node-toolbox"></div>
+    </div>
     <div class="region" id="map"></div>
     <div class="region" id="sidebar">
       <div class="region" id="sidebar-top"></div>
@@ -51,7 +55,7 @@
     <script>
   $(function(){
 
-    AlterMap.Map.draw({lat: -31.802967214779812, lon: -64.41782692156015});
+    AlterMap.Map.draw();
 
 // templates are in a separate file to facilitate testing
 // we load them and on success start the app.

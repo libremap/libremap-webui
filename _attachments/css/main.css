@@ -16,6 +16,11 @@ html, body {
  height: 40px;
  overflow: hidden;
 }
+.toolbox{
+ display: inline;
+ float: left;
+}
+
 #map {
  position: absolute;
  top: 40px;

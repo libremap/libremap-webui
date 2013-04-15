@@ -34,9 +34,12 @@ AlterMap.addRegions({
   sidebarRegion: "#sidebar",
   sidebarTopRegion: "#sidebar-top",
   sidebarMainRegion: "#sidebar-main",
-  toolbarRegion: "#toolbar",
+//  toolbarRegion: "#toolbar",
+  globalToolboxRegion: "#global-toolbox",
+  networkToolboxRegion: "#network-toolbox",
+  nodeToolboxRegion: "#node-toolbox",
   statusRegion: "#status",
-  modalRegion: ModalRegion,
+  modalRegion: ModalRegion
 });
 
 ////////////////////////////// Models
@@ -201,13 +204,13 @@ AlterMap.NetworkSelectView = Backbone.Marionette.CompositeView.extend({
 });
 
 AlterMap.NetworkToolboxView = Backbone.Marionette.ItemView.extend({
-  id: 'network-toolbox',
-  className: 'toolbox',
+//  id: 'network-toolbox',
+//  className: 'toolbox',
   events: {
     'click #add-node-link': 'addNode'
   },
   initialize : function(){
-    this.template = _.template($('#network-toolbox').html());
+    this.template = _.template($('#network-toolbox-template').html());
     _.bindAll(this, 'addNode');
   },
   addNode: function(evt){
@@ -267,11 +270,9 @@ AlterMap.NodeListView = Backbone.Marionette.CollectionView.extend({
         collectionView.$el.append(itemView.el);
     }
   },
-/*
   onItemRemoved: function(itemView){
     AlterMap.Map.removeNodeMarker(itemView.model);
   },
-*/
   onClose: function(){
     AlterMap.Map.resetMarkers();
   }
@@ -317,7 +318,6 @@ AlterMap.NodeDetailView = Backbone.Marionette.ItemView.extend({
   }
 });
 
-
 AlterMap.LinkLineView = Backbone.Marionette.ItemView.extend({
   initialize : function(){
     _.bindAll(this, '_nodeFromMAC');
@@ -354,10 +354,10 @@ AlterMap.LinkLineView = Backbone.Marionette.ItemView.extend({
 
 AlterMap.WifiLinksView = Backbone.Marionette.CollectionView.extend({
   itemView: AlterMap.LinkLineView,
-/*
   onItemRemoved: function(itemView){
-    AlterMap.Map.removeLinkLine(itemView.model);
+    AlterMap.Map.removeLinkLine(itemView.model.line);
   },
+/*
   onClose: function(){
     AlterMap.Map.resetLinkLines();
   }
@@ -383,7 +383,7 @@ AlterMap.selectNetwork = function(network_id){
 
   AlterMap.Map.zoomToNodes();
   var networkToolboxView = new AlterMap.NetworkToolboxView();
-  AlterMap.toolbarRegion.show(networkToolboxView);
+  AlterMap.networkToolboxRegion.show(networkToolboxView);
 }
 
 AlterMap.selectNode = function(node_id){
@@ -434,7 +434,7 @@ AlterMap.addInitializer(function(options){
   AlterMap.wifilinks = new AlterMap.WifiLinkCollection();
 
   var networkSelectView = new AlterMap.NetworkSelectView({collection: AlterMap.networks})
-  AlterMap.toolbarRegion.show(networkSelectView);
+  AlterMap.globalToolboxRegion.show(networkSelectView);
   var nodeListView = new AlterMap.NodeListView({collection: AlterMap.nodes})
   AlterMap.sidebarMainRegion.show(nodeListView);
   
@@ -473,11 +473,17 @@ AlterMap.addInitializer(function(options){
         AlterMap.interfaces.fetch({success: function(){
           AlterMap.wifilinks.fetch({success: function(){
             AlterMap.Map.zoomToNodes();
+            if (AlterMap.networks.length==1){
+              AlterMap.vent.trigger("network:selected", AlterMap.networks.at(0).id)
+              AlterMap.globalToolboxRegion.close();
+            }
           }});
         }});
       }});
     }});
   }});
+
+
 });
 
 AlterMap.on("initialize:after", function(){
