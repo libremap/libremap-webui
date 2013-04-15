@@ -147,7 +147,7 @@ AlterMap.Map = {
   },
 
   zoomToNodes: function(){
-    if (this.nodesLayer.features.length >1){
+    if (this.nodesLayer.features.length>=1){
       this._map.zoomToExtent(this.nodesLayer.getDataExtent());
     }
   }

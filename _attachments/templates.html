@@ -9,7 +9,11 @@
 <script type="text/template" id="node-detail-template">
   <h4 class="modal-title"><%= node.name %></h4>
   <a class="close" data-dismiss="modal">x</a>
-  <p class="modal-content">coords: <%= node.coords.lon %>, <%= node.coords.lat %></p>
+  <p class="modal-content">
+    hardware: <%= node.hardware %></br>
+    firmware: <%= node.firmware %></br>
+    coords: <%= node.coords.lon %>, <%= node.coords.lat %>
+  </p>
 </script>
 <script type="text/template" id="network-toolbox-template">
   <h3 class="toolbox-title"><%= network_name %></h3>

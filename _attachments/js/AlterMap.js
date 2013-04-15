@@ -191,6 +191,7 @@ AlterMap.NetworkSelectView = Backbone.Marionette.CompositeView.extend({
     _.bindAll(this, 'select');
   },
   onRender: function(){
+    // hacky way to add an empty option as first element
     if (!$('.empty-network-option', this.el).length>0){
       empty_option = new Option('----','',true,true);
       $(empty_option).addClass('empty-network-option');
@@ -421,11 +422,6 @@ AlterMap.addInitializer(function(options){
   else var db_name = 'altermap';
 
   AlterMap.setupCouch(db_name);
-
-  // Enables Mustache.js-like templating.
-  _.templateSettings = {
-    interpolate : /\{\{(.+?)\}\}/g
-  }
 
   AlterMap.networks = new AlterMap.NetworkCollection();
   AlterMap.nodes = new AlterMap.NodeCollection();
