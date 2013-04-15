@@ -117,13 +117,17 @@ AlterMap.Map = {
     var line = new OpenLayers.Feature.Vector(linestring)
     var signal = link.get('attributes')['signal']
     if (signal>-65){
-      signal_factor = 1/2
+// over -65, we consider the link to already be good
+      signal_factor = 1;
+    }
+// under -85 we will consider it a bad link
+    else if (signal<-85){
+      signal_factor = 0.2;
     }
     else{
-      signal_factor = (100+signal)/100/2
+      signal_factor = ((85 + signal) / (85 - 65) * (1 - 0.2) ) + 0.2;
     }
-    opacity = 1000/(100-link.get('attributes')['signal']*20)
-    line.style = {strokeColor: "#0F0", strokeWidth: 3, strokeOpacity: signal_factor};
+    line.style = {strokeColor: "#0F0", strokeWidth: 3, strokeOpacity: signal_factor/4};
 //    line.link = link;
     this.wifiLinksLayer.addFeatures([line]);
     return line
