@@ -109,7 +109,7 @@ AlterMap.Map = {
       this.selector.select(node.marker);
     }
     var center = node.marker.geometry.getBounds().getCenterLonLat()
-    this._map.setCenter(center, 18);
+    this._map.setCenter(center);
   },
   
   unselectNodeMarker: function(node){
