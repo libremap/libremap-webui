@@ -114,20 +114,20 @@ AlterMap.Map = {
       link.target_coords.lon, link.target_coords.lat).transform(
         this._map.displayProjection, this._map.projection);
     var linestring = new OpenLayers.Geometry.LineString([source_point, target_point]);
-    var line = new OpenLayers.Feature.Vector(linestring)
-    var signal = link.get('attributes')['signal']
-    if (signal>-65){
+    var line = new OpenLayers.Feature.Vector(linestring);
+    var signal = parseFloat(link.get('attributes')['signal']);
+    if (signal >= -65){
 // over -65, we consider the link to already be good
       signal_factor = 1;
     }
 // under -85 we will consider it a bad link
-    else if (signal<-85){
+    else if (signal < -85){
       signal_factor = 0.2;
     }
     else{
       signal_factor = ((85 + signal) / (85 - 65) * (1 - 0.2) ) + 0.2;
     }
-    line.style = {strokeColor: "#0F0", strokeWidth: 3, strokeOpacity: signal_factor/4};
+    line.style = {strokeColor: "#0F0", strokeWidth: 3, strokeOpacity: signal_factor/2};
 //    line.link = link;
     this.wifiLinksLayer.addFeatures([line]);
     return line
