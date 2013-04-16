@@ -42,6 +42,19 @@ AlterMap.addRegions({
   modalRegion: ModalRegion
 });
 
+
+AlterMap.nodeFromMAC = function (macaddr){
+  var iface = AlterMap.interfaces.where({'macaddr': macaddr})[0];
+  if (iface != undefined ){
+    try{
+      var device = AlterMap.devices.get(iface.get('device_id'));
+      var node = AlterMap.nodes.where({'_id': device.get('node_id')})[0]
+      return node;
+    }
+    catch(e){console.log('could not determine node for MAC: '+ macaddr);}
+  }
+}
+
 ////////////////////////////// Models
 
 AlterMap.Network = Backbone.Model.extend({
@@ -311,9 +324,21 @@ AlterMap.NodeDetailView = Backbone.Marionette.ItemView.extend({
   },
   render: function(){
     var devices = AlterMap.devices.where({'node_id': this.model.id});
-    var dev_list = []
-    devices.forEach(function(device){dev_list.push(device.toJSON())});
-    $(this.el).html(this.template({'node': this.model.toJSON(), 'devices': dev_list}));
+    var devList = [];
+    var linkList = [];
+    devices.forEach(function(device){
+      devList.push(device.toJSON());
+      var interfaces = AlterMap.interfaces.where({'device_id': device.id});
+      interfaces.forEach(function(iface){
+        var wifilinks = AlterMap.wifilinks.where({'macaddr': iface.get('macaddr')});
+        wifilinks.forEach(function(wifilink){
+          linkData  = wifilink.toJSON();
+          linkData['station_node'] = AlterMap.nodeFromMAC(wifilink.get('station')).get('name');
+          linkList.push(linkData);
+        });
+      });
+    });
+    $(this.el).html(this.template({'node': this.model.toJSON(), 'devices': devList, 'links': linkList}));
   },
   onClose: function(){
 // TODO: this view is getting instantiated and closed more than once. Need to investigate
@@ -323,24 +348,9 @@ AlterMap.NodeDetailView = Backbone.Marionette.ItemView.extend({
 });
 
 AlterMap.LinkLineView = Backbone.Marionette.ItemView.extend({
-  initialize : function(){
-    _.bindAll(this, '_nodeFromMAC');
-  },
-  _nodeFromMAC: function (macaddr){
-    var iface = AlterMap.interfaces.where({'macaddr': macaddr})[0];
-    if (iface != undefined ){
-	try{
-          var device = AlterMap.devices.get(iface.get('device_id'));
-          var node = AlterMap.nodes.where({'_id': device.get('node_id')})[0]
-          return node;
-	}
-	catch(e){console.log('bad interface '+ macaddr);}
-    }
-  },
-
   render: function(){
-    var source_node = this._nodeFromMAC(this.model.get('macaddr'));
-    var target_node = this._nodeFromMAC(this.model.get('station'));
+    var source_node = AlterMap.nodeFromMAC(this.model.get('macaddr'));
+    var target_node = AlterMap.nodeFromMAC(this.model.get('station'));
     if (source_node != undefined && target_node != undefined){
       // only show links for the currently selected network
       if (AlterMap.currentNetwork == null ||

@@ -14,16 +14,25 @@
     <h4>devices:</h4>
     <% _.each(devices, function(device){ %>
       <div class="device-data">
+        <% if (typeof(device.hostname) != 'undefined') { %>
+        <p><%= device.hostname %></p>
+        <% } %>
         <% if (typeof(device.hardware) != 'undefined') { %>
-        <p>
-          hardware: <%= _.escape(device.hardware) %>
-        </p>
+        <p>hardware: <%= device.hardware %></p>
         <% } %>
         <% if (typeof(device.firmware) != 'undefined') { %>
-        <p>
-          firmware: <%= _.escape(device.firmware) %>
-        </p>
+        <p>firmware: <%= device.firmware %></p>
         <% } %>
+      </div>
+    <% }); %>
+    <h4>wifi links:</h4>
+    <% _.each(links, function(link){ %>
+      <div class="link-data">
+        <p><%= link.station_node %></p>
+        <p>
+          channel: <%= link.attributes.channel %>
+          signal: <%= link.attributes.signal %>
+        </p>
       </div>
     <% }); %>
   </div>
