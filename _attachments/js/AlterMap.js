@@ -335,6 +335,11 @@ AlterMap.NodeDetailView = Backbone.Marionette.ItemView.extend({
           linkData  = wifilink.toJSON();
           linkData['station_node'] = AlterMap.nodeFromMAC(wifilink.get('station')).get('name');
           linkList.push(linkData);
+          linkList.sort(function(a, b) {
+              var textA = a.station_node.toUpperCase();
+              var textB = b.station_node.toUpperCase();
+              return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+          });
         });
       });
     });
