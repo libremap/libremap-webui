@@ -85,7 +85,10 @@ html, body {
  padding: 20px;
  color: #08c;
 }
-
+.device-data{
+ padding: 0px 10px;
+ border: 1px #ccc solid;
+}
 .toolbox{
  height: 40px;
 }

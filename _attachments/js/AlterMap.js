@@ -310,7 +310,10 @@ AlterMap.NodeDetailView = Backbone.Marionette.ItemView.extend({
     this.template = _.template($("#node-detail-template").html());
   },
   render: function(){
-    $(this.el).html(this.template({'node': this.model.toJSON()}));
+    var devices = AlterMap.devices.where({'node_id': this.model.id});
+    var dev_list = []
+    devices.forEach(function(device){dev_list.push(device.toJSON())});
+    $(this.el).html(this.template({'node': this.model.toJSON(), 'devices': dev_list}));
   },
   onClose: function(){
 // TODO: this view is getting instantiated and closed more than once. Need to investigate
