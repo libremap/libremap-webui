@@ -221,15 +221,20 @@ AlterMap.NetworkToolboxView = Backbone.Marionette.ItemView.extend({
 //  id: 'network-toolbox',
 //  className: 'toolbox',
   events: {
-    'click #add-node-link': 'addNode'
+    'click #add-node-link': 'addNode',
+    'click #export-kml-link': 'exportKML',
+
   },
   initialize : function(){
     this.template = _.template($('#network-toolbox-template').html());
-    _.bindAll(this, 'addNode');
+    _.bindAll(this, 'addNode', 'exportKML');
   },
   addNode: function(evt){
 //    evt.preventDefault();
     AlterMap.vent.trigger('node:add-new', AlterMap.currentNetwork.id);
+  },
+  exportKML: function(evt){
+    AlterMap.vent.trigger('network:export-kml', AlterMap.currentNetwork.id);
   },
   render: function(){
     $(this.el).html(this.template(
@@ -237,6 +242,19 @@ AlterMap.NetworkToolboxView = Backbone.Marionette.ItemView.extend({
        'network_name': AlterMap.currentNetwork.get('name')}));
   }
 });
+
+AlterMap.NetworkExportKMLView = Backbone.Marionette.ItemView.extend({
+  className: "modal",
+  events: {
+  },
+  initialize: function(){
+    this.template = _.template($("#network-export-kml").html());
+  },
+  render: function(){
+    $(this.el).html(this.template(
+      {'kml_data': AlterMap.Map.getKMLdata()}));
+  }
+})
 
 AlterMap.NodeRowView = Backbone.Marionette.ItemView.extend({
   tagName: "li",
@@ -333,6 +351,7 @@ AlterMap.NodeDetailView = Backbone.Marionette.ItemView.extend({
         var wifilinks = AlterMap.wifilinks.where({'macaddr': iface.get('macaddr')});
         wifilinks.forEach(function(wifilink){
           linkData  = wifilink.toJSON();
+          // TODO: this is failing when the first get returns undefined
           linkData['station_node'] = AlterMap.nodeFromMAC(wifilink.get('station')).get('name');
           linkList.push(linkData);
           linkList.sort(function(a, b) {
@@ -405,6 +424,10 @@ AlterMap.selectNetwork = function(network_id){
   AlterMap.networkToolboxRegion.show(networkToolboxView);
 }
 
+AlterMap.exportKML = function(network_id){  
+  AlterMap.modalRegion.show(new AlterMap.NetworkExportKMLView());
+}
+
 AlterMap.selectNode = function(node_id){
   var node = AlterMap.nodes.where({'_id': node_id})[0];
   AlterMap.nodes.select(node);
@@ -456,6 +479,10 @@ AlterMap.addInitializer(function(options){
 
   AlterMap.vent.on("network:selected", function(network_id){
     AlterMap.selectNetwork(network_id);
+  });
+
+  AlterMap.vent.on("network:export-kml", function(network_id){
+    AlterMap.exportKML(network_id);
   });
 
   AlterMap.vent.on("node:selected", function(node_id){

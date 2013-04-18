@@ -66,6 +66,8 @@ AlterMap.Map = {
       this._map.displayProjection, this._map.projection);
     var marker = new OpenLayers.Feature.Vector(point);
     marker.node = node;
+    marker.attributes['name'] = node.get('name');
+    marker.attributes['description'] = '';
     this.nodesLayer.addFeatures([marker]);
     return marker
   },
@@ -129,6 +131,8 @@ AlterMap.Map = {
     }
     line.style = {strokeColor: "#0F0", strokeWidth: 3, strokeOpacity: signal_factor/2};
 //    line.link = link;
+    line.attributes['name'] = link.get('macaddr') +", "+ link.get('station');
+    line.attributes['description'] = 'channel: '+ link.get('attributes')['channel'] +', signal: '+ link.get('attributes')['signal']
     this.wifiLinksLayer.addFeatures([line]);
     return line
   }, 
@@ -150,6 +154,18 @@ AlterMap.Map = {
     if (this.nodesLayer.features.length>=1){
       this._map.zoomToExtent(this.nodesLayer.getDataExtent());
     }
+  },
+
+  getKMLdata: function(){
+    var kmlFormat = new OpenLayers.Format.KML({
+      'maxDepth':10,
+      'extractStyles':true,
+      'internalProjection': this._map.projection,
+      'externalProjection': new OpenLayers.Projection("EPSG:4326"),
+      'foldersName': 'AlterMap KML export',
+      'foldersDesc': '', 
+    })
+    return kmlFormat.write(this.nodesLayer.features.concat(this.wifiLinksLayer.features))
   }
 }
 

@@ -2,6 +2,13 @@
   <select id="network-select" class="control"></select>
 </script>
 
+<script type="text/template" id="network-export-kml">
+  <h4 class="modal-title">KML data</h4>
+  <textarea class="modal-content" id="kml" style="width: 100%; height: 100%">
+    <%= kml_data %>
+  </textarea>
+</script>
+
 <script type="text/template" id="node-row-template">
   <a href="#nodes/<%= _id %>"><%= name %></a>
 </script>
@@ -41,6 +48,9 @@
   <h3 class="toolbox-title"><%= network_name %></h3>
   <span class="control">
     <a id="add-node-link" href="#add-node?network_id=<%= network_id %>">add node</a>
+  </span>
+  <span class="control">
+    <a id="export-kml-link" href="#export-kml?network_id=<%= network_id %>">export KML</a>
   </span>
 </script>
 <script type="text/template" id="node-add-template">
