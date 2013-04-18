@@ -146,7 +146,7 @@ a.close {
  font-weight: bold;
 }
 .region {
-// border: thin red solid;
+/* border: thin red solid;*/
 }
 #nodelist {
  margin-left: 10px;

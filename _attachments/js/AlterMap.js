@@ -314,6 +314,9 @@ AlterMap.NodeListView = Backbone.Marionette.CollectionView.extend({
   updateMarker: function(node){
     node.marker.destroy();
     node.marker = AlterMap.Map.displayNodeMarker(node);
+    AlterMap.Map.resetLinkLines();
+    // TODO: refactor
+    AlterMap.wifilinks.fetch();
   }
 });
 
@@ -372,8 +375,13 @@ AlterMap.NodeDetailView = Backbone.Marionette.ItemView.extend({
         var wifilinks = AlterMap.wifilinks.where({'macaddr': iface.get('macaddr')});
         wifilinks.forEach(function(wifilink){
           linkData  = wifilink.toJSON();
-          // TODO: this is failing when the first get returns undefined
-          linkData['station_node'] = AlterMap.nodeFromMAC(wifilink.get('station')).get('name');
+          // TODO: this is failing when the first get returns undefined so we are catching it, but need to solve it better
+          try{
+            linkData['station_node'] = AlterMap.nodeFromMAC(wifilink.get('station')).get('name');
+          }
+          catch(e){
+            linkData['station_node'] = '---'
+          }
           linkList.push(linkData);
           linkList.sort(function(a, b) {
               var textA = a.station_node.toUpperCase();
