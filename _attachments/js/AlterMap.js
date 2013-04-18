@@ -283,7 +283,10 @@ AlterMap.NodeListView = Backbone.Marionette.CollectionView.extend({
   itemView: AlterMap.NodeRowView,
   tagName: 'ul',
   id: 'nodelist',
-
+  initialize : function(){
+    this.collection.on("change", this.updateMarker);
+    _.bindAll(this, 'updateMarker');
+  },
   onItemAdded: function(itemView){
     // only show node markers for the currently selected network
     var node = itemView.model
@@ -307,6 +310,10 @@ AlterMap.NodeListView = Backbone.Marionette.CollectionView.extend({
   },
   onClose: function(){
     AlterMap.Map.resetMarkers();
+  },
+  updateMarker: function(node){
+    node.marker.destroy();
+    node.marker = AlterMap.Map.displayNodeMarker(node);
   }
 });
 
@@ -315,7 +322,6 @@ AlterMap.NodeAddView = Backbone.Marionette.ItemView.extend({
   events: {
     'click #pick-coords': 'pickCoords'
   },
-
   initialize: function(){
     this.template = _.template($("#node-add-template").html());
     _.bindAll(this, 'pickCoords');
@@ -337,8 +343,23 @@ render: function(){
 
 AlterMap.NodeDetailView = Backbone.Marionette.ItemView.extend({
   className: "modal",
+  events: {
+    'click #new-placement': 'newPlacement',
+    'click #delete-node': 'destroyCurrentNode'
+  },
   initialize: function(){
     this.template = _.template($("#node-detail-template").html());
+    _.bindAll(this, 'newPlacement', 'destroyCurrentNode');
+  },
+  newPlacement: function(){
+    this.close();
+    AlterMap.Map.drawNodeMarker();
+  },
+  destroyCurrentNode: function(){
+    this.close();
+    node_id = AlterMap.currentNode.id
+    AlterMap.currentNode.destroy();
+    AlterMap.vent.trigger('node:destroyed', node_id);
   },
   render: function(){
     var devices = AlterMap.devices.where({'node_id': this.model.id});
@@ -449,6 +470,40 @@ AlterMap.saveNodeToCoords = function(node, coords){
   }
 }
 
+AlterMap.destroyRelatedData = function(node_id){
+  var devices = AlterMap.devices.where({node_id: node_id});
+  var interfaces = []
+  var links = []
+  devices.forEach(function(device){
+    AlterMap.interfaces.where({device_id: device.id}).forEach(function(iface){
+    interfaces.push(iface);
+    });
+  });
+  interfaces.forEach(function(iface){
+    AlterMap.wifilinks.where({macaddr: iface.get('macaddr')}).forEach(function(link){
+      links.push(link);
+    });
+    AlterMap.wifilinks.where({station: iface.get('macaddr')}).forEach(function(link){
+      links.push(link);
+    });
+  })
+  if (links.length>0){
+    links.forEach(function(item){
+      item.destroy();
+    });
+  }
+  if (interfaces.length>0){
+    interfaces.forEach(function(item){
+      item.destroy();
+    });
+  }
+  if (devices.length>0){
+    devices.forEach(function(item){
+      item.destroy();
+    });
+  }
+}
+
 AlterMap.setupCouch = function(db_name){
   Backbone.couch_connector.config.db_name = db_name;
   Backbone.couch_connector.config.ddoc_name = db_name;
@@ -495,6 +550,10 @@ AlterMap.addInitializer(function(options){
 
   AlterMap.vent.on("node:coords-picked", function(coords){
     AlterMap.saveNodeToCoords(AlterMap.currentNode, coords);
+  });
+
+  AlterMap.vent.on("node:destroyed", function(node_id){
+    AlterMap.destroyRelatedData(node_id);
   });
   
   /*

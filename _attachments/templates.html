@@ -4,9 +4,8 @@
 
 <script type="text/template" id="network-export-kml">
   <h4 class="modal-title">KML data</h4>
-  <textarea class="modal-content" id="kml" style="width: 100%; height: 100%">
-    <%= kml_data %>
-  </textarea>
+  <a class="close" data-dismiss="modal">x</a>
+  <textarea id="kml"><%= kml_data %></textarea>
 </script>
 
 <script type="text/template" id="node-row-template">
@@ -43,6 +42,8 @@
       </div>
     <% }); %>
   </div>
+  <input type="button" id="new-placement" class="control bottom-right" value="move node >" />
+  <input type="button" id="delete-node" class="control bottom-right" value="delete node" />
 </script>
 <script type="text/template" id="network-toolbox-template">
   <h3 class="toolbox-title"><%= network_name %></h3>
