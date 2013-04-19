@@ -5,7 +5,7 @@ AlterMap.Map = {
       projection: new OpenLayers.Projection("EPSG:900913"),
       displayProjection: new OpenLayers.Projection("EPSG:4326"),
     });
-    var map_layers = [ new OpenLayers.Layer.OSM("OpenStreetMap"),
+    var map_layers = [ new OpenLayers.Layer.OSM("OpenStreetMap", null, {numZoomLevels: 23}),
                    new OpenLayers.Layer.Google(
                      "Google Hybrid",
                      {type: google.maps.MapTypeId.HYBRID, numZoomLevels: 20}

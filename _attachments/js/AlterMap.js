@@ -124,6 +124,9 @@ AlterMap.NetworkCollection =  Backbone.Collection.extend({
   db : {
     changes : true
   },
+  comparator: function(collection){
+    return(collection.get('name'));
+  },
   url: "/networks",
   model: AlterMap.Network,
 
@@ -140,6 +143,9 @@ AlterMap.NetworkCollection =  Backbone.Collection.extend({
 AlterMap.NodeCollection =  Backbone.Collection.extend({
   db : {
     changes : true
+  },
+  comparator: function(collection){
+    return(collection.get('name'));
   },
   url: "/nodes",
   model: AlterMap.Node,
