@@ -134,27 +134,34 @@ AlterMap.DataGen = {
 
     var network = this.generateNetwork();
     networks.add(network);
-
     for (var i=1; i<=node_count; i++){
       var node = this.generateNode({network_id: network.id});
       nodes.add(node);
       var device = this.generateDevice({node_id: node.id});
       devices.add(device);
       var iface = this.generateInterface({device_id: device.id})
-      interfaces.add(iface);
+      interfaces.add(iface, {success:function(){console.log('wiii')}});
+    }
+    var i = 0;
+    var that = this
+    nodes.forEach(function(node){
+      i++;
       if (i>1){
         prev_node_id = nodes.at(i-2).id;
-        prev_device_id = devices.where({node_id: prev_node_id})[0].id;
-        prev_iface = interfaces.where({device_id: prev_device_id})[0];
-        var wifilink = this.generateWifiLink({
+        var prev_device_id = devices.where({node_id: prev_node_id})[0].id;
+        var prev_iface = interfaces.where({device_id: prev_device_id})[0];
+
+        var curr_device_id = devices.where({node_id: node.id})[0].id;
+        var curr_iface = interfaces.where({device_id: curr_device_id})[0];
+
+        var wifilink = that.generateWifiLink({
           macaddr: prev_iface.get('macaddr'),
-          station: iface.get('macaddr')
+          station: curr_iface.get('macaddr')
         });
         wifilinks.add(wifilink);
       }
-    }
+    });
     return {networks: networks, nodes: nodes, devices: devices,
             interfaces: interfaces, wifilinks: wifilinks};
   },
-
 }

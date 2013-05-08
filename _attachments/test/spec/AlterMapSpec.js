@@ -2,10 +2,11 @@ describe('AlterMap', function(){
 //  var async = new AsyncSpec(this);
 
   // Enables Mustache.js-like templating.
+/*
   _.templateSettings = {
     interpolate : /\{\{(.+?)\}\}/g
   }
-
+*/
   var test_db = 'altermap_test';
   AlterMap.setupCouch(test_db);
   $.ajax({async: false, url: '/'+ test_db, type: 'PUT'});
@@ -237,14 +238,15 @@ describe('AlterMap', function(){
     describe('NetworkSelectView', function(){
       beforeEach(function(){
         this.networkSelectView = new AlterMap.NetworkSelectView({collection: this.fixture.networks});
-        AlterMap.sidebarTopRegion.show(this.networkSelectView);
+        AlterMap.globalToolboxRegion.show(this.networkSelectView);
       });
       afterEach(function() {
-        AlterMap.sidebarTopRegion.reset();
-        AlterMap.toolbarRegion.reset()
+        AlterMap.globalToolboxRegion.reset();
+        AlterMap.networkToolboxRegion.reset();
       });
       it('shows a select of existing networks', function(){
-        expect($('#network-select option').length).toEqual(1);
+// there's 1 empty option
+        expect($('#network-select option').length).toEqual(2);
       });
       it('adds a select option when a new network is added', function(){
         var network = AlterMap.DataGen.generateNetwork({name: 'mynetwork'})
@@ -263,7 +265,8 @@ describe('AlterMap', function(){
 
     describe('NetworkToolboxView', function(){
       afterEach(function() {
-        AlterMap.toolbarRegion.reset();
+        AlterMap.globalToolboxRegion.reset();
+        AlterMap.networkToolboxRegion.reset();
       });
       it('shows the Add Node button only when a network is selected', function(){
         expect($('#toolbox #add-node-button')).not.toExist();
@@ -273,6 +276,7 @@ describe('AlterMap', function(){
       });
       it('shows the Add Node form when the Add Node button is clicked', function(){
         fakeInit(this.fixture);
+        the_net = this.fixture.networks.models[0];
         AlterMap.vent.trigger("network:selected", this.fixture.networks.models[0].id)
         AlterMap.vent.trigger("node:add-new", AlterMap.currentNetwork.id);
         expect($('#modal #new-node-form')).toExist();
@@ -310,22 +314,20 @@ describe('AlterMap', function(){
         this.nodeListView = new AlterMap.NodeListView({collection: this.fixture.nodes});
         AlterMap.sidebarMainRegion.show(this.nodeListView);
         this.networkSelectView = new AlterMap.NetworkSelectView({collection: this.fixture.networks});
-        AlterMap.sidebarTopRegion.show(this.networkSelectView);
+        AlterMap.globalToolboxRegion.show(this.networkSelectView);
       });
       afterEach(function() {
         AlterMap.sidebarMainRegion.reset();
-        AlterMap.sidebarTopRegion.reset();
-        AlterMap.toolbarRegion.reset();
+        AlterMap.globalToolboxRegion.reset();
+        AlterMap.networkToolboxRegion.reset();
       });
       it('displays a node marker for each node', function(){
         expect(AlterMap.Map.nodesLayer.features.length).toEqual(node_count);
       });
-      it('filters displayed node markers when a network is selected', function(){        
-        addOneNodeNetToFixture(this.fixture);
-        $("#network-select option:first").attr('selected','selected').change();
-        // TODO: the event is not triggering, so we force the trigger. fix this
-        AlterMap.vent.trigger("network:selected", this.fixture.networks.models[1].id)
-        expect(AlterMap.Map.nodesLayer.features.length).toEqual(1);
+      it('filters displayed node markers when a network is selected', function(){
+          addOneNodeNetToFixture(this.fixture);
+          $("#network-select option:last").attr('selected','selected').change();
+          expect(AlterMap.Map.nodesLayer.features.length).toEqual(1);
       });
       it('shows links between associated nodes', function(){
         this.wifiLinksView = new AlterMap.WifiLinksView({collection: this.fixture.wifilinks});

@@ -37,7 +37,7 @@ AlterMap.addRegions({
 //  toolbarRegion: "#toolbar",
   globalToolboxRegion: "#global-toolbox",
   networkToolboxRegion: "#network-toolbox",
-  nodeToolboxRegion: "#node-toolbox",
+//  nodeToolboxRegion: "#node-toolbox",
   statusRegion: "#status",
   modalRegion: ModalRegion
 });

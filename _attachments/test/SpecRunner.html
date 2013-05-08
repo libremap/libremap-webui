@@ -58,15 +58,20 @@ html, body {height: 100%;}
 
 <!-- regions -->
 <!-- must be the same as the app''s index.html region containers for view tests to work correctly -->
+
 <div id="container">
-  <div id="toolbar"></div>
-  <div id="map"></div>
-  <div id="sidebar">      
-    <div id="sidebar-top"></div>
-    <div id="sidebar-main"></div>
-  </div>
-  <div id="status"></div>
-  <div id="modal"></div>
+  <div class="region" id="toolbar">
+      <div class="region toolbox" id="global-toolbox"></div>
+      <div class="region toolbox" id="network-toolbox"></div>
+      <div class="region toolbox" id="node-toolbox"></div>
+    </div>
+    <div class="region" id="map"></div>
+    <div class="region" id="sidebar">
+      <div class="region" id="sidebar-top"></div>
+      <div class="region" id="sidebar-main"></div>
+    </div>
+  <div class="region" id="status"></div>
+  <div class="region" id="modal"></div>
 </div>
 
   <!-- scripts to be tested --> 
