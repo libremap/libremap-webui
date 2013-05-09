@@ -15,7 +15,7 @@
 <script type="text/template" id="node-detail-template">
   <h4 class="modal-title"><%= node.name %></h4>
   <a class="close" data-dismiss="modal">x</a>
-  <div class="modal-content">
+  <div id="node-detail" class="modal-content">
     coords: <%= node.coords.lon %>, <%= node.coords.lat %>
     <h4>devices:</h4>
     <% _.each(devices, function(device){ %>

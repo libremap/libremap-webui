@@ -48,7 +48,7 @@ AlterMap.DataGen = {
   },
 
   generateNetwork: function(attrs){
-    attrs = attrs || {};
+    var attrs = attrs || {};
     var id = attrs.id || _.uniqueId('network_').toString();
     var network_name = attrs.name || this._randomString()+'Libre';
     var coords = attrs.coords || this.default_coords;
@@ -62,48 +62,72 @@ AlterMap.DataGen = {
     return network;
   },
 
-  generateNode: function(attrs){
-    attrs = attrs || {};
+  _newNode: function(attrs){
     var coords = attrs.coords || this._randomCoords();
     var node_name = attrs.name || this._randomString()+'_node';
     var network_id = attrs.network_id || this.generateNetwork().id;
-    var completed_attrs = {
+    var node = {
       _id: _.uniqueId('node_').toString(),
       name: node_name,
       coords: coords,
       elevation: 50,
       network_id: network_id,
-    }
+    }    
+    return node;
+  },
+
+  _newInterface: function(){
+    var iface = {name: 'wlan0',
+                 phydev: 'phy0',
+                 macaddr: this.randomMAC(),
+                 mode: 'adhoc',
+                 medium: 'wireless',
+                }
+    return iface
+  },
+
+  _newDevice: function(node, attrs){
+    var attrs = attrs || {};
+    var hostname = attrs.hostname || node.get('name')+'--'+ this._randomString();
+    var iface = this._newInterface();
+    var device = {'hostname': hostname,
+                  'interfaces': [iface]
+                 }
+    return device
+  },
+
+  generateNode: function(attrs){
+    var attrs = attrs || {};
+    completed_attrs = this._newNode(attrs);
     var node = new AlterMap.Node(completed_attrs);
     this._save(node);
     return node;
   },
 
-  generateDevice: function(attrs){
-    attrs = attrs || {};
-    var node_id = attrs.node_id || this.generateNode().id;
-    var device = new AlterMap.Device({
-      _id: _.uniqueId('device_').toString(),
-      node_id: node_id
-    });
-    this._save(device);
-    return device;
+  addDevice: function(node, attrs){
+    var attrs = attrs || {};
+    var device = this._newDevice(node, attrs);
+    var devices = node.get('devices')
+    if (devices == undefined){
+      node.set({'devices': [device]});
+    }
+    else {
+      devices.push(device);
+      node.set({'devices': devices});
+    }
+    this._save(node);
+    return device
   },
 
-  generateInterface: function(attrs){
-    attrs = attrs || {};
-    var device_id = attrs.device_id || this.generateDevice().id;
-    var iface = new AlterMap.Interface({
-      _id: _.uniqueId('interface_').toString(),
-      name: 'wlan0',
-      phydev: 'phy0',
-      macaddr: this.randomMAC(),
-      mode: 'adhoc',
-      medium: 'wireless',
-      device_id: device_id,
-    });
-    this._save(iface);
-    return iface;
+  generateFullNode: function(attrs){
+  // this method exists separately because calling generateNode and addDevice one after the other results in a couchdb conflict.
+    var attrs = attrs || {};
+    var completed_attrs = this._newNode(attrs);
+    var node = new AlterMap.Node(completed_attrs);
+    var device = this._newDevice(node);
+    node.set({'devices': [device]})
+    this._save(node);
+    return node;
   },
 
   generateWifiLink: function(attrs){
@@ -128,40 +152,30 @@ AlterMap.DataGen = {
 
     var networks = new AlterMap.NetworkCollection();
     var nodes = new AlterMap.NodeCollection();
-    var devices = new AlterMap.DeviceCollection();
-    var interfaces = new AlterMap.InterfaceCollection();
+    var devices = [];
     var wifilinks = new AlterMap.WifiLinkCollection();
 
     var network = this.generateNetwork();
     networks.add(network);
+
+    var curr_device, prev_device, curr_iface, prev_iface, node;
+
     for (var i=1; i<=node_count; i++){
-      var node = this.generateNode({network_id: network.id});
-      nodes.add(node);
-      var device = this.generateDevice({node_id: node.id});
-      devices.add(device);
-      var iface = this.generateInterface({device_id: device.id})
-      interfaces.add(iface, {success:function(){console.log('wiii')}});
-    }
-    var i = 0;
-    var that = this
-    nodes.forEach(function(node){
-      i++;
+      node = this.generateFullNode({network_id: network.id});
+      curr_device = node.get('devices')[0];
+      devices.push(curr_device);
+      curr_iface = curr_device.interfaces[0];
       if (i>1){
-        prev_node_id = nodes.at(i-2).id;
-        var prev_device_id = devices.where({node_id: prev_node_id})[0].id;
-        var prev_iface = interfaces.where({device_id: prev_device_id})[0];
-
-        var curr_device_id = devices.where({node_id: node.id})[0].id;
-        var curr_iface = interfaces.where({device_id: curr_device_id})[0];
-
-        var wifilink = that.generateWifiLink({
-          macaddr: prev_iface.get('macaddr'),
-          station: curr_iface.get('macaddr')
+        prev_device = devices.slice(-2,-1)[0]
+        prev_iface = prev_device.interfaces[0];
+        var wifilink = this.generateWifiLink({
+          macaddr: prev_iface['macaddr'],
+          station: curr_iface['macaddr']
         });
-        wifilinks.add(wifilink);
+        wifilinks.add(wifilink);        
       }
-    });
-    return {networks: networks, nodes: nodes, devices: devices,
-            interfaces: interfaces, wifilinks: wifilinks};
+      nodes.add(node);
+    }
+    return {networks: networks, nodes: nodes, wifilinks: wifilinks};
   },
 }

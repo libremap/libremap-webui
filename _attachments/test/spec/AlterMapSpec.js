@@ -1,12 +1,5 @@
 describe('AlterMap', function(){
-//  var async = new AsyncSpec(this);
 
-  // Enables Mustache.js-like templating.
-/*
-  _.templateSettings = {
-    interpolate : /\{\{(.+?)\}\}/g
-  }
-*/
   var test_db = 'altermap_test';
   AlterMap.setupCouch(test_db);
   $.ajax({async: false, url: '/'+ test_db, type: 'PUT'});
@@ -54,12 +47,30 @@ describe('AlterMap', function(){
 
   var fakeInit = function(fixture){
     // fakes some necessary initialization steps normally run by AlterMap.start()
-    AlterMap.vent.bind("network:selected", function(network_id){
+    AlterMap.vent.on("network:selected", function(network_id){
       AlterMap.selectNetwork(network_id);
     });
-    AlterMap.vent.bind("node:add-new", function(network_id){
+    
+    AlterMap.vent.on("network:export-kml", function(network_id){
+      AlterMap.exportKML(network_id);
+    });
+    
+    AlterMap.vent.on("node:selected", function(node_id){
+      AlterMap.selectNode(node_id);
+    });
+    
+    AlterMap.vent.on("node:add-new", function(network_id){
       AlterMap.addNewNode(network_id);
     });
+    
+    AlterMap.vent.on("node:coords-picked", function(coords){
+      AlterMap.saveNodeToCoords(AlterMap.currentNode, coords);
+    });
+    
+    AlterMap.vent.on("node:destroyed", function(node_id){
+      AlterMap.destroyRelatedData(node_id);
+    });
+    
     AlterMap.networks = fixture.networks;
     AlterMap.nodes = fixture.nodes;
     AlterMap.devices = fixture.devices;
@@ -144,31 +155,23 @@ describe('AlterMap', function(){
 
     describe('Generated Device', function() {
       beforeEach(function(){
-        this.device = AlterMap.DataGen.generateDevice();
+        this.node = AlterMap.DataGen.generateNode();
+        this.hostname = this.node.get('name')+"--my_device"
+        AlterMap.DataGen.addDevice(this.node, {'hostname': this.hostname});
+        this.device = this.node.get('devices')[0]
       });
-      it('is part of a node', function(){
-        expect(this.device.get('node_id')).not.toBeUndefined();
+      it('gets added to a device-less node', function(){
+        expect(this.device['hostname']).toEqual(this.hostname);
       });
-      it('can be associated to a given node by id', function(){
-        var device = AlterMap.DataGen.generateDevice({node_id: 'mynode_0'});
-        expect(device.get('node_id')).toEqual('mynode_0');
+      it('gets added to the device list of a node', function(){
+        var new_hostname = this.node.get('name')+"--my_other_device"
+        AlterMap.DataGen.addDevice(this.node, {'hostname': new_hostname});
+        this.new_device = this.node.get('devices').slice(-1)[0];
+        expect(this.node.get('devices').length).toEqual(2);
+        expect(this.new_device['hostname']).toEqual(new_hostname);
       });
-    });
-
-    describe('Generated Interface', function(){
-      beforeEach(function(){
-        this.iface = AlterMap.DataGen.generateInterface();
-      });
-      it('it has a macaddr', function(){
-        expect(this.iface.get('macaddr')).not.toBeUndefined()
-      });
-      it('can be associated to a given device by id', function(){
-        var iface = AlterMap.DataGen.generateInterface({device_id: 'rel_device_0'});
-        expect(iface.get('device_id')).toEqual('rel_device_0');
-      });
-      it('does not share macaddress with others', function(){
-        var iface = AlterMap.DataGen.generateInterface();
-        expect(this.iface.get('macaddr')).not.toEqual(iface.get('macaddr'));
+      it('has some valid interface data associated', function(){
+        expect(this.device['interfaces'][0]['macaddr']).not.toBeUndefined()
       });
     });
 
@@ -222,6 +225,7 @@ describe('AlterMap', function(){
 
       afterEach(function() {
         AlterMap.sidebarMainRegion.reset();
+        AlterMap.modalRegion.reset();
       });
 
       it('shows a list of the existing nodes', function(){
@@ -233,8 +237,12 @@ describe('AlterMap', function(){
           last_item = $('#nodelist li.node-row a').last()
           expect(last_item).toHaveText('mynode');
       });
+      it('shows the node detail when a node row is clicked', function(){
+        fakeInit(this.fixture);
+        $(".node-row a").last().trigger("click");
+        expect($('#modal #node-detail')).toExist();      
+      });
     });
-
     describe('NetworkSelectView', function(){
       beforeEach(function(){
         this.networkSelectView = new AlterMap.NetworkSelectView({collection: this.fixture.networks});
@@ -286,17 +294,18 @@ describe('AlterMap', function(){
       it('saves the node location', function(){
         $(".olMapViewport").trigger("click");
       });
-/*
-      it('has the correct form fields and some default values pre-set', function(){
-      });
-      it('prevents posting the form with missing required values', function(){
-      });
-*/
+//      it('has the correct form fields and some default values pre-set', function(){
+//      });
+//      it('prevents posting the form with missing required values', function(){
+//      });
     });
   });
+
   describe('AlterMap Map', function(){
     beforeEach(function(){
       AlterMap.Map.draw({lat: -31.802967214779812, lon: -64.41782692156015});
+//      stopPersistance();
+//      startPersistance();
     });
     afterEach(function() {
       AlterMap.Map.destroy();

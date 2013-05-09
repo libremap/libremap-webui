@@ -34,7 +34,6 @@ AlterMap.addRegions({
   sidebarRegion: "#sidebar",
   sidebarTopRegion: "#sidebar-top",
   sidebarMainRegion: "#sidebar-main",
-//  toolbarRegion: "#toolbar",
   globalToolboxRegion: "#global-toolbox",
   networkToolboxRegion: "#network-toolbox",
 //  nodeToolboxRegion: "#node-toolbox",
@@ -44,18 +43,28 @@ AlterMap.addRegions({
 
 
 AlterMap.nodeFromMAC = function (macaddr){
-  var iface = AlterMap.interfaces.where({'macaddr': macaddr})[0];
-  if (iface != undefined ){
-    try{
-      var device = AlterMap.devices.get(iface.get('device_id'));
-      var node = AlterMap.nodes.where({'_id': device.get('node_id')})[0]
-      return node;
+//TODO: this does not scale at all and needs to be implemented in a clean optimized way.
+  var node, devices, matched;
+  for (var i=0; i<AlterMap.nodes.length; i++){ 
+    node = AlterMap.nodes.at(i)
+    devices = node.get('devices')
+    if (devices!=undefined){
+      devices.forEach(function(device){
+        ifaces = device.interfaces;
+        ifaces.forEach(function(iface){
+          if(iface.macaddr==macaddr){
+            matched = true;
+          }
+        });
+      });
     }
-    catch(e){console.log('could not determine node for MAC: '+ macaddr);}
+    if(matched==true){
+      return node
+    }
   }
 }
 
-////////////////////////////// Models
+//-------- Models
 
 AlterMap.Network = Backbone.Model.extend({
   url : function() {
@@ -100,6 +109,7 @@ AlterMap.Node = Backbone.Model.extend({
   */
 });
 
+/*
 AlterMap.Device = Backbone.Model.extend({
   url : function() {
     return this.id ? '/devices/' + this.id : '/devices';
@@ -111,6 +121,7 @@ AlterMap.Interface = Backbone.Model.extend({
     return this.id ? '/interfaces/' + this.id : '/interfaces';
   },
 });
+*/
 
 AlterMap.WifiLink = Backbone.Model.extend({
   url : function() {
@@ -118,7 +129,7 @@ AlterMap.WifiLink = Backbone.Model.extend({
   },
 });
 
-////////////////////////////// Collections
+//-------- Collections
 
 AlterMap.NetworkCollection =  Backbone.Collection.extend({
   db : {
@@ -160,6 +171,7 @@ AlterMap.NodeCollection =  Backbone.Collection.extend({
 
 });
 
+/*
 AlterMap.DeviceCollection =  Backbone.Collection.extend({
   db : {
     changes : true
@@ -175,6 +187,7 @@ AlterMap.InterfaceCollection =  Backbone.Collection.extend({
   url: "/interfaces",
   model: AlterMap.Interface,
 });
+*/
 
 AlterMap.WifiLinkCollection =  Backbone.Collection.extend({
   db : {
@@ -184,7 +197,7 @@ AlterMap.WifiLinkCollection =  Backbone.Collection.extend({
   model: AlterMap.WifiLink,
 });
 
-////////////////////////////// Views 
+//-------- Views 
 
 AlterMap.NetworkOptionView = Backbone.Marionette.ItemView.extend({
   tagName: "option",
@@ -367,37 +380,36 @@ AlterMap.NodeDetailView = Backbone.Marionette.ItemView.extend({
   destroyCurrentNode: function(){
     this.close();
     node_id = AlterMap.currentNode.id
-    AlterMap.currentNode.destroy();
     AlterMap.vent.trigger('node:destroyed', node_id);
   },
   render: function(){
-    var devices = AlterMap.devices.where({'node_id': this.model.id});
-    var devList = [];
+    var devices = this.model.get('devices')
     var linkList = [];
-    devices.forEach(function(device){
-      devList.push(device.toJSON());
-      var interfaces = AlterMap.interfaces.where({'device_id': device.id});
-      interfaces.forEach(function(iface){
-        var wifilinks = AlterMap.wifilinks.where({'macaddr': iface.get('macaddr')});
-        wifilinks.forEach(function(wifilink){
-          linkData  = wifilink.toJSON();
-          // TODO: this is failing when the first get returns undefined so we are catching it, but need to solve it better
-          try{
-            linkData['station_node'] = AlterMap.nodeFromMAC(wifilink.get('station')).get('name');
-          }
-          catch(e){
-            linkData['station_node'] = '---'
-          }
-          linkList.push(linkData);
-          linkList.sort(function(a, b) {
+    if(devices!=undefined){
+      devices.forEach(function(device){
+        var interfaces = device.interfaces;
+        interfaces.forEach(function(iface){
+          var wifilinks = AlterMap.wifilinks.where({'macaddr': iface['macaddr']});
+          wifilinks.forEach(function(wifilink){
+            linkData  = wifilink.toJSON();
+            // TODO: this is failing when the first get returns undefined so we are catching it, but need to solve it better
+            try{
+              linkData['station_node'] = AlterMap.nodeFromMAC(wifilink.get('station')).get('name');
+            }
+            catch(e){
+              linkData['station_node'] = '---'
+            }
+            linkList.push(linkData);
+            linkList.sort(function(a, b) {
               var textA = a.station_node.toUpperCase();
               var textB = b.station_node.toUpperCase();
               return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+            });
           });
         });
       });
-    });
-    $(this.el).html(this.template({'node': this.model.toJSON(), 'devices': devList, 'links': linkList}));
+    }
+    $(this.el).html(this.template({'node': this.model.toJSON(), 'devices': devices, 'links': linkList}));
   },
   onClose: function(){
 // TODO: this view is getting instantiated and closed more than once. Need to investigate
@@ -438,8 +450,7 @@ AlterMap.WifiLinksView = Backbone.Marionette.CollectionView.extend({
 });
 
 
-////////////////////////////// 
-
+//--------
 
 AlterMap.selectNetwork = function(network_id){
   AlterMap.networks.select(network_id);
@@ -484,38 +495,27 @@ AlterMap.saveNodeToCoords = function(node, coords){
   }
 }
 
-AlterMap.destroyRelatedData = function(node_id){
-  var devices = AlterMap.devices.where({node_id: node_id});
-  var interfaces = []
-  var links = []
+AlterMap.destroyNodeAndLinks = function(node_id){
+  node = AlterMap.nodes.where({'_id': node_id})[0];
+  var links = [];
+  var devices = node.get('devices');
   devices.forEach(function(device){
-    AlterMap.interfaces.where({device_id: device.id}).forEach(function(iface){
-    interfaces.push(iface);
+    ifaces = device.interfaces;
+    ifaces.forEach(function(iface){
+      AlterMap.wifilinks.where({macaddr: iface['macaddr']}).forEach(function(link){
+        links.push(link);
+      });
+      AlterMap.wifilinks.where({station: iface['macaddr']}).forEach(function(link){
+        links.push(link);
+      });        
     });
-  });
-  interfaces.forEach(function(iface){
-    AlterMap.wifilinks.where({macaddr: iface.get('macaddr')}).forEach(function(link){
-      links.push(link);
-    });
-    AlterMap.wifilinks.where({station: iface.get('macaddr')}).forEach(function(link){
-      links.push(link);
-    });
-  })
+  }); 
   if (links.length>0){
     links.forEach(function(item){
       item.destroy();
     });
   }
-  if (interfaces.length>0){
-    interfaces.forEach(function(item){
-      item.destroy();
-    });
-  }
-  if (devices.length>0){
-    devices.forEach(function(item){
-      item.destroy();
-    });
-  }
+  node.destroy();
 }
 
 AlterMap.setupCouch = function(db_name){
@@ -535,8 +535,6 @@ AlterMap.addInitializer(function(options){
 
   AlterMap.networks = new AlterMap.NetworkCollection();
   AlterMap.nodes = new AlterMap.NodeCollection();
-  AlterMap.devices = new AlterMap.DeviceCollection();
-  AlterMap.interfaces = new AlterMap.InterfaceCollection();
   AlterMap.wifilinks = new AlterMap.WifiLinkCollection();
 
   var networkSelectView = new AlterMap.NetworkSelectView({collection: AlterMap.networks})
@@ -567,14 +565,10 @@ AlterMap.addInitializer(function(options){
   });
 
   AlterMap.vent.on("node:destroyed", function(node_id){
-    AlterMap.destroyRelatedData(node_id);
+    AlterMap.destroyNodeAndLinks(node_id);
   });
   
   /*
-    AlterMap.nodes.on("add", function(node){
-    AlterMap.addNodeMarker(node);
-    });
-
     AlterMap.vent.on("node:selected", function(node){
     AlterMap.showNode(node);
     router.navigate("nodes/" + node.id);
@@ -583,16 +577,12 @@ AlterMap.addInitializer(function(options){
 
   AlterMap.networks.fetch({success: function(){
     AlterMap.nodes.fetch({success: function(){
-      AlterMap.devices.fetch({success: function(){
-        AlterMap.interfaces.fetch({success: function(){
-          AlterMap.wifilinks.fetch({success: function(){
-            AlterMap.Map.zoomToNodes();
-            if (AlterMap.networks.length==1){
-              AlterMap.vent.trigger("network:selected", AlterMap.networks.at(0).id)
-              AlterMap.globalToolboxRegion.close();
-            }
-          }});
-        }});
+      AlterMap.wifilinks.fetch({success: function(){
+        AlterMap.Map.zoomToNodes();
+        if (AlterMap.networks.length==1){
+          AlterMap.vent.trigger("network:selected", AlterMap.networks.at(0).id)
+          AlterMap.globalToolboxRegion.close();
+        }
       }});
     }});
   }});
