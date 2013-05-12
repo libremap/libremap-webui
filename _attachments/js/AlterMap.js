@@ -383,30 +383,34 @@ AlterMap.NodeDetailView = Backbone.Marionette.ItemView.extend({
     AlterMap.vent.trigger('node:destroyed', node_id);
   },
   render: function(){
+//    var devices = this.model.get('devices')
     var devices = this.model.get('devices')
+    console.log(devices);
     var linkList = [];
     if(devices!=undefined){
       devices.forEach(function(device){
         var interfaces = device.interfaces;
-        interfaces.forEach(function(iface){
-          var wifilinks = AlterMap.wifilinks.where({'macaddr': iface['macaddr']});
-          wifilinks.forEach(function(wifilink){
-            linkData  = wifilink.toJSON();
-            // TODO: this is failing when the first get returns undefined so we are catching it, but need to solve it better
-            try{
-              linkData['station_node'] = AlterMap.nodeFromMAC(wifilink.get('station')).get('name');
-            }
-            catch(e){
-              linkData['station_node'] = '---'
-            }
-            linkList.push(linkData);
-            linkList.sort(function(a, b) {
-              var textA = a.station_node.toUpperCase();
-              var textB = b.station_node.toUpperCase();
-              return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+        if(interfaces!=undefined){
+          interfaces.forEach(function(iface){
+            var wifilinks = AlterMap.wifilinks.where({'macaddr': iface['macaddr']});
+            wifilinks.forEach(function(wifilink){
+              linkData  = wifilink.toJSON();
+              // TODO: this is failing when the first get returns undefined so we are catching it, but need to solve it better
+              try{
+                linkData['station_node'] = AlterMap.nodeFromMAC(wifilink.get('station')).get('name');
+              }
+              catch(e){
+                linkData['station_node'] = '---'
+              }
+              linkList.push(linkData);
+              linkList.sort(function(a, b) {
+                var textA = a.station_node.toUpperCase();
+                var textB = b.station_node.toUpperCase();
+                return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+              });
             });
           });
-        });
+        }
       });
     }
     $(this.el).html(this.template({'node': this.model.toJSON(), 'devices': devices, 'links': linkList}));
