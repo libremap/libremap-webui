@@ -503,17 +503,21 @@ AlterMap.destroyNodeAndLinks = function(node_id){
   node = AlterMap.nodes.where({'_id': node_id})[0];
   var links = [];
   var devices = node.get('devices');
-  devices.forEach(function(device){
-    ifaces = device.interfaces;
-    ifaces.forEach(function(iface){
-      AlterMap.wifilinks.where({macaddr: iface['macaddr']}).forEach(function(link){
-        links.push(link);
-      });
-      AlterMap.wifilinks.where({station: iface['macaddr']}).forEach(function(link){
-        links.push(link);
-      });        
-    });
-  }); 
+  if (devices!=undefined){
+    devices.forEach(function(device){
+      ifaces = device.interfaces;
+      if (ifaces!=undefined){
+        ifaces.forEach(function(iface){
+          AlterMap.wifilinks.where({macaddr: iface['macaddr']}).forEach(function(link){
+            links.push(link);
+          });
+          AlterMap.wifilinks.where({station: iface['macaddr']}).forEach(function(link){
+            links.push(link);
+          });        
+        });
+      }
+    }); 
+  }
   if (links.length>0){
     links.forEach(function(item){
       item.destroy();
