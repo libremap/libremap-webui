@@ -60,7 +60,7 @@ AlterMap.Map = {
     this._map.addControl(new OpenLayers.Control.LayerSwitcher());
   },
 
-  displayNodeMarker: function(node){
+  createNodeMarker: function(node){
     var coords = node.get('coords');
     var point = new OpenLayers.Geometry.Point(coords.lon, coords.lat).transform(
       this._map.displayProjection, this._map.projection);
@@ -109,6 +109,9 @@ AlterMap.Map = {
   },
 
   displayLinkLine: function(link){
+    this.wifiLinksLayer.addFeatures([link.line]);
+  },
+  createLinkLine: function(link){
     var source_point = new OpenLayers.Geometry.Point(
       link.source_coords.lon, link.source_coords.lat).transform(
         this._map.displayProjection, this._map.projection);
@@ -117,7 +120,7 @@ AlterMap.Map = {
         this._map.displayProjection, this._map.projection);
     var linestring = new OpenLayers.Geometry.LineString([source_point, target_point]);
     var line = new OpenLayers.Feature.Vector(linestring);
-    var signal = parseFloat(link.get('attributes')['signal']);
+    var signal = parseFloat(link.attributes.signal);
     if (signal >= -65){
 // over -65, we consider the link to already be good
       signal_factor = 1;
@@ -130,16 +133,19 @@ AlterMap.Map = {
       signal_factor = ((85 + signal) / (85 - 65) * (1 - 0.2) ) + 0.2;
     }
     line.style = {strokeColor: "#0F0", strokeWidth: 3, strokeOpacity: signal_factor/2};
-//    line.link = link;
-    line.attributes['name'] = link.get('macaddr') +", "+ link.get('station');
-    line.attributes['description'] = 'channel: '+ link.get('attributes')['channel'] +', signal: '+ link.get('attributes')['signal']
+//    line.attributes['name'] = link.attributes.local_mac +", "+ link.attributes.station_mac;
+//    line.attributes['description'] = 'channel: '+ link.attributes.channel +', signal: '+ link.attributes.signal
     this.wifiLinksLayer.addFeatures([line]);
+    line.link = link;
     return line
   }, 
 
   removeLinkLine: function(line){
+// unselect in case the line was selected
     this.selector.unselectAll();
+    line.destroy();
     this.wifiLinksLayer.removeFeatures(line, {silent: false});
+//    delete line;
   },
 
   resetLinkLines: function(){

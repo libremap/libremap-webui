@@ -1,6 +1,7 @@
 describe('AlterMap', function(){
 
   var test_db = 'altermap_test';
+//  var test_db = 'altermap';
   AlterMap.setupCouch(test_db);
   $.ajax({async: false, url: '/'+ test_db, type: 'PUT'});
 
@@ -73,14 +74,10 @@ describe('AlterMap', function(){
     
     AlterMap.networks = fixture.networks;
     AlterMap.nodes = fixture.nodes;
-    AlterMap.devices = fixture.devices;
-    AlterMap.interfaces = fixture.interfaces;
-    AlterMap.wifilinks = fixture.wifilinks;
     AlterMap.currentNetwork = null;
   }
 
   describe('AlterMap test-data generator', function(){
-
     describe('Generated Network', function() {
       beforeEach(function(){
         this.network = AlterMap.DataGen.generateNetwork();
@@ -177,12 +174,15 @@ describe('AlterMap', function(){
 
     describe('Generated WifiLink', function() {
       beforeEach(function(){
-        this.wifilink = AlterMap.DataGen.generateWifiLink(
-          {macaddr: AlterMap.DataGen.randomMAC(), station: AlterMap.DataGen.randomMAC()});
+        this.node = AlterMap.DataGen.generateNode();
+        this.local_mac = AlterMap.DataGen.randomMAC();
+        this.station_mac = AlterMap.DataGen.randomMAC();
+        AlterMap.DataGen.addWifiLink(this.node, {local_mac: this.local_mac, station_mac: this.station_mac});
+        this.wifilink = this.node.get('links')[0]
       });
-      it('can be created with a given macaddr/station pair', function(){
-        expect(this.wifilink.get('macaddr')).not.toBeUndefined();
-        expect(this.wifilink.get('station')).not.toBeUndefined();
+      it('can be created with a given local and station macaddress pair', function(){
+        expect(this.wifilink.attributes.local_mac).toEqual(this.local_mac);
+        expect(this.wifilink.attributes.station_mac).toEqual(this.station_mac);
       });
     });
 
@@ -198,16 +198,17 @@ describe('AlterMap', function(){
         expect(this.fixture.nodes).not.toBeUndefined();
         expect(this.fixture.nodes.length).toBe(10);
       });
-      it('has the expected number of wifilinks', function(){
-        expect(this.fixture.wifilinks).not.toBeUndefined();
-        expect(this.fixture.wifilinks.length).toBe(9)
-      });
+     it('has the expected number of wifilinks', function(){
+       expect(this.fixture.wifilinks).not.toBeUndefined();
+       expect(this.fixture.wifilinks.length).toBe(9)
+     });
     });
   });
 
   describe('AlterMap Views', function(){
     var node_count = 10;
     beforeEach(function(){
+//      stopPersistance();
 //      startPersistance();
       this.fixture = AlterMap.DataGen.generateFixture({ node_count: node_count });
       // the NodeListView calls map methods so we draw it
@@ -219,6 +220,7 @@ describe('AlterMap', function(){
     });
     describe('NodeListView', function(){
       beforeEach(function(){
+        fakeInit(this.fixture);
         this.nodeListView = new AlterMap.NodeListView({collection: this.fixture.nodes});
         AlterMap.sidebarMainRegion.show(this.nodeListView);
       });
@@ -238,7 +240,6 @@ describe('AlterMap', function(){
           expect(last_item).toHaveText('mynode');
       });
       it('shows the node detail when a node row is clicked', function(){
-        fakeInit(this.fixture);
         $(".node-row a").last().trigger("click");
         expect($('#modal #node-detail')).toExist();      
       });
@@ -253,7 +254,7 @@ describe('AlterMap', function(){
         AlterMap.networkToolboxRegion.reset();
       });
       it('shows a select of existing networks', function(){
-// there's 1 empty option
+        // there's 1 empty option
         expect($('#network-select option').length).toEqual(2);
       });
       it('adds a select option when a new network is added', function(){
@@ -294,10 +295,6 @@ describe('AlterMap', function(){
       it('saves the node location', function(){
         $(".olMapViewport").trigger("click");
       });
-//      it('has the correct form fields and some default values pre-set', function(){
-//      });
-//      it('prevents posting the form with missing required values', function(){
-//      });
     });
   });
 
@@ -319,6 +316,7 @@ describe('AlterMap', function(){
       beforeEach(function(){
         this.fixture = AlterMap.DataGen.generateFixture({ node_count: node_count });
         fakeInit(this.fixture);
+        AlterMap.currentNetwork = AlterMap.networks.at(0);
         // the map features render is connected to the NodeListView
         this.nodeListView = new AlterMap.NodeListView({collection: this.fixture.nodes});
         AlterMap.sidebarMainRegion.show(this.nodeListView);
@@ -333,15 +331,13 @@ describe('AlterMap', function(){
       it('displays a node marker for each node', function(){
         expect(AlterMap.Map.nodesLayer.features.length).toEqual(node_count);
       });
+      it('shows links between associated nodes', function(){
+        expect(AlterMap.Map.wifiLinksLayer.features.length).toEqual(node_count-1);
+      });
       it('filters displayed node markers when a network is selected', function(){
           addOneNodeNetToFixture(this.fixture);
           $("#network-select option:last").attr('selected','selected').change();
           expect(AlterMap.Map.nodesLayer.features.length).toEqual(1);
-      });
-      it('shows links between associated nodes', function(){
-        this.wifiLinksView = new AlterMap.WifiLinksView({collection: this.fixture.wifilinks});
-        this.wifiLinksView.render();
-        expect(AlterMap.Map.wifiLinksLayer.features.length).toEqual(node_count-1);          
       });
     });
   });

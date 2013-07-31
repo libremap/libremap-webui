@@ -45,6 +45,11 @@ AlterMap.addRegions({
 AlterMap.nodeFromMAC = function (macaddr){
 //TODO: this does not scale at all and needs to be implemented in a clean optimized way.
   var node, devices, matched;
+
+//node_id = $.couch.db("altermap").view("altermap/nodeByMAC",{success: function(data){console.log(data.rows[0].id)}, keys:["01:35:5C:B3:73:D4"]});
+//AlterMap.nodes.where({'_id': node_id})
+//return node
+
   for (var i=0; i<AlterMap.nodes.length; i++){ 
     node = AlterMap.nodes.at(i)
     devices = node.get('devices')
@@ -80,6 +85,19 @@ AlterMap.Node = Backbone.Model.extend({
     return this.id ? '/nodes/' + this.id : '/nodes';
   },
 
+  save: function(attrs, options) {
+  // remove the line attribute from node links before saving. It should not be persisted.
+    if (this.attributes.links){
+      this.attributes.links.forEach(function(link){
+        if (link.line){
+          link.line.destroy();
+          delete link.line;
+        }
+      });
+    }
+    Backbone.Model.prototype.save.call(this, attrs, options);
+  },
+
   initialize : function(){
     _.bindAll(this, 'isInCurrentNetwork');
   },
@@ -107,26 +125,6 @@ AlterMap.Node = Backbone.Model.extend({
     this.trigger("deselected");
     }
   */
-});
-
-/*
-AlterMap.Device = Backbone.Model.extend({
-  url : function() {
-    return this.id ? '/devices/' + this.id : '/devices';
-  },
-});
-
-AlterMap.Interface = Backbone.Model.extend({
-  url : function() {
-    return this.id ? '/interfaces/' + this.id : '/interfaces';
-  },
-});
-*/
-
-AlterMap.WifiLink = Backbone.Model.extend({
-  url : function() {
-    return this.id ? '/wifilinks/' + this.id : '/wifilinks';
-  },
 });
 
 //-------- Collections
@@ -169,32 +167,6 @@ AlterMap.NodeCollection =  Backbone.Collection.extend({
     AlterMap.currentNode = node;
   }
 
-});
-
-/*
-AlterMap.DeviceCollection =  Backbone.Collection.extend({
-  db : {
-    changes : true
-  },
-  url: "/devices",
-  model: AlterMap.Device,
-});
-
-AlterMap.InterfaceCollection =  Backbone.Collection.extend({
-  db : {
-    changes : true
-  },
-  url: "/interfaces",
-  model: AlterMap.Interface,
-});
-*/
-
-AlterMap.WifiLinkCollection =  Backbone.Collection.extend({
-  db : {
-    changes : true
-  },
-  url: "/wifilinks",
-  model: AlterMap.WifiLink,
 });
 
 //-------- Views 
@@ -256,9 +228,11 @@ AlterMap.NetworkToolboxView = Backbone.Marionette.ItemView.extend({
     AlterMap.vent.trigger('network:export-kml', AlterMap.currentNetwork.id);
   },
   render: function(){
-    $(this.el).html(this.template(
-      {'network_id': AlterMap.currentNetwork.id,
-       'network_name': AlterMap.currentNetwork.get('name')}));
+    if(AlterMap.currentNetwork){
+      $(this.el).html(this.template(
+        {'network_id': AlterMap.currentNetwork.id,
+         'network_name': AlterMap.currentNetwork.get('name')}));
+    }
   }
 });
 
@@ -281,7 +255,7 @@ AlterMap.NodeRowView = Backbone.Marionette.ItemView.extend({
   events: {
     "click": "selectNode"
   },
-  initialize : function(){
+  initialize: function(){
     // we load the template here because they aren't ready at page load
     // because we get them through an ajax request
     this.template = _.template($("#node-row-template").html())
@@ -291,6 +265,7 @@ AlterMap.NodeRowView = Backbone.Marionette.ItemView.extend({
   render: function(){
     var content = this.model.toJSON();
     $(this.el).html(this.template(content));
+    AlterMap.refreshNodeLinks(this.model)
   },
   selectNode: function(evt){
 //    evt.preventDefault();
@@ -307,11 +282,11 @@ AlterMap.NodeListView = Backbone.Marionette.CollectionView.extend({
     _.bindAll(this, 'updateMarker');
   },
   onItemAdded: function(itemView){
-    // only show node markers for the currently selected network
+    // if a network is selected only show node markers for that network
     var node = itemView.model
     if (AlterMap.currentNetwork == null || node.isInCurrentNetwork()){
       if(node.get('coords')!=undefined){
-        node.marker = AlterMap.Map.displayNodeMarker(node);
+        node.marker = AlterMap.Map.createNodeMarker(node);
       }
       else{
         console.log('unpositioned node '+ node.get('name') +', id: '+ node.id);
@@ -329,13 +304,12 @@ AlterMap.NodeListView = Backbone.Marionette.CollectionView.extend({
   },
   onClose: function(){
     AlterMap.Map.resetMarkers();
-  },
+    AlterMap.Map.resetLinkLines();
+   },
   updateMarker: function(node){
     node.marker.destroy();
-    node.marker = AlterMap.Map.displayNodeMarker(node);
-    AlterMap.Map.resetLinkLines();
-    // TODO: refactor
-    AlterMap.wifilinks.fetch();
+    node.marker = AlterMap.Map.createNodeMarker(node);
+    AlterMap.refreshNodeLinks(node);
   }
 });
 
@@ -383,34 +357,27 @@ AlterMap.NodeDetailView = Backbone.Marionette.ItemView.extend({
     AlterMap.vent.trigger('node:destroyed', node_id);
   },
   render: function(){
-//    var devices = this.model.get('devices')
     var devices = this.model.get('devices')
-    console.log(devices);
+    var wifilinks = this.model.get('links') // TODO: should only get links of type "wifi"
     var linkList = [];
-    if(devices!=undefined){
-      devices.forEach(function(device){
-        var interfaces = device.interfaces;
-        if(interfaces!=undefined){
-          interfaces.forEach(function(iface){
-            var wifilinks = AlterMap.wifilinks.where({'macaddr': iface['macaddr']});
-            wifilinks.forEach(function(wifilink){
-              linkData  = wifilink.toJSON();
-              // TODO: this is failing when the first get returns undefined so we are catching it, but need to solve it better
-              try{
-                linkData['station_node'] = AlterMap.nodeFromMAC(wifilink.get('station')).get('name');
-              }
-              catch(e){
-                linkData['station_node'] = '---'
-              }
-              linkList.push(linkData);
-              linkList.sort(function(a, b) {
-                var textA = a.station_node.toUpperCase();
-                var textB = b.station_node.toUpperCase();
-                return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
-              });
-            });
-          });
+    
+    if (wifilinks != undefined){
+      wifilinks.forEach(function(wifilink){
+        linkData  = wifilink;
+        stationNode = AlterMap.nodeFromMAC(wifilink.attributes.station_mac)
+        iface_prefix = wifilink.attributes.interface +": "
+        if (stationNode != undefined){
+          linkData['station_name'] = iface_prefix + stationNode.get("name");
         }
+        else{
+          linkData['station_name'] = iface_prefix + '---';
+        }
+        linkList.push(linkData);
+        linkList.sort(function(a, b) {
+          var textA = a.station_name.toUpperCase();
+          var textB = b.station_name.toUpperCase();
+          return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+        });
       });
     }
     $(this.el).html(this.template({'node': this.model.toJSON(), 'devices': devices, 'links': linkList}));
@@ -422,38 +389,6 @@ AlterMap.NodeDetailView = Backbone.Marionette.ItemView.extend({
   }
 });
 
-AlterMap.LinkLineView = Backbone.Marionette.ItemView.extend({
-  render: function(){
-    var source_node = AlterMap.nodeFromMAC(this.model.get('macaddr'));
-    var target_node = AlterMap.nodeFromMAC(this.model.get('station'));
-    if (source_node != undefined && target_node != undefined){
-      // only show links for the currently selected network
-      if (AlterMap.currentNetwork == null ||
-          (source_node.isInCurrentNetwork() || target_node.isInCurrentNetwork())
-         ){
-        this.model.source_coords = source_node.get('coords');
-        this.model.target_coords = target_node.get('coords');
-        if (this.model.line == undefined){
-          this.model.line = AlterMap.Map.displayLinkLine(this.model);
-        }
-      }
-    }
-  },
-})
-
-AlterMap.WifiLinksView = Backbone.Marionette.CollectionView.extend({
-  itemView: AlterMap.LinkLineView,
-  onItemRemoved: function(itemView){
-    AlterMap.Map.removeLinkLine(itemView.model.line);
-  },
-/*
-  onClose: function(){
-    AlterMap.Map.resetLinkLines();
-  }
-*/
-});
-
-
 //--------
 
 AlterMap.selectNetwork = function(network_id){
@@ -464,10 +399,6 @@ AlterMap.selectNetwork = function(network_id){
     collection: AlterMap.nodes
   });
   AlterMap.sidebarMainRegion.show(nodeListView);
-
-  AlterMap.Map.resetLinkLines();
-  // TODO: this should be refactored to avoid fetching the whole links collection
-  AlterMap.wifilinks.fetch();
 
   AlterMap.Map.zoomToNodes();
   var networkToolboxView = new AlterMap.NetworkToolboxView();
@@ -493,37 +424,42 @@ AlterMap.addNewNode = function(network_id){
 
 AlterMap.saveNodeToCoords = function(node, coords){
   node.set({coords: coords});
+  AlterMap.brokenNode = node;
   node.save();
   if (node == AlterMap.currentNode){
     AlterMap.currentNode = null;
   }
 }
 
-AlterMap.destroyNodeAndLinks = function(node_id){
-  node = AlterMap.nodes.where({'_id': node_id})[0];
-  var links = [];
-  var devices = node.get('devices');
-  if (devices!=undefined){
-    devices.forEach(function(device){
-      ifaces = device.interfaces;
-      if (ifaces!=undefined){
-        ifaces.forEach(function(iface){
-          AlterMap.wifilinks.where({macaddr: iface['macaddr']}).forEach(function(link){
-            links.push(link);
-          });
-          AlterMap.wifilinks.where({station: iface['macaddr']}).forEach(function(link){
-            links.push(link);
-          });        
-        });
-      }
-    }); 
-  }
-  if (links.length>0){
-    links.forEach(function(item){
-      item.destroy();
-    });
-  }
-  node.destroy();
+AlterMap.refreshNodeLinks = function(node){
+    var wifilinks = node.get('links') // TODO: should only get links of type "wifi"
+    if (wifilinks != undefined){
+      wifilinks.forEach(function(wifilink){
+        // only show links for the currently selected network
+        if (node.isInCurrentNetwork()){
+          linkData  = wifilink;
+          stationNode = AlterMap.nodeFromMAC(wifilink.attributes.station_mac)
+          if (stationNode){
+            linkData.source_coords = node.get('coords');
+            linkData.target_coords = stationNode.get('coords');
+
+            if (wifilink.line == undefined){
+              wifilink.line = AlterMap.Map.createLinkLine(linkData);
+            }
+            // if a link line exists, check if it's still current or recreate it
+            else{
+              if (wifilink.line.link == wifilink){
+                AlterMap.Map.displayLinkLine(wifilink)
+              }
+              else {
+                AlterMap.Map.removeLinkLine(wifilink.line);
+                wifilink.line = AlterMap.Map.createLinkLine(wifilink)
+              }
+            }
+          }
+        }
+      });
+    }
 }
 
 AlterMap.setupCouch = function(db_name){
@@ -543,14 +479,11 @@ AlterMap.addInitializer(function(options){
 
   AlterMap.networks = new AlterMap.NetworkCollection();
   AlterMap.nodes = new AlterMap.NodeCollection();
-  AlterMap.wifilinks = new AlterMap.WifiLinkCollection();
 
   var networkSelectView = new AlterMap.NetworkSelectView({collection: AlterMap.networks})
   AlterMap.globalToolboxRegion.show(networkSelectView);
   var nodeListView = new AlterMap.NodeListView({collection: AlterMap.nodes})
   AlterMap.sidebarMainRegion.show(nodeListView);
-  
-  AlterMap.wifiLinksView = new AlterMap.WifiLinksView({collection: AlterMap.wifilinks});
 
   AlterMap.vent.on("network:selected", function(network_id){
     AlterMap.selectNetwork(network_id);
@@ -585,13 +518,11 @@ AlterMap.addInitializer(function(options){
 
   AlterMap.networks.fetch({success: function(){
     AlterMap.nodes.fetch({success: function(){
-      AlterMap.wifilinks.fetch({success: function(){
         AlterMap.Map.zoomToNodes();
         if (AlterMap.networks.length==1){
           AlterMap.vent.trigger("network:selected", AlterMap.networks.at(0).id)
           AlterMap.globalToolboxRegion.close();
         }
-      }});
     }});
   }});
 

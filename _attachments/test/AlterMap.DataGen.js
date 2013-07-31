@@ -96,6 +96,26 @@ AlterMap.DataGen = {
     return device
   },
 
+  _newWifiLink: function(attrs){
+    if (attrs.local_mac==undefined || attrs.station_mac==undefined){
+      throw ('_newWifiLink: missing local macaddress or station macaddress');
+    }
+    if (attrs.local_mac == attrs.station_mac){
+      throw ('_newWifiLink: local and station macaddress cannot be the same');
+    }
+    var wifilink = {
+      type: "wifi", 
+      attributes: {
+        local_mac: attrs.local_mac,
+        station_mac: attrs.station_mac,
+        channel: 4,
+        signal: this._randomSignal()
+      }
+    }
+    return wifilink
+  },
+
+
   generateNode: function(attrs){
     var attrs = attrs || {};
     completed_attrs = this._newNode(attrs);
@@ -119,41 +139,50 @@ AlterMap.DataGen = {
     return device
   },
 
-  generateFullNode: function(attrs){
-  // this method exists separately because calling generateNode and addDevice one after the other results in a couchdb conflict.
+  _newFullNode: function(attrs){
     var attrs = attrs || {};
     var completed_attrs = this._newNode(attrs);
     var node = new AlterMap.Node(completed_attrs);
     var device = this._newDevice(node);
     node.set({'devices': [device]})
+    return node
+  },
+
+  generateFullNode: function(attrs){
+  // this method exists separately because calling generateNode and addDevice one after the other results in a couchdb conflict.
+    node = this._newFullNode(attrs)
     this._save(node);
     return node;
   },
 
-  generateWifiLink: function(attrs){
-    if (attrs.macaddr==undefined || attrs.station==undefined){
-      throw ('generateWifiLink: missing macaddr or station');
+  addWifiLink: function(node, attrs){
+    var wifilink = this._newWifiLink(attrs)
+    var links = node.get('links')
+    if (links == undefined){
+      node.set({'links': [wifilink]});
     }
-    if (attrs.macaddr == attrs.station){
-      throw ('generateWifiLink: macaddr and station cannot be the same');
+    else {
+      links.push(wifilink);
+      node.set({'links': links});
     }
-    var wifilink = new AlterMap.WifiLink({
-      _id: _.uniqueId('wifilink_').toString(),
-      macaddr: attrs.macaddr,
-      station: attrs.station,
-      attributes: { signal: this._randomSignal(), channel: 11 }
-    });
-    this._save(wifilink);
+    this._save(node);
     return wifilink;
+  },
+
+  linkNodes: function(local_node, station_node){
+  // generates reciprocal links between the first interface of the first device of two given nodes
+    local_mac = local_node.get('devices')[0].interfaces[0].macaddr;
+    station_mac = station_node.get('devices')[0].interfaces[0].macaddr;
+    this.addWifiLink(local_node, {local_mac: local_mac, station_mac: station_mac});
+    this.addWifiLink(station_node, {local_mac: station_mac, station_mac: local_mac});
   },
 
   generateFixture: function(attrs){
     var node_count = attrs.node_count || 10;
-
     var networks = new AlterMap.NetworkCollection();
     var nodes = new AlterMap.NodeCollection();
     var devices = [];
-    var wifilinks = new AlterMap.WifiLinkCollection();
+    var wifilinks = [];
 
     var network = this.generateNetwork();
     networks.add(network);
@@ -161,19 +190,18 @@ AlterMap.DataGen = {
     var curr_device, prev_device, curr_iface, prev_iface, node;
 
     for (var i=1; i<=node_count; i++){
-      node = this.generateFullNode({network_id: network.id});
+      node = this._newFullNode({network_id: network.id});
       curr_device = node.get('devices')[0];
       devices.push(curr_device);
       curr_iface = curr_device.interfaces[0];
       if (i>1){
-        prev_device = devices.slice(-2,-1)[0]
+        prev_device = devices.slice(-2,-1)[0];
         prev_iface = prev_device.interfaces[0];
-        var wifilink = this.generateWifiLink({
-          macaddr: prev_iface['macaddr'],
-          station: curr_iface['macaddr']
-        });
-        wifilinks.add(wifilink);        
+        wifilink = this._newWifiLink({local_mac: curr_iface['macaddr'], station_mac: prev_iface['macaddr']});
+        wifilinks.push(wifilink);
+        node.set({'links': [wifilink]});
       }
+      node.save();
       nodes.add(node);
     }
     return {networks: networks, nodes: nodes, wifilinks: wifilinks};
