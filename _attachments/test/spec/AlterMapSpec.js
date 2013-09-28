@@ -40,28 +40,28 @@ describe('AlterMap', function(){
   }
 
   var addOneNodeNetToFixture = function(fixture){
-    var network = AlterMap.DataGen.generateNetwork();
-    fixture.networks.add(network);
-    var node = AlterMap.DataGen.generateNode({name: 'anode', network_id: network.id});
+    var community = AlterMap.DataGen.generateCommunity();
+    fixture.communities.add(community);
+    var node = AlterMap.DataGen.generateNode({name: 'anode', community_id: community.id});
     fixture.nodes.add(node);
   }
 
   var fakeInit = function(fixture){
     // fakes some necessary initialization steps normally run by AlterMap.start()
-    AlterMap.vent.on("network:selected", function(network_id){
-      AlterMap.selectNetwork(network_id);
+    AlterMap.vent.on("community:selected", function(community_id){
+      AlterMap.selectCommunity(community_id);
     });
     
-    AlterMap.vent.on("network:export-kml", function(network_id){
-      AlterMap.exportKML(network_id);
+    AlterMap.vent.on("community:export-kml", function(community_id){
+      AlterMap.exportKML(community_id);
     });
     
     AlterMap.vent.on("node:selected", function(node_id){
       AlterMap.selectNode(node_id);
     });
     
-    AlterMap.vent.on("node:add-new", function(network_id){
-      AlterMap.addNewNode(network_id);
+    AlterMap.vent.on("node:add-new", function(community_id){
+      AlterMap.addNewNode(community_id);
     });
     
     AlterMap.vent.on("node:coords-picked", function(coords){
@@ -72,39 +72,39 @@ describe('AlterMap', function(){
       AlterMap.destroyRelatedData(node_id);
     });
     
-    AlterMap.networks = fixture.networks;
+    AlterMap.communities = fixture.communities;
     AlterMap.nodes = fixture.nodes;
-    AlterMap.currentNetwork = null;
+    AlterMap.currentCommunity = null;
   }
 
   describe('test-data generator', function(){
-    describe('Generated Network', function() {
+    describe('Generated Community', function() {
       beforeEach(function(){
-        this.network = AlterMap.DataGen.generateNetwork();
+        this.community = AlterMap.DataGen.generateCommunity();
       });
 
       it('has a name', function() {
-        expect(this.network.get('name')).not.toBeUndefined();
-        expect(this.network.get('name')).not.toBe('');
+        expect(this.community.get('name')).not.toBeUndefined();
+        expect(this.community.get('name')).not.toBe('');
       });
       it('does not share name with others', function(){
-        var network = AlterMap.DataGen.generateNetwork();
-        expect(this.network.get('name')).not.toBe(network.get('name'));
+        var community = AlterMap.DataGen.generateCommunity();
+        expect(this.community.get('name')).not.toBe(community.get('name'));
       });
       it('can be created with a given name', function(){
-        var network = AlterMap.DataGen.generateNetwork({name: 'mynet'});
-        expect(network.get('name')).toBe('mynet');
+        var community = AlterMap.DataGen.generateCommunity({name: 'mynet'});
+        expect(community.get('name')).toBe('mynet');
       });
       it('can be created with a given id', function(){
-        var network = AlterMap.DataGen.generateNetwork({name: 'mynet', id: 'mynetwork_0'});
-        expect(network.id).toBe('mynetwork_0');
+        var community = AlterMap.DataGen.generateCommunity({name: 'mynet', id: 'mycommunity_0'});
+        expect(community.id).toBe('mycommunity_0');
       });
       it('can be created with center coordinates', function(){
-        var network = AlterMap.DataGen.generateNetwork(
+        var community = AlterMap.DataGen.generateCommunity(
           {name: 'mynet',
            coords: {lon: -64.43404197692871, lat: -31.803275545018444}
           });
-        expect(network.get('coords')).toEqual(
+        expect(community.get('coords')).toEqual(
           {lon: -64.43404197692871, lat: -31.803275545018444}
         );
       });
@@ -126,17 +126,17 @@ describe('AlterMap', function(){
         var node = AlterMap.DataGen.generateNode({name: 'mynode'});
         expect(node.get('name')).toBe('mynode');
       });
-      it('is part of a network', function(){
-        expect(this.node.get('network_id')).not.toBeUndefined();
+      it('is part of a community', function(){
+        expect(this.node.get('community_id')).not.toBeUndefined();
       });
-      it('can be associated to a given network by id', function(){
-        var node = AlterMap.DataGen.generateNode({name: 'mynode', network_id: 'rel_net_0'});
-        expect(node.get('network_id')).toEqual('rel_net_0');
+      it('can be associated to a given community by id', function(){
+        var node = AlterMap.DataGen.generateNode({name: 'mynode', community_id: 'rel_net_0'});
+        expect(node.get('community_id')).toEqual('rel_net_0');
       });
       it('has a set of coordinates', function(){
         expect(this.node.get('coords')).not.toBeUndefined();
       });
-      it('is near network center', function(){
+      it('is near community center', function(){
         var lat_diff = this.node.get('coords').lat - AlterMap.DataGen.default_coords.lat;
         var lon_diff = this.node.get('coords').lon - AlterMap.DataGen.default_coords.lon;
         var distance = Math.sqrt(Math.pow(2,lat_diff)+Math.pow(2,lon_diff))
@@ -186,13 +186,13 @@ describe('AlterMap', function(){
       });
     });
 
-    describe('Generated network fixture', function(){
+    describe('Generated community fixture', function(){
       beforeEach(function(){
         this.fixture = AlterMap.DataGen.generateFixture({ node_count: 10 });
       });
-      it('has the expected number of networks', function(){
-        expect(this.fixture.networks).not.toBeUndefined();
-        expect(this.fixture.networks.length).toBe(1);
+      it('has the expected number of communities', function(){
+        expect(this.fixture.communities).not.toBeUndefined();
+        expect(this.fixture.communities.length).toBe(1);
       });
       it('has the expected number of nodes', function(){
         expect(this.fixture.nodes).not.toBeUndefined();
@@ -244,50 +244,50 @@ describe('AlterMap', function(){
         expect($('#modal #node-detail')).toExist();      
       });
     });
-    describe('NetworkSelectView', function(){
+    describe('CommunitySelectView', function(){
       beforeEach(function(){
-        this.networkSelectView = new AlterMap.NetworkSelectView({collection: this.fixture.networks});
-        AlterMap.globalToolboxRegion.show(this.networkSelectView);
+        this.communitySelectView = new AlterMap.CommunitySelectView({collection: this.fixture.communities});
+        AlterMap.globalToolboxRegion.show(this.communitySelectView);
       });
       afterEach(function() {
         AlterMap.globalToolboxRegion.reset();
-        AlterMap.networkToolboxRegion.reset();
+        AlterMap.communityToolboxRegion.reset();
       });
-      it('shows a select of existing networks', function(){
+      it('shows a select of existing communities', function(){
         // there's 1 empty option
-        expect($('#network-select option').length).toEqual(2);
+        expect($('#community-select option').length).toEqual(2);
       });
-      it('adds a select option when a new network is added', function(){
-        var network = AlterMap.DataGen.generateNetwork({name: 'mynetwork'})
-        this.fixture.networks.add(network);
-        expect($('#network-select option').last()).toHaveText('mynetwork');
+      it('adds a select option when a new community is added', function(){
+        var community = AlterMap.DataGen.generateCommunity({name: 'mycommunity'})
+        this.fixture.communities.add(community);
+        expect($('#community-select option').last()).toHaveText('mycommunity');
       });
-      it('filters the node list when a network is selected', function(){
+      it('filters the node list when a community is selected', function(){
         addOneNodeNetToFixture(this.fixture);
         fakeInit(this.fixture);
-        $("#network-select option:last").attr('selected','selected').change();
+        $("#community-select option:last").attr('selected','selected').change();
         expect($('#nodelist li.node-row').length).toEqual(1);
         last_item = $('#nodelist li.node-row a').last()
         expect(last_item).toHaveText('anode');
       });  
     });
 
-    describe('NetworkToolboxView', function(){
+    describe('CommunityToolboxView', function(){
       afterEach(function() {
         AlterMap.globalToolboxRegion.reset();
-        AlterMap.networkToolboxRegion.reset();
+        AlterMap.communityToolboxRegion.reset();
       });
-      it('shows the Add Node button only when a network is selected', function(){
+      it('shows the Add Node button only when a community is selected', function(){
         expect($('#toolbox #add-node-button')).not.toExist();
         fakeInit(this.fixture);
-        AlterMap.vent.trigger("network:selected", this.fixture.networks.models[0].id)
+        AlterMap.vent.trigger("community:selected", this.fixture.communities.models[0].id)
         expect($('#add-node-link')).toExist();
       });
       it('shows the Add Node form when the Add Node button is clicked', function(){
         fakeInit(this.fixture);
-        the_net = this.fixture.networks.models[0];
-        AlterMap.vent.trigger("network:selected", this.fixture.networks.models[0].id)
-        AlterMap.vent.trigger("node:add-new", AlterMap.currentNetwork.id);
+        the_net = this.fixture.communities.models[0];
+        AlterMap.vent.trigger("community:selected", this.fixture.communities.models[0].id)
+        AlterMap.vent.trigger("node:add-new", AlterMap.currentCommunity.id);
         expect($('#modal #new-node-form')).toExist();
       });
       it('activates node positioning when the form is submitted', function(){
@@ -311,29 +311,29 @@ describe('AlterMap', function(){
       expect($('.olMapViewport')).toExist();
     });
 
-    describe('Network Features', function(){
+    describe('Community Features', function(){
       var node_count = 10;
       beforeEach(function(){
         this.fixture = AlterMap.DataGen.generateFixture({ node_count: node_count });
         fakeInit(this.fixture);
-        AlterMap.currentNetwork = AlterMap.networks.at(0);
+        AlterMap.currentCommunity = AlterMap.communities.at(0);
         // the map features render is connected to the NodeListView
         this.nodeListView = new AlterMap.NodeListView({collection: this.fixture.nodes});
         AlterMap.sidebarMainRegion.show(this.nodeListView);
-        this.networkSelectView = new AlterMap.NetworkSelectView({collection: this.fixture.networks});
-        AlterMap.globalToolboxRegion.show(this.networkSelectView);
+        this.communitySelectView = new AlterMap.CommunitySelectView({collection: this.fixture.communities});
+        AlterMap.globalToolboxRegion.show(this.communitySelectView);
       });
       afterEach(function() {
         AlterMap.sidebarMainRegion.reset();
         AlterMap.globalToolboxRegion.reset();
-        AlterMap.networkToolboxRegion.reset();
+        AlterMap.communityToolboxRegion.reset();
       });
       it('displays a node marker for each node', function(){
         expect(AlterMap.Map.nodesLayer.features.length).toEqual(node_count);
       });
       it('adds a node marker when a node is created', function(){
-        var network = this.fixture.networks.at(0);
-        var node = AlterMap.DataGen.generateNode({name: 'anode', network_id: network.id});
+        var community = this.fixture.communities.at(0);
+        var node = AlterMap.DataGen.generateNode({name: 'anode', community_id: community.id});
         this.fixture.nodes.add(node);
         expect(AlterMap.Map.nodesLayer.features.length).toEqual(node_count+1);
       });
@@ -345,9 +345,9 @@ describe('AlterMap', function(){
       it('shows links between associated nodes', function(){
         expect(AlterMap.Map.wifiLinksLayer.features.length).toEqual(node_count-1);
       });
-      it('filters displayed node markers when a network is selected', function(){
+      it('filters displayed node markers when a community is selected', function(){
         addOneNodeNetToFixture(this.fixture);
-        $("#network-select option:last").attr('selected','selected').change();
+        $("#community-select option:last").attr('selected','selected').change();
         expect(AlterMap.Map.nodesLayer.features.length).toEqual(1);
       });
     });

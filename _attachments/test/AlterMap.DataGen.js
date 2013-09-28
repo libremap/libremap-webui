@@ -47,31 +47,31 @@ AlterMap.DataGen = {
     return this._randomString().match(/.{2}/g).join(':');
   },
 
-  generateNetwork: function(attrs){
+  generateCommunity: function(attrs){
     var attrs = attrs || {};
-    var id = attrs.id || _.uniqueId('network_').toString();
-    var network_name = attrs.name || this._randomString()+'Libre';
+    var id = attrs.id || _.uniqueId('community_').toString();
+    var community_name = attrs.name || this._randomString()+'Libre';
     var coords = attrs.coords || this.default_coords;
     var completed_attrs = {
       _id: id,
-      name: network_name,
+      name: community_name,
       coords: coords
     }
-    var network = new AlterMap.Network(completed_attrs);
-    this._save(network);
-    return network;
+    var community = new AlterMap.Community(completed_attrs);
+    this._save(community);
+    return community;
   },
 
   _newNode: function(attrs){
     var coords = attrs.coords || this._randomCoords();
     var node_name = attrs.name || this._randomString()+'_node';
-    var network_id = attrs.network_id || this.generateNetwork().id;
+    var community_id = attrs.community_id || this.generateCommunity().id;
     var node = {
       _id: _.uniqueId('node_').toString(),
       name: node_name,
       coords: coords,
       elevation: 50,
-      network_id: network_id,
+      community_id: community_id,
     }    
     return node;
   },
@@ -179,18 +179,18 @@ AlterMap.DataGen = {
 
   generateFixture: function(attrs){
     var node_count = attrs.node_count || 10;
-    var networks = new AlterMap.NetworkCollection();
+    var communities = new AlterMap.CommunityCollection();
     var nodes = new AlterMap.NodeCollection();
     var devices = [];
     var wifilinks = [];
 
-    var network = this.generateNetwork();
-    networks.add(network);
+    var community = this.generateCommunity();
+    communities.add(community);
 
     var curr_device, prev_device, curr_iface, prev_iface, node;
 
     for (var i=1; i<=node_count; i++){
-      node = this._newFullNode({network_id: network.id});
+      node = this._newFullNode({community_id: community.id});
       curr_device = node.get('devices')[0];
       devices.push(curr_device);
       curr_iface = curr_device.interfaces[0];
@@ -204,6 +204,6 @@ AlterMap.DataGen = {
       node.save();
       nodes.add(node);
     }
-    return {networks: networks, nodes: nodes, wifilinks: wifilinks};
+    return {communities: communities, nodes: nodes, wifilinks: wifilinks};
   },
 }
