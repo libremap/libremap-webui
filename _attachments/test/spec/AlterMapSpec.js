@@ -77,7 +77,7 @@ describe('AlterMap', function(){
     AlterMap.currentNetwork = null;
   }
 
-  describe('AlterMap test-data generator', function(){
+  describe('test-data generator', function(){
     describe('Generated Network', function() {
       beforeEach(function(){
         this.network = AlterMap.DataGen.generateNetwork();
@@ -298,7 +298,7 @@ describe('AlterMap', function(){
     });
   });
 
-  describe('AlterMap Map', function(){
+  describe('Map', function(){
     beforeEach(function(){
       AlterMap.Map.draw({lat: -31.802967214779812, lon: -64.41782692156015});
 //      stopPersistance();
@@ -331,13 +331,24 @@ describe('AlterMap', function(){
       it('displays a node marker for each node', function(){
         expect(AlterMap.Map.nodesLayer.features.length).toEqual(node_count);
       });
+      it('adds a node marker when a node is created', function(){
+        var network = this.fixture.networks.at(0);
+        var node = AlterMap.DataGen.generateNode({name: 'anode', network_id: network.id});
+        this.fixture.nodes.add(node);
+        expect(AlterMap.Map.nodesLayer.features.length).toEqual(node_count+1);
+      });
+      it('removes the node marker when a node is deleted', function(){
+        var node = this.fixture.nodes.at(0);
+        node.destroy();
+        expect(AlterMap.Map.nodesLayer.features.length).toEqual(node_count-1);
+      });
       it('shows links between associated nodes', function(){
         expect(AlterMap.Map.wifiLinksLayer.features.length).toEqual(node_count-1);
       });
       it('filters displayed node markers when a network is selected', function(){
-          addOneNodeNetToFixture(this.fixture);
-          $("#network-select option:last").attr('selected','selected').change();
-          expect(AlterMap.Map.nodesLayer.features.length).toEqual(1);
+        addOneNodeNetToFixture(this.fixture);
+        $("#network-select option:last").attr('selected','selected').change();
+        expect(AlterMap.Map.nodesLayer.features.length).toEqual(1);
       });
     });
   });

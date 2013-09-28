@@ -431,6 +431,11 @@ AlterMap.saveNodeToCoords = function(node, coords){
   }
 }
 
+AlterMap.destroyNode = function(node_id){
+  var node = AlterMap.nodes.where({'_id': node_id})[0];
+  node.destroy();
+}
+
 AlterMap.refreshNodeLinks = function(node){
     var wifilinks = node.get('links') // TODO: should only get links of type "wifi"
     if (wifilinks != undefined){
@@ -506,7 +511,7 @@ AlterMap.addInitializer(function(options){
   });
 
   AlterMap.vent.on("node:destroyed", function(node_id){
-    AlterMap.destroyNodeAndLinks(node_id);
+    AlterMap.destroyNode(node_id);
   });
   
   /*
