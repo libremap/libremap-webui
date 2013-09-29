@@ -1,24 +1,28 @@
-function (newDoc, oldDoc, userCtx, secObj) {
+function validate(newDoc, oldDoc, userCtx, secObj) {
   // validation according to
   // https://github.com/libre-mesh/libremap/blob/master/doc-api.md
 
-  function required(field, base, message) {
+  function exists(field, base) {
     var base = base ? base : newDoc;
-    if (!(field in base)) {
-      throw({forbidden: message || "Document must have a " + field});
+    return base.hasOwnProperty(field);
+  }
+
+  function required(field, base, message) {
+    if (!exists(field, base)) {
+      throw({forbidden: message || "Document must have a " + field + base});
     }
   }
 
   function unchanged(field) {
-    if (oldDoc && toJSON(oldDoc[field]) != toJSON(newDoc[field]))
+    if (oldDoc && toJSON(oldDoc[field]) != toJSON(newDoc[field])) {
       throw({forbidden: "Field can't be changed: " + field});
+    }
   }
 
   function isType(type, field, base) {
     var base = base ? base : newDoc;
     if (typeof(base[field]) != type) {
-      throw({forbidden: "Field must be a "+type+": " + field);
-      }
+      throw({forbidden: "Field must be a "+type+": " + field});
     }
   }
 
@@ -32,6 +36,7 @@ function (newDoc, oldDoc, userCtx, secObj) {
 
   function isObject(field, base) {
     isType("object", field, base);
+  }
 
   function isVersionString(field, base) {
     var base = base ? base : newDoc;
@@ -45,8 +50,7 @@ function (newDoc, oldDoc, userCtx, secObj) {
     var base = base ? base : newDoc;
     var date = (new Date(base[field])).toISOString();
     if (base[field] != date) {
-      throw({forbidden: (message
-        || "Field "+field+" has to be invariant under (new Date(...)).toISOString() (evaluates to "+date+")") });
+      throw({forbidden: (message || "Field "+field+" has to be invariant under (new Date(...)).toISOString() (evaluates to "+date+")") });
     }
     return date;
   }
@@ -69,11 +73,11 @@ function (newDoc, oldDoc, userCtx, secObj) {
   required('type');
   isString('type');
 
-  if (newDoc.type == 'node') {
+  if (newDoc.type == 'router') {
     required('name');
-    isString('name')
+    isString('name');
 
-    required('ctime')
+    required('ctime');
     unchanged('ctime');
     var ctime = isDate('ctime');
     var compare_time = (new Date( (new Date()).getTime() + 5*60*1000 )).toISOString();
@@ -112,25 +116,28 @@ function (newDoc, oldDoc, userCtx, secObj) {
     if ('aliases' in newDoc) {
       isObject('aliases');
       for (var alias in newDoc['aliases']) {
-        required('type', alias);
-        isString('type', alias);
+        var aliasobj = newDoc['aliases'][alias];
+        required('type', aliasobj);
+        isString('type', aliasobj);
       }
     }
 
     if ('links' in newDoc) {
       isObject('links');
       for (var link in newDoc['links']) {
-        if ('type' in link) {
-          isString('type', link);
+        var linkobj = newDoc['links'][link];
+        if ('type' in linkobj) {
+          isString('type', linkobj);
         }
-        if ('quality' in link) {
-          isNumber('quality', link);
-          var quality = link['quality'];
+        if ('quality' in linkobj) {
+          isNumber('quality', linkobj);
+          var quality = linkobj['quality'];
           if (quality<0 || quality>1) {
             throw({forbidden: 'invalid range: link quality should be between 0 and 1'});
+          }
         }
-        if ('attributes' in link) {
-          isObject('attributes', link);
+        if ('attributes' in linkobj) {
+          isObject('attributes', linkobj);
         }
       }
     }

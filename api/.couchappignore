@@ -1,5 +1,6 @@
 [
   ".*\\.swp$",
   "sample_docs",
-  ".couchappignore"
+  ".couchappignore",
+  "rewrites.json"
 ]
