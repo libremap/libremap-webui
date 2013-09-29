@@ -38,6 +38,11 @@ function validate(newDoc, oldDoc, userCtx, secObj) {
     isType("object", field, base);
   }
 
+  function isArray(field, base) {
+    var base = base ? base : newDoc;
+    Object.prototype.toString.call(base[field]) === '[object Array]';
+  }
+
   function isVersionString(field, base) {
     var base = base ? base : newDoc;
     isString(field, base);
@@ -114,30 +119,33 @@ function validate(newDoc, oldDoc, userCtx, secObj) {
     }
 
     if (exists('aliases')) {
-      isObject('aliases');
-      for (var alias in newDoc['aliases']) {
-        var aliasobj = newDoc['aliases'][alias];
-        required('type', aliasobj);
-        isString('type', aliasobj);
+      isArray('aliases');
+      for (var i=0, alias; alias=newDoc['aliases'][i++];) {
+        required('alias', alias);
+        isString('alias', alias);
+        if (exists('type', alias)) {
+          isString('type', alias);
+        }
       }
     }
 
     if (exists('links')) {
-      isObject('links');
-      for (var link in newDoc['links']) {
-        var linkobj = newDoc['links'][link];
-        if (exists('type', linkobj)) {
-          isString('type', linkobj);
+      isArray('links');
+      for (var i=0, link; link=newDoc['links'][i++];) {
+        required('alias', link);
+        isString('alias', link);
+        if (exists('type', link)) {
+          isString('type', link);
         }
-        if (exists('quality', linkobj)) {
-          isNumber('quality', linkobj);
-          var quality = linkobj['quality'];
+        if (exists('quality', link)) {
+          isNumber('quality', link);
+          var quality = link['quality'];
           if (quality<0 || quality>1) {
             throw({forbidden: 'invalid range: link quality should be between 0 and 1'});
           }
         }
-        if (exists('attributes', linkobj)) {
-          isObject('attributes', linkobj);
+        if (exists('attributes', link)) {
+          isObject('attributes', link);
         }
       }
     }
