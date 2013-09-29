@@ -72,6 +72,8 @@ This document describes the current **API revision 1.0** and contains documentat
       "quality": 0.78,
     }
   },
+  "site": "roof town hall",
+  "community": "Freifunk/Berlin",
   "attributes": {
     "firmware": {
       "name": "meshkit",
