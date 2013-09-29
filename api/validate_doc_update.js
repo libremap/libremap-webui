@@ -9,7 +9,7 @@ function validate(newDoc, oldDoc, userCtx, secObj) {
 
   function required(field, base, message) {
     if (!exists(field, base)) {
-      throw({forbidden: message || "Document must have a " + field + base});
+      throw({forbidden: message || "Document must have a " + field});
     }
   }
 

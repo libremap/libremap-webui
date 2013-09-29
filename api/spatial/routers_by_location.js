@@ -1,8 +1,6 @@
 function map(doc) {
+  var common = require('views/lib/common');
   if (doc.type=='router') {
-    emit(
-        {type: 'Point', coordinates: [ doc.location.lon, doc.location.lat]},
-        doc
-        );
+    emit(common.router_coords(doc), common.strip(doc));
   }
 }
