@@ -50,11 +50,11 @@ AlterMap.DataGen = {
   generateCommunity: function(attrs){
     var attrs = attrs || {};
     var id = attrs.id || _.uniqueId('community_').toString();
-    var community_name = attrs.name || this._randomString()+'Libre';
+    var name = attrs.name || this._randomString()+'Libre';
     var coords = attrs.coords || this.default_coords;
     var completed_attrs = {
       _id: id,
-      name: community_name,
+      name: name,
       coords: coords
     }
     var community = new AlterMap.Community(completed_attrs);
@@ -62,18 +62,20 @@ AlterMap.DataGen = {
     return community;
   },
 
-  _newNode: function(attrs){
+  _newRouter: function(attrs){
     var coords = attrs.coords || this._randomCoords();
-    var node_name = attrs.name || this._randomString()+'_node';
-    var community_id = attrs.community_id || this.generateCommunity().id;
-    var node = {
-      _id: _.uniqueId('node_').toString(),
-      name: node_name,
+    var hostname = attrs.hostname || this._randomString()+'_router';
+    var community = attrs.community || this.generateCommunity().get('name');
+    var node = attrs.node || hostname
+    var router = {
+      _id: _.uniqueId('router_').toString(),
+      hostname: hostname,
       coords: coords,
       elevation: 50,
-      community_id: community_id,
+      community: community,
+      node: node
     }    
-    return node;
+    return router;
   },
 
   _newInterface: function(){
@@ -84,16 +86,6 @@ AlterMap.DataGen = {
                  medium: 'wireless',
                 }
     return iface
-  },
-
-  _newDevice: function(node, attrs){
-    var attrs = attrs || {};
-    var hostname = attrs.hostname || node.get('name')+'--'+ this._randomString();
-    var iface = this._newInterface();
-    var device = {'hostname': hostname,
-                  'interfaces': [iface]
-                 }
-    return device
   },
 
   _newWifiLink: function(attrs){
@@ -116,94 +108,83 @@ AlterMap.DataGen = {
   },
 
 
-  generateNode: function(attrs){
+  generateRouter: function(attrs){
     var attrs = attrs || {};
-    completed_attrs = this._newNode(attrs);
-    var node = new AlterMap.Node(completed_attrs);
-    this._save(node);
-    return node;
+    completed_attrs = this._newRouter(attrs);
+    var router = new AlterMap.Router(completed_attrs);
+    this._save(router);
+    return router;
   },
 
-  addDevice: function(node, attrs){
+  _newFullRouter: function(attrs){
     var attrs = attrs || {};
-    var device = this._newDevice(node, attrs);
-    var devices = node.get('devices')
-    if (devices == undefined){
-      node.set({'devices': [device]});
+    var completed_attrs = this._newRouter(attrs);
+    var router = new AlterMap.Router(completed_attrs);
+    var iface = this._newInterface();
+    router.set({'interfaces': [iface]})
+    return router
+  },
+
+  addInterface: function(router){
+    var iface = this._newInterface();
+    var interfaces = router.get('interfaces')
+    if (interfaces == undefined){
+      router.set({'interfaces': [iface]});
     }
     else {
-      devices.push(device);
-      node.set({'devices': devices});
+      interfaces.push(iface);
+      router.set({'interfaces': interfaces});
     }
-    this._save(node);
-    return device
+    this._save(router);
+    return iface
   },
 
-  _newFullNode: function(attrs){
-    var attrs = attrs || {};
-    var completed_attrs = this._newNode(attrs);
-    var node = new AlterMap.Node(completed_attrs);
-    var device = this._newDevice(node);
-    node.set({'devices': [device]})
-    return node
-  },
-
-  generateFullNode: function(attrs){
-  // this method exists separately because calling generateNode and addDevice one after the other results in a couchdb conflict.
-    node = this._newFullNode(attrs)
-    this._save(node);
-    return node;
-  },
-
-  addWifiLink: function(node, attrs){
+  addWifiLink: function(router, attrs){
     var wifilink = this._newWifiLink(attrs)
-    var links = node.get('links')
+    var links = router.get('links')
     if (links == undefined){
-      node.set({'links': [wifilink]});
+      router.set({'links': [wifilink]});
     }
     else {
       links.push(wifilink);
-      node.set({'links': links});
+      router.set({'links': links});
     }
-    this._save(node);
+    this._save(router);
     return wifilink;
   },
 
-  linkNodes: function(local_node, station_node){
-  // generates reciprocal links between the first interface of the first device of two given nodes
-    local_mac = local_node.get('devices')[0].interfaces[0].macaddr;
-    station_mac = station_node.get('devices')[0].interfaces[0].macaddr;
-    this.addWifiLink(local_node, {local_mac: local_mac, station_mac: station_mac});
-    this.addWifiLink(station_node, {local_mac: station_mac, station_mac: local_mac});
+  linkRouters: function(local_router, station_router){
+  // generates reciprocal links between the first interface of two given routers
+    local_mac = local_router.get('interfaces')[0].macaddr;
+    station_mac = station_router.get('interfaces')[0].macaddr;
+    this.addWifiLink(local_router, {local_mac: local_mac, station_mac: station_mac});
+    this.addWifiLink(station_router, {local_mac: station_mac, station_mac: local_mac});
   },
 
   generateFixture: function(attrs){
-    var node_count = attrs.node_count || 10;
+    var router_count = attrs.router_count || 10;
     var communities = new AlterMap.CommunityCollection();
-    var nodes = new AlterMap.NodeCollection();
-    var devices = [];
+    var routers = new AlterMap.RouterCollection();
     var wifilinks = [];
 
     var community = this.generateCommunity();
     communities.add(community);
 
-    var curr_device, prev_device, curr_iface, prev_iface, node;
+    var curr_iface, prev_iface, router;
 
-    for (var i=1; i<=node_count; i++){
-      node = this._newFullNode({community_id: community.id});
-      curr_device = node.get('devices')[0];
-      devices.push(curr_device);
-      curr_iface = curr_device.interfaces[0];
-      if (i>1){
-        prev_device = devices.slice(-2,-1)[0];
-        prev_iface = prev_device.interfaces[0];
+    for (var i=0; i<router_count; i++){
+      router = this._newFullRouter({community: community.get('name')});
+      curr_iface = router.get('interfaces')[0];
+      if (i>=1){
+        prev_router = routers.at(i-1);
+        prev_iface = prev_router.get('interfaces')[0];
         wifilink = this._newWifiLink({local_mac: curr_iface['macaddr'], station_mac: prev_iface['macaddr']});
         wifilinks.push(wifilink);
-        node.set({'links': [wifilink]});
+        router.set({'links': [wifilink]});
       }
-      node.save();
-      nodes.add(node);
+      router.save();
+      routers.add(router);
     }
-    return {communities: communities, nodes: nodes, wifilinks: wifilinks};
+    return {communities: communities, routers: routers, wifilinks: wifilinks};
   },
 }

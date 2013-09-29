@@ -27,7 +27,7 @@ var ModalRegion = Backbone.Marionette.Region.extend({
 var AlterMap = new Backbone.Marionette.Application();
 
 AlterMap.currentCommunity = null;
-AlterMap.currentNode = null;
+AlterMap.currentRouter = null;
 
 AlterMap.addRegions({
   mapRegion: "#map",
@@ -36,36 +36,33 @@ AlterMap.addRegions({
   sidebarMainRegion: "#sidebar-main",
   globalToolboxRegion: "#global-toolbox",
   communityToolboxRegion: "#community-toolbox",
-//  nodeToolboxRegion: "#node-toolbox",
+//  routerToolboxRegion: "#router-toolbox",
   statusRegion: "#status",
   modalRegion: ModalRegion
 });
 
 
-AlterMap.nodeFromMAC = function (macaddr){
+AlterMap.routerFromMAC = function (macaddr){
 //TODO: this does not scale at all and needs to be implemented in a clean optimized way.
-  var node, devices, matched;
+  var router, matched;
 
 // possible server-side option...
-// node_id = $.couch.db("altermap").view("altermap/nodeByMAC",{success: function(data){console.log(data.rows[0].id)}, keys:["01:35:5C:B3:73:D4"]});
-//AlterMap.nodes.where({'_id': node_id})
-//return node
+// router_id = $.couch.db("altermap").view("altermap/routerByMAC",{success: function(data){console.log(data.rows[0].id)}, keys:["01:35:5C:B3:73:D4"]});
+//AlterMap.routers.where({'_id': router_id})
+//return router
 
-  for (var i=0; i<AlterMap.nodes.length; i++){ 
-    node = AlterMap.nodes.at(i)
-    devices = node.get('devices')
-    if (devices!=undefined){
-      devices.forEach(function(device){
-        ifaces = device.interfaces;
-        ifaces.forEach(function(iface){
-          if(iface.macaddr==macaddr){
-            matched = true;
-          }
-        });
+  for (var i=0; i<AlterMap.routers.length; i++){ 
+    router = AlterMap.routers.at(i)
+    interfaces = router.get('interfaces')
+    if (interfaces!=undefined){
+      interfaces.forEach(function(iface){
+        if(iface.macaddr==macaddr){
+          matched = true;
+        }
       });
     }
     if(matched==true){
-      return node
+      return router
     }
   }
 }
@@ -76,18 +73,18 @@ AlterMap.Community = Backbone.Model.extend({
   url : function() {
     return this.id ? '/communities/' + this.id : '/communities';
   },
-  nodeCount: function(){
+  routerCount: function(){
   },
 });
 
-AlterMap.Node = Backbone.Model.extend({
+AlterMap.Router = Backbone.Model.extend({
   url : function() {
-    // POST to '/nodes' and PUT to '/nodes/:id'
-    return this.id ? '/nodes/' + this.id : '/nodes';
+    // POST to '/routers' and PUT to '/routers/:id'
+    return this.id ? '/routers/' + this.id : '/routers';
   },
 
   save: function(attrs, options) {
-  // remove the line attribute from node links before saving. It should not be persisted.
+  // remove the line attribute from router links before saving. It should not be persisted.
   // TODO: there must be a tidier way of doing this
     if (this.attributes.links){
       this.attributes.links.forEach(function(link){
@@ -106,7 +103,7 @@ AlterMap.Node = Backbone.Model.extend({
 
   isInCurrentCommunity: function(){
     if (AlterMap.currentCommunity != null){
-      if (this.get('community_id') == AlterMap.currentCommunity.id){
+      if ( this.get('community') == AlterMap.currentCommunity.get('name')){
         return true;
       }
     }
@@ -119,7 +116,7 @@ AlterMap.Node = Backbone.Model.extend({
     this.trigger("selected");
     this.collection.select(this);
     }
-    AlterMap.vent.trigger("node:selected", this);
+    AlterMap.vent.trigger("router:selected", this);
     },
 
     deselect: function(){
@@ -151,22 +148,22 @@ AlterMap.CommunityCollection =  Backbone.Collection.extend({
   }
 });
 
-AlterMap.NodeCollection =  Backbone.Collection.extend({
+AlterMap.RouterCollection =  Backbone.Collection.extend({
   db : {
     changes : true
   },
   comparator: function(collection){
     return(collection.get('name'));
   },
-  url: "/nodes",
-  model: AlterMap.Node,
+  url: "/routers",
+  model: AlterMap.Router,
 
   initialize : function(){
     _.bindAll(this, 'select');
   },
 
-  select: function(node){
-    AlterMap.currentNode = node;
+  select: function(router){
+    AlterMap.currentRouter = router;
   }
 
 });
@@ -214,17 +211,17 @@ AlterMap.CommunityToolboxView = Backbone.Marionette.ItemView.extend({
 //  id: 'community-toolbox',
 //  className: 'toolbox',
   events: {
-    'click #add-node-link': 'addNode',
+    'click #add-router-link': 'addRouter',
     'click #export-kml-link': 'exportKML',
 
   },
   initialize : function(){
     this.template = _.template($('#community-toolbox-template').html());
-    _.bindAll(this, 'addNode', 'exportKML');
+    _.bindAll(this, 'addRouter', 'exportKML');
   },
-  addNode: function(evt){
+  addRouter: function(evt){
 //    evt.preventDefault();
-    AlterMap.vent.trigger('node:add-new', AlterMap.currentCommunity.id);
+    AlterMap.vent.trigger('router:add-new', AlterMap.currentCommunity.id);
   },
   exportKML: function(evt){
     AlterMap.vent.trigger('community:export-kml', AlterMap.currentCommunity.id);
@@ -251,85 +248,85 @@ AlterMap.CommunityExportKMLView = Backbone.Marionette.ItemView.extend({
   }
 })
 
-AlterMap.NodeRowView = Backbone.Marionette.ItemView.extend({
+AlterMap.RouterRowView = Backbone.Marionette.ItemView.extend({
   tagName: "li",
-  className: "node-row",
+  className: "router-row",
   events: {
-    "click": "selectNode"
+    "click": "selectRouter"
   },
   initialize: function(){
     // we load the template here because they aren't ready at page load
     // because we get them through an ajax request
-    this.template = _.template($("#node-row-template").html())
-    _.bindAll(this, 'selectNode');
+    this.template = _.template($("#router-row-template").html())
+    _.bindAll(this, 'selectRouter');
 
   },
   render: function(){
     var content = this.model.toJSON();
     $(this.el).html(this.template(content));
-    AlterMap.refreshNodeLinks(this.model)
+    AlterMap.refreshRouterLinks(this.model)
   },
-  selectNode: function(evt){
+  selectRouter: function(evt){
 //    evt.preventDefault();
-    AlterMap.vent.trigger('node:selected', this.model.id);
+    AlterMap.vent.trigger('router:selected', this.model.id);
   }
 })
 
-AlterMap.NodeListView = Backbone.Marionette.CollectionView.extend({
-  itemView: AlterMap.NodeRowView,
+AlterMap.RouterListView = Backbone.Marionette.CollectionView.extend({
+  itemView: AlterMap.RouterRowView,
   tagName: 'ul',
-  id: 'nodelist',
+  id: 'routerlist',
   initialize : function(){
     this.collection.on("change", this.updateMarker);
     _.bindAll(this, 'updateMarker');
   },
   onItemAdded: function(itemView){
-    // if a community is selected only show node markers for that community
-    var node = itemView.model
-    if (AlterMap.currentCommunity == null || node.isInCurrentCommunity()){
-      if(node.get('coords')!=undefined){
-        node.marker = AlterMap.Map.createNodeMarker(node);
+    // if a community is selected only show router markers for that community
+    var router = itemView.model
+    if (AlterMap.currentCommunity == null || router.isInCurrentCommunity()){
+      if(router.get('coords')!=undefined){
+        router.marker = AlterMap.Map.createRouterMarker(router);
       }
       else{
-        console.log('unpositioned node '+ node.get('name') +', id: '+ node.id);
+        console.log('unpositioned router '+ router.get('name') +', id: '+ router.id);
       }
     }
   },
   appendHtml: function(collectionView, itemView, index){
-    // only show nodes for the currently selected community
+    // only show routers for the currently selected community
     if (AlterMap.currentCommunity == null || itemView.model.isInCurrentCommunity()){
         collectionView.$el.append(itemView.el);
     }
   },
   onItemRemoved: function(itemView){
-    AlterMap.Map.removeNodeMarker(itemView.model);
+    AlterMap.Map.removeRouterMarker(itemView.model);
   },
   onClose: function(){
     AlterMap.Map.resetMarkers();
     AlterMap.Map.resetLinkLines();
    },
-  updateMarker: function(node){
-    node.marker.destroy();
-    node.marker = AlterMap.Map.createNodeMarker(node);
-    AlterMap.refreshNodeLinks(node);
+  updateMarker: function(router){
+    router.marker.destroy();
+    router.marker = AlterMap.Map.createRouterMarker(router);
+    AlterMap.refreshRouterLinks(router);
   }
 });
 
-AlterMap.NodeAddView = Backbone.Marionette.ItemView.extend({
+AlterMap.RouterAddView = Backbone.Marionette.ItemView.extend({
   className: "modal",
   events: {
     'click #pick-coords': 'pickCoords'
   },
   initialize: function(){
-    this.template = _.template($("#node-add-template").html());
+    this.template = _.template($("#router-add-template").html());
     _.bindAll(this, 'pickCoords');
   },
   pickCoords: function(){
-    nodeName = $('#new-node-form #node_name').val();
-    if (nodeName!=""){
-      AlterMap.currentNode = new AlterMap.Node({'name': nodeName, 'community_id': AlterMap.currentCommunity.id});
+    routerName = $('#new-router-form #router_hostname').val();
+    if (routerName!=""){
+      AlterMap.currentRouter = new AlterMap.Router({'name': routerName, 'community_id': AlterMap.currentCommunity.id});
       this.close();
-      AlterMap.Map.drawNodeMarker();
+      AlterMap.Map.drawRouterMarker();
     };
   }
 /*
@@ -339,37 +336,36 @@ render: function(){
 */
 });
 
-AlterMap.NodeDetailView = Backbone.Marionette.ItemView.extend({
+AlterMap.RouterDetailView = Backbone.Marionette.ItemView.extend({
   className: "modal",
   events: {
     'click #new-placement': 'newPlacement',
-    'click #delete-node': 'destroyCurrentNode'
+    'click #delete-router': 'destroyCurrentRouter'
   },
   initialize: function(){
-    this.template = _.template($("#node-detail-template").html());
-    _.bindAll(this, 'newPlacement', 'destroyCurrentNode');
+    this.template = _.template($("#router-detail-template").html());
+    _.bindAll(this, 'newPlacement', 'destroyCurrentRouter');
   },
   newPlacement: function(){
     this.close();
-    AlterMap.Map.drawNodeMarker();
+    AlterMap.Map.drawRouterMarker();
   },
-  destroyCurrentNode: function(){
+  destroyCurrentRouter: function(){
     this.close();
-    node_id = AlterMap.currentNode.id
-    AlterMap.vent.trigger('node:destroyed', node_id);
+    router_id = AlterMap.currentRouter.id
+    AlterMap.vent.trigger('router:destroyed', router_id);
   },
   render: function(){
-    var devices = this.model.get('devices')
     var wifilinks = this.model.get('links') // TODO: should only get links of type "wifi"
     var linkList = [];
     
     if (wifilinks != undefined){
       wifilinks.forEach(function(wifilink){
         linkData  = wifilink;
-        stationNode = AlterMap.nodeFromMAC(wifilink.attributes.station_mac)
+        stationRouter = AlterMap.routerFromMAC(wifilink.attributes.station_mac)
         iface_prefix = wifilink.attributes.interface +": "
-        if (stationNode != undefined){
-          linkData['station_name'] = iface_prefix + stationNode.get("name");
+        if (stationRouter != undefined){
+          linkData['station_name'] = iface_prefix + stationRouter.get("name");
         }
         else{
           linkData['station_name'] = iface_prefix + '---';
@@ -382,12 +378,12 @@ AlterMap.NodeDetailView = Backbone.Marionette.ItemView.extend({
         });
       });
     }
-    $(this.el).html(this.template({'node': this.model.toJSON(), 'devices': devices, 'links': linkList}));
+    $(this.el).html(this.template({'router': this.model.toJSON(), 'links': linkList}));
   },
   onClose: function(){
 // TODO: this view is getting instantiated and closed more than once. Need to investigate
-//    AlterMap.currentNode = null;
-//    AlterMap.Map.unselectNodeMarker(this.model);
+//    AlterMap.currentRouter = null;
+//    AlterMap.Map.unselectRouterMarker(this.model);
   }
 });
 
@@ -397,12 +393,12 @@ AlterMap.selectCommunity = function(community_id){
   AlterMap.communities.select(community_id);
   // a new community has been selected, so we re-render the view
   AlterMap.sidebarMainRegion.close();
-  var nodeListView = new AlterMap.NodeListView({
-    collection: AlterMap.nodes
+  var routerListView = new AlterMap.RouterListView({
+    collection: AlterMap.routers
   });
-  AlterMap.sidebarMainRegion.show(nodeListView);
+  AlterMap.sidebarMainRegion.show(routerListView);
 
-  AlterMap.Map.zoomToNodes();
+  AlterMap.Map.zoomToRouters();
   var communityToolboxView = new AlterMap.CommunityToolboxView();
   AlterMap.communityToolboxRegion.show(communityToolboxView);
 }
@@ -411,44 +407,44 @@ AlterMap.exportKML = function(community_id){
   AlterMap.modalRegion.show(new AlterMap.CommunityExportKMLView());
 }
 
-AlterMap.selectNode = function(node_id){
-  var node = AlterMap.nodes.where({'_id': node_id})[0];
-  AlterMap.nodes.select(node);
-  var nodeDetail = new AlterMap.NodeDetailView({model: node});
-  AlterMap.Map.selectNodeMarker(node);
-  AlterMap.modalRegion.show(nodeDetail);
+AlterMap.selectRouter = function(router_id){
+  var router = AlterMap.routers.where({'_id': router_id})[0];
+  AlterMap.routers.select(router);
+  var routerDetail = new AlterMap.RouterDetailView({model: router});
+  AlterMap.Map.selectRouterMarker(router);
+  AlterMap.modalRegion.show(routerDetail);
 }
 
-AlterMap.addNewNode = function(community_id){
-  nodeAddView = new AlterMap.NodeAddView();
-  AlterMap.modalRegion.show(nodeAddView);
+AlterMap.addNewRouter = function(community_id){
+  routerAddView = new AlterMap.RouterAddView();
+  AlterMap.modalRegion.show(routerAddView);
 }
 
-AlterMap.saveNodeToCoords = function(node, coords){
-  node.set({coords: coords});
-  AlterMap.brokenNode = node;
-  node.save();
-  if (node == AlterMap.currentNode){
-    AlterMap.currentNode = null;
+AlterMap.saveRouterToCoords = function(router, coords){
+  router.set({coords: coords});
+  AlterMap.brokenRouter = router;
+  router.save();
+  if (router == AlterMap.currentRouter){
+    AlterMap.currentRouter = null;
   }
 }
 
-AlterMap.destroyNode = function(node_id){
-  var node = AlterMap.nodes.where({'_id': node_id})[0];
-  node.destroy();
+AlterMap.destroyRouter = function(router_id){
+  var router = AlterMap.routers.where({'_id': router_id})[0];
+  router.destroy();
 }
 
-AlterMap.refreshNodeLinks = function(node){
-    var wifilinks = node.get('links') // TODO: should only get links of type "wifi"
+AlterMap.refreshRouterLinks = function(router){
+    var wifilinks = router.get('links') // TODO: should only get links of type "wifi"
     if (wifilinks != undefined){
       wifilinks.forEach(function(wifilink){
         // only show links for the currently selected community
-        if (node.isInCurrentCommunity()){
+        if (router.isInCurrentCommunity()){
           linkData  = wifilink;
-          stationNode = AlterMap.nodeFromMAC(wifilink.attributes.station_mac)
-          if (stationNode){
-            linkData.source_coords = node.get('coords');
-            linkData.target_coords = stationNode.get('coords');
+          stationRouter = AlterMap.routerFromMAC(wifilink.attributes.station_mac)
+          if (stationRouter){
+            linkData.source_coords = router.get('coords');
+            linkData.target_coords = stationRouter.get('coords');
 
             if (wifilink.line == undefined){
               wifilink.line = AlterMap.Map.createLinkLine(linkData);
@@ -485,12 +481,12 @@ AlterMap.addInitializer(function(options){
   AlterMap.setupCouch(db_name);
 
   AlterMap.communities = new AlterMap.CommunityCollection();
-  AlterMap.nodes = new AlterMap.NodeCollection();
+  AlterMap.routers = new AlterMap.RouterCollection();
 
   var communitySelectView = new AlterMap.CommunitySelectView({collection: AlterMap.communities})
   AlterMap.globalToolboxRegion.show(communitySelectView);
-  var nodeListView = new AlterMap.NodeListView({collection: AlterMap.nodes})
-  AlterMap.sidebarMainRegion.show(nodeListView);
+  var routerListView = new AlterMap.RouterListView({collection: AlterMap.routers})
+  AlterMap.sidebarMainRegion.show(routerListView);
 
   AlterMap.vent.on("community:selected", function(community_id){
     AlterMap.selectCommunity(community_id);
@@ -500,32 +496,32 @@ AlterMap.addInitializer(function(options){
     AlterMap.exportKML(community_id);
   });
 
-  AlterMap.vent.on("node:selected", function(node_id){
-    AlterMap.selectNode(node_id);
+  AlterMap.vent.on("router:selected", function(router_id){
+    AlterMap.selectRouter(router_id);
   });
 
-  AlterMap.vent.on("node:add-new", function(community_id){
-    AlterMap.addNewNode(community_id);
+  AlterMap.vent.on("router:add-new", function(community_id){
+    AlterMap.addNewRouter(community_id);
   });
 
-  AlterMap.vent.on("node:coords-picked", function(coords){
-    AlterMap.saveNodeToCoords(AlterMap.currentNode, coords);
+  AlterMap.vent.on("router:coords-picked", function(coords){
+    AlterMap.saveRouterToCoords(AlterMap.currentRouter, coords);
   });
 
-  AlterMap.vent.on("node:destroyed", function(node_id){
-    AlterMap.destroyNode(node_id);
+  AlterMap.vent.on("router:destroyed", function(router_id){
+    AlterMap.destroyRouter(router_id);
   });
   
   /*
-    AlterMap.vent.on("node:selected", function(node){
-    AlterMap.showNode(node);
-    router.navigate("nodes/" + node.id);
+    AlterMap.vent.on("router:selected", function(router){
+    AlterMap.showRouter(router);
+    router.navigate("routers/" + router.id);
     });
   */
 
   AlterMap.communities.fetch({success: function(){
-    AlterMap.nodes.fetch({success: function(){
-        AlterMap.Map.zoomToNodes();
+    AlterMap.routers.fetch({success: function(){
+        AlterMap.Map.zoomToRouters();
         if (AlterMap.communities.length==1){
           AlterMap.vent.trigger("community:selected", AlterMap.communities.at(0).id)
           AlterMap.globalToolboxRegion.close();

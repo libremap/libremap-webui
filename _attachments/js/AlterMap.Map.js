@@ -14,13 +14,13 @@ AlterMap.Map = {
     this._map.addLayers(map_layers);
 
 
-    this.nodesLayer = new OpenLayers.Layer.Vector(
-      "Nodes", {
+    this.routersLayer = new OpenLayers.Layer.Vector(
+      "Routers", {
         eventListeners: {
           'featureselected': function(evt){
             var marker = evt.feature;
-            var node = marker.node;
-            AlterMap.vent.trigger('node:selected', node.id);
+            var router = marker.router;
+            AlterMap.vent.trigger('router:selected', router.id);
           },
           'featureunselected': function(evt){
           },
@@ -28,7 +28,7 @@ AlterMap.Map = {
         }
       })
 
-    this._map.addLayer(this.nodesLayer);
+    this._map.addLayer(this.routersLayer);
 
     this.wifiLinksLayer = new OpenLayers.Layer.Vector(
       "WifiLinks",
@@ -43,7 +43,7 @@ AlterMap.Map = {
     this._map.addLayer(this.wifiLinksLayer);
 
     this.selector = new OpenLayers.Control.SelectFeature(
-      [this.nodesLayer, this.wifiLinksLayer],
+      [this.routersLayer, this.wifiLinksLayer],
       {geometryTypes: ['OpenLayers.Geometry.LineString',
                        'OpenLayers.Geometry.Point']},
       {clickout: true, toggle: true, multiple: false, hover: false}
@@ -51,61 +51,61 @@ AlterMap.Map = {
     this._map.addControl(this.selector);
     this.selector.activate();
 
-    this._map.nodeDraw = new OpenLayers.Control.DrawFeature(
-      this.nodesLayer, OpenLayers.Handler.Point)
-    this._map.nodeDraw.featureAdded = this._positionNodeMarker
-    this._map.addControl(this._map.nodeDraw);
+    this._map.routerDraw = new OpenLayers.Control.DrawFeature(
+      this.routersLayer, OpenLayers.Handler.Point)
+    this._map.routerDraw.featureAdded = this._positionRouterMarker
+    this._map.addControl(this._map.routerDraw);
 
     this._map.addControl(new OpenLayers.Control.MousePosition());
     this._map.addControl(new OpenLayers.Control.LayerSwitcher());
   },
 
-  createNodeMarker: function(node){
-    var coords = node.get('coords');
+  createRouterMarker: function(router){
+    var coords = router.get('coords');
     var point = new OpenLayers.Geometry.Point(coords.lon, coords.lat).transform(
       this._map.displayProjection, this._map.projection);
     var marker = new OpenLayers.Feature.Vector(point);
-    marker.node = node;
-    marker.attributes['name'] = node.get('name');
+    marker.router = router;
+    marker.attributes['name'] = router.get('name');
     marker.attributes['description'] = '';
-    this.nodesLayer.addFeatures([marker]);
+    this.routersLayer.addFeatures([marker]);
     return marker
   },
 
-  removeNodeMarker: function(node){
-    this.nodesLayer.removeFeatures(node.marker, {silent: false});
+  removeRouterMarker: function(router){
+    this.routersLayer.removeFeatures(router.marker, {silent: false});
   },
 
-  drawNodeMarker: function(){
-    this._map.nodeDraw.activate();
+  drawRouterMarker: function(){
+    this._map.routerDraw.activate();
   },
 
-  _positionNodeMarker: function(feature){
+  _positionRouterMarker: function(feature){
     var map = feature.layer.map;
     var mouse_coords = feature.geometry.getBounds().getCenterLonLat()
     coords = mouse_coords.transform(map.projection,
                                     map.displayProjection);
-    map.nodeDraw.deactivate();
-    // a feature will be drawn when the node is saved
+    map.routerDraw.deactivate();
+    // a feature will be drawn when the router is saved
     feature.destroy();
     delete feature;
-    AlterMap.vent.trigger('node:coords-picked', coords)
+    AlterMap.vent.trigger('router:coords-picked', coords)
   },
 
-  selectNodeMarker: function(node){
-    if (this.nodesLayer.selectedFeatures.indexOf(node.marker)<0){
+  selectRouterMarker: function(router){
+    if (this.routersLayer.selectedFeatures.indexOf(router.marker)<0){
       this.selector.unselectAll();
-      this.selector.select(node.marker);
+      this.selector.select(router.marker);
     }
-    var center = node.marker.geometry.getBounds().getCenterLonLat()
+    var center = router.marker.geometry.getBounds().getCenterLonLat()
     this._map.setCenter(center);
   },
   
-  unselectNodeMarker: function(node){
-      this.selector.unselect(node.marker);
+  unselectRouterMarker: function(router){
+      this.selector.unselect(router.marker);
   },
   resetMarkers: function(){
-    this.nodesLayer.removeAllFeatures();
+    this.routersLayer.removeAllFeatures();
   },
 
   displayLinkLine: function(link){
@@ -156,9 +156,9 @@ AlterMap.Map = {
     this._map.destroy();
   },
 
-  zoomToNodes: function(){
-    if (this.nodesLayer.features.length>=1){
-      this._map.zoomToExtent(this.nodesLayer.getDataExtent());
+  zoomToRouters: function(){
+    if (this.routersLayer.features.length>=1){
+      this._map.zoomToExtent(this.routersLayer.getDataExtent());
     }
   },
 
@@ -171,7 +171,7 @@ AlterMap.Map = {
       'foldersName': 'AlterMap KML export',
       'foldersDesc': '', 
     })
-    return kmlFormat.write(this.nodesLayer.features.concat(this.wifiLinksLayer.features))
+    return kmlFormat.write(this.routersLayer.features.concat(this.wifiLinksLayer.features))
   }
 }
 

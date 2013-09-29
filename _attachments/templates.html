@@ -8,29 +8,15 @@
   <textarea id="kml"><%= kml_data %></textarea>
 </script>
 
-<script type="text/template" id="node-row-template">
-  <a href="#nodes/<%= _id %>"><%= name %></a>
+<script type="text/template" id="router-row-template">
+  <a href="#routers/<%= _id %>"><%= hostname %></a>
 </script>
 
-<script type="text/template" id="node-detail-template">
-  <h4 class="modal-title"><%= node.name %></h4>
+<script type="text/template" id="router-detail-template">
+  <h4 class="modal-title"><%= router.hostname %></h4>
   <a class="close" data-dismiss="modal">x</a>
-  <div id="node-detail" class="modal-content">
-    coords: <%= node.coords.lon %>, <%= node.coords.lat %>
-    <h4>devices:</h4>
-    <% _.each(devices, function(device){ %>
-      <div class="device-data">
-        <% if (typeof(device.hostname) != 'undefined') { %>
-        <p><%= device.hostname %></p>
-        <% } %>
-        <% if (typeof(device.hardware) != 'undefined') { %>
-        <p>hardware: <%= device.hardware %></p>
-        <% } %>
-        <% if (typeof(device.firmware) != 'undefined') { %>
-        <p>firmware: <%= device.firmware %></p>
-        <% } %>
-      </div>
-    <% }); %>
+  <div id="router-detail" class="modal-content">
+    coords: <%= router.coords.lon %>, <%= router.coords.lat %>
     <h4>wifi links:</h4>
     <% _.each(links, function(link){ %>
       <div class="link-data">
@@ -42,23 +28,23 @@
       </div>
     <% }); %>
   </div>
-  <input type="button" id="new-placement" class="control bottom-right" value="move node >" />
-  <input type="button" id="delete-node" class="control bottom-right" value="delete node" />
+  <input type="button" id="new-placement" class="control bottom-right" value="move router >" />
+  <input type="button" id="delete-router" class="control bottom-right" value="delete router" />
 </script>
 <script type="text/template" id="community-toolbox-template">
   <h3 class="toolbox-title"><%= community_name %></h3>
   <span class="control">
-    <a id="add-node-link" href="#add-node?community_id=<%= community_id %>">add node</a>
+    <a id="add-router-link" href="#add-router?community_id=<%= community_id %>">add router</a>
   </span>
   <span class="control">
     <a id="export-kml-link" href="#export-kml?community_id=<%= community_id %>">export KML</a>
   </span>
 </script>
-<script type="text/template" id="node-add-template">
-  <h4 class="modal-title">Add node</h4>
+<script type="text/template" id="router-add-template">
+  <h4 class="modal-title">Add router</h4>
   <a class="close" data-dismiss="modal">x</a>
-  <form id="new-node-form" class="modal-content">
-    <label>node name:</label><input id="node_name" name="node_name" value=""></input>
+  <form id="new-router-form" class="modal-content">
+    <label>router name:</label><input id="router_hostname" name="router_hostname" value=""></input>
     <input type="button" id="pick-coords" class="control bottom-right" value="pick coords >" />
   </form>
 </script>

@@ -39,11 +39,11 @@ describe('AlterMap', function(){
     AlterMap.DataGen.PERSIST = false;
   }
 
-  var addOneNodeNetToFixture = function(fixture){
+  var addOneRouterNetToFixture = function(fixture){
     var community = AlterMap.DataGen.generateCommunity();
     fixture.communities.add(community);
-    var node = AlterMap.DataGen.generateNode({name: 'anode', community_id: community.id});
-    fixture.nodes.add(node);
+    var router = AlterMap.DataGen.generateRouter({hostname: 'arouter', community: community.get('name')});
+    fixture.routers.add(router);
   }
 
   var fakeInit = function(fixture){
@@ -56,24 +56,24 @@ describe('AlterMap', function(){
       AlterMap.exportKML(community_id);
     });
     
-    AlterMap.vent.on("node:selected", function(node_id){
-      AlterMap.selectNode(node_id);
+    AlterMap.vent.on("router:selected", function(router_id){
+      AlterMap.selectRouter(router_id);
     });
     
-    AlterMap.vent.on("node:add-new", function(community_id){
-      AlterMap.addNewNode(community_id);
+    AlterMap.vent.on("router:add-new", function(community_id){
+      AlterMap.addNewRouter(community_id);
     });
     
-    AlterMap.vent.on("node:coords-picked", function(coords){
-      AlterMap.saveNodeToCoords(AlterMap.currentNode, coords);
+    AlterMap.vent.on("router:coords-picked", function(coords){
+      AlterMap.saveRouterToCoords(AlterMap.currentRouter, coords);
     });
     
-    AlterMap.vent.on("node:destroyed", function(node_id){
-      AlterMap.destroyRelatedData(node_id);
+    AlterMap.vent.on("router:destroyed", function(router_id){
+      AlterMap.destroyRelatedData(router_id);
     });
     
     AlterMap.communities = fixture.communities;
-    AlterMap.nodes = fixture.nodes;
+    AlterMap.routers = fixture.routers;
     AlterMap.currentCommunity = null;
   }
 
@@ -92,16 +92,16 @@ describe('AlterMap', function(){
         expect(this.community.get('name')).not.toBe(community.get('name'));
       });
       it('can be created with a given name', function(){
-        var community = AlterMap.DataGen.generateCommunity({name: 'mynet'});
-        expect(community.get('name')).toBe('mynet');
+        var community = AlterMap.DataGen.generateCommunity({name: 'mycommunity'});
+        expect(community.get('name')).toBe('mycommunity');
       });
       it('can be created with a given id', function(){
-        var community = AlterMap.DataGen.generateCommunity({name: 'mynet', id: 'mycommunity_0'});
+        var community = AlterMap.DataGen.generateCommunity({name: 'mycommunity', id: 'mycommunity_0'});
         expect(community.id).toBe('mycommunity_0');
       });
       it('can be created with center coordinates', function(){
         var community = AlterMap.DataGen.generateCommunity(
-          {name: 'mynet',
+          {name: 'mycommunity',
            coords: {lon: -64.43404197692871, lat: -31.803275545018444}
           });
         expect(community.get('coords')).toEqual(
@@ -110,75 +110,61 @@ describe('AlterMap', function(){
       });
     });
 
-    describe('Generated Node', function() {
+    describe('Generated Router', function() {
       beforeEach(function(){
-        this.node = AlterMap.DataGen.generateNode();
+        this.router = AlterMap.DataGen.generateRouter();
       });
-      it('has a name', function(){
-        expect(this.node.get('name')).not.toBeUndefined();
-        expect(this.node.get('name')).not.toBe('');
+      it('has a hostname', function(){
+        expect(this.router.get('hostname')).not.toBeUndefined();
+        expect(this.router.get('hostname')).not.toBe('');
       });
-      it('does not share name with others', function(){
-        var node = AlterMap.DataGen.generateNode();
-        expect(this.node.get('name')).not.toBe(node.get('name'));
+      it('does not share hostname with others', function(){
+        var router = AlterMap.DataGen.generateRouter();
+        expect(this.router.get('hostname')).not.toBe(router.get('hostname'));
       });
-      it('can be created with a given name', function(){
-        var node = AlterMap.DataGen.generateNode({name: 'mynode'});
-        expect(node.get('name')).toBe('mynode');
+      it('can be created with a given hostname', function(){
+        var router = AlterMap.DataGen.generateRouter({hostname: 'myrouter'});
+        expect(router.get('hostname')).toBe('myrouter');
       });
       it('is part of a community', function(){
-        expect(this.node.get('community_id')).not.toBeUndefined();
+        expect(this.router.get('community')).not.toBeUndefined();
       });
-      it('can be associated to a given community by id', function(){
-        var node = AlterMap.DataGen.generateNode({name: 'mynode', community_id: 'rel_net_0'});
-        expect(node.get('community_id')).toEqual('rel_net_0');
+      it('can be associated to a given community by name', function(){
+        var router = AlterMap.DataGen.generateRouter({hostname: 'myrouter', community: 'mycommunity'});
+        expect(router.get('community')).toEqual('mycommunity');
+      });
+      it('has a node name set to the hostname by default', function(){
+        expect(this.router.get('node')).toEqual(this.router.get('hostname'));
+      });
+      it('can have a node name that is different from the hostname', function(){
+        var router = AlterMap.DataGen.generateRouter({hostname: 'myrouter', node: 'mynode'});
+        expect(router.get('hostname')).toEqual('myrouter');
+        expect(router.get('node')).toEqual('mynode');
       });
       it('has a set of coordinates', function(){
-        expect(this.node.get('coords')).not.toBeUndefined();
+        expect(this.router.get('coords')).not.toBeUndefined();
       });
       it('is near community center', function(){
-        var lat_diff = this.node.get('coords').lat - AlterMap.DataGen.default_coords.lat;
-        var lon_diff = this.node.get('coords').lon - AlterMap.DataGen.default_coords.lon;
+        var lat_diff = this.router.get('coords').lat - AlterMap.DataGen.default_coords.lat;
+        var lon_diff = this.router.get('coords').lon - AlterMap.DataGen.default_coords.lon;
         var distance = Math.sqrt(Math.pow(2,lat_diff)+Math.pow(2,lon_diff))
-        // this was an empirical value taken from nodes near map edge at zoom lvl 15
+        // this was an empirical value taken from routers near map edge at zoom lvl 15
         expect(distance).toBeLessThan(1.425);
       });
-      it('does not share position with others', function(){
-        var node = AlterMap.DataGen.generateNode();
-        expect([this.node.get('coords'), this.node.get('elevation')])
-          .not.toEqual([node.get('coords'), this.node.get('elevation')]);
-      });
-    });
-
-    describe('Generated Device', function() {
-      beforeEach(function(){
-        this.node = AlterMap.DataGen.generateNode();
-        this.hostname = this.node.get('name')+"--my_device"
-        AlterMap.DataGen.addDevice(this.node, {'hostname': this.hostname});
-        this.device = this.node.get('devices')[0]
-      });
-      it('gets added to a device-less node', function(){
-        expect(this.device['hostname']).toEqual(this.hostname);
-      });
-      it('gets added to the device list of a node', function(){
-        var new_hostname = this.node.get('name')+"--my_other_device"
-        AlterMap.DataGen.addDevice(this.node, {'hostname': new_hostname});
-        this.new_device = this.node.get('devices').slice(-1)[0];
-        expect(this.node.get('devices').length).toEqual(2);
-        expect(this.new_device['hostname']).toEqual(new_hostname);
-      });
-      it('has some valid interface data associated', function(){
-        expect(this.device['interfaces'][0]['macaddr']).not.toBeUndefined()
+      it('can have interfaces added', function(){
+        AlterMap.DataGen.addInterface(this.router);
+        expect(this.router.get('interfaces').length).toEqual(1);
+        expect(this.router.get('interfaces')[0]['macaddr']).not.toBeUndefined()
       });
     });
 
     describe('Generated WifiLink', function() {
       beforeEach(function(){
-        this.node = AlterMap.DataGen.generateNode();
+        this.router = AlterMap.DataGen.generateRouter();
         this.local_mac = AlterMap.DataGen.randomMAC();
         this.station_mac = AlterMap.DataGen.randomMAC();
-        AlterMap.DataGen.addWifiLink(this.node, {local_mac: this.local_mac, station_mac: this.station_mac});
-        this.wifilink = this.node.get('links')[0]
+        AlterMap.DataGen.addWifiLink(this.router, {local_mac: this.local_mac, station_mac: this.station_mac});
+        this.wifilink = this.router.get('links')[0]
       });
       it('can be created with a given local and station macaddress pair', function(){
         expect(this.wifilink.attributes.local_mac).toEqual(this.local_mac);
@@ -188,15 +174,15 @@ describe('AlterMap', function(){
 
     describe('Generated community fixture', function(){
       beforeEach(function(){
-        this.fixture = AlterMap.DataGen.generateFixture({ node_count: 10 });
+        this.fixture = AlterMap.DataGen.generateFixture({ router_count: 10 });
       });
       it('has the expected number of communities', function(){
         expect(this.fixture.communities).not.toBeUndefined();
         expect(this.fixture.communities.length).toBe(1);
       });
-      it('has the expected number of nodes', function(){
-        expect(this.fixture.nodes).not.toBeUndefined();
-        expect(this.fixture.nodes.length).toBe(10);
+      it('has the expected number of routers', function(){
+        expect(this.fixture.routers).not.toBeUndefined();
+        expect(this.fixture.routers.length).toBe(10);
       });
      it('has the expected number of wifilinks', function(){
        expect(this.fixture.wifilinks).not.toBeUndefined();
@@ -206,23 +192,23 @@ describe('AlterMap', function(){
   });
 
   describe('AlterMap Views', function(){
-    var node_count = 10;
+    var router_count = 10;
     beforeEach(function(){
 //      stopPersistance();
 //      startPersistance();
-      this.fixture = AlterMap.DataGen.generateFixture({ node_count: node_count });
-      // the NodeListView calls map methods so we draw it
+      this.fixture = AlterMap.DataGen.generateFixture({ router_count: router_count });
+      // the RouterListView calls map methods so we draw it
       AlterMap.Map.draw(AlterMap.DataGen.default_coords);
     });
     afterEach(function() {
       AlterMap.Map.destroy();
 //      stopPersistance();
     });
-    describe('NodeListView', function(){
+    describe('RouterListView', function(){
       beforeEach(function(){
         fakeInit(this.fixture);
-        this.nodeListView = new AlterMap.NodeListView({collection: this.fixture.nodes});
-        AlterMap.sidebarMainRegion.show(this.nodeListView);
+        this.routerListView = new AlterMap.RouterListView({collection: this.fixture.routers});
+        AlterMap.sidebarMainRegion.show(this.routerListView);
       });
 
       afterEach(function() {
@@ -230,18 +216,18 @@ describe('AlterMap', function(){
         AlterMap.modalRegion.reset();
       });
 
-      it('shows a list of the existing nodes', function(){
-        expect($('#nodelist .node-row').length).toEqual(node_count);
+      it('shows a list of the existing routers', function(){
+        expect($('#routerlist .router-row').length).toEqual(router_count);
       });
-      it('adds a list row when a new node is added', function(){
-          var node = AlterMap.DataGen.generateNode({name: 'mynode'});
-          this.fixture.nodes.add(node);
-          last_item = $('#nodelist li.node-row a').last()
-          expect(last_item).toHaveText('mynode');
+      it('adds a list row when a new router is added', function(){
+          var router = AlterMap.DataGen.generateRouter({hostname: 'myrouter'});
+          this.fixture.routers.add(router);
+          last_item = $('#routerlist li.router-row a').last()
+          expect(last_item).toHaveText('myrouter');
       });
-      it('shows the node detail when a node row is clicked', function(){
-        $(".node-row a").last().trigger("click");
-        expect($('#modal #node-detail')).toExist();      
+      it('shows the router detail when a router row is clicked', function(){
+        $(".router-row a").last().trigger("click");
+        expect($('#modal #router-detail')).toExist();      
       });
     });
     describe('CommunitySelectView', function(){
@@ -262,13 +248,13 @@ describe('AlterMap', function(){
         this.fixture.communities.add(community);
         expect($('#community-select option').last()).toHaveText('mycommunity');
       });
-      it('filters the node list when a community is selected', function(){
-        addOneNodeNetToFixture(this.fixture);
+      it('filters the router list when a community is selected', function(){
+        addOneRouterNetToFixture(this.fixture);
         fakeInit(this.fixture);
         $("#community-select option:last").attr('selected','selected').change();
-        expect($('#nodelist li.node-row').length).toEqual(1);
-        last_item = $('#nodelist li.node-row a').last()
-        expect(last_item).toHaveText('anode');
+        expect($('#routerlist li.router-row').length).toEqual(1);
+        last_item = $('#routerlist li.router-row a').last()
+        expect(last_item).toHaveText('arouter');
       });  
     });
 
@@ -277,22 +263,22 @@ describe('AlterMap', function(){
         AlterMap.globalToolboxRegion.reset();
         AlterMap.communityToolboxRegion.reset();
       });
-      it('shows the Add Node button only when a community is selected', function(){
-        expect($('#toolbox #add-node-button')).not.toExist();
+      it('shows the Add Router button only when a community is selected', function(){
+        expect($('#toolbox #add-router-button')).not.toExist();
         fakeInit(this.fixture);
         AlterMap.vent.trigger("community:selected", this.fixture.communities.models[0].id)
-        expect($('#add-node-link')).toExist();
+        expect($('#add-router-link')).toExist();
       });
-      it('shows the Add Node form when the Add Node button is clicked', function(){
+      it('shows the Add Router form when the Add Router button is clicked', function(){
         fakeInit(this.fixture);
         the_net = this.fixture.communities.models[0];
         AlterMap.vent.trigger("community:selected", this.fixture.communities.models[0].id)
-        AlterMap.vent.trigger("node:add-new", AlterMap.currentCommunity.id);
-        expect($('#modal #new-node-form')).toExist();
+        AlterMap.vent.trigger("router:add-new", AlterMap.currentCommunity.id);
+        expect($('#modal #new-router-form')).toExist();
       });
-      it('activates node positioning when the form is submitted', function(){
+      it('activates router positioning when the form is submitted', function(){
       });
-      it('saves the node location', function(){
+      it('saves the router location', function(){
         $(".olMapViewport").trigger("click");
       });
     });
@@ -312,14 +298,14 @@ describe('AlterMap', function(){
     });
 
     describe('Community Features', function(){
-      var node_count = 10;
+      var router_count = 10;
       beforeEach(function(){
-        this.fixture = AlterMap.DataGen.generateFixture({ node_count: node_count });
+        this.fixture = AlterMap.DataGen.generateFixture({ router_count: router_count });
         fakeInit(this.fixture);
         AlterMap.currentCommunity = AlterMap.communities.at(0);
-        // the map features render is connected to the NodeListView
-        this.nodeListView = new AlterMap.NodeListView({collection: this.fixture.nodes});
-        AlterMap.sidebarMainRegion.show(this.nodeListView);
+        // the map features render is connected to the RouterListView
+        this.routerListView = new AlterMap.RouterListView({collection: this.fixture.routers});
+        AlterMap.sidebarMainRegion.show(this.routerListView);
         this.communitySelectView = new AlterMap.CommunitySelectView({collection: this.fixture.communities});
         AlterMap.globalToolboxRegion.show(this.communitySelectView);
       });
@@ -328,27 +314,27 @@ describe('AlterMap', function(){
         AlterMap.globalToolboxRegion.reset();
         AlterMap.communityToolboxRegion.reset();
       });
-      it('displays a node marker for each node', function(){
-        expect(AlterMap.Map.nodesLayer.features.length).toEqual(node_count);
+      it('displays a router marker for each router', function(){
+        expect(AlterMap.Map.routersLayer.features.length).toEqual(router_count);
       });
-      it('adds a node marker when a node is created', function(){
+      it('adds a router marker when a router is created', function(){
         var community = this.fixture.communities.at(0);
-        var node = AlterMap.DataGen.generateNode({name: 'anode', community_id: community.id});
-        this.fixture.nodes.add(node);
-        expect(AlterMap.Map.nodesLayer.features.length).toEqual(node_count+1);
+        var router = AlterMap.DataGen.generateRouter({hostname: 'arouter', community: community.get('name')});
+        this.fixture.routers.add(router);
+        expect(AlterMap.Map.routersLayer.features.length).toEqual(router_count+1);
       });
-      it('removes the node marker when a node is deleted', function(){
-        var node = this.fixture.nodes.at(0);
-        node.destroy();
-        expect(AlterMap.Map.nodesLayer.features.length).toEqual(node_count-1);
+      it('removes the router marker when a router is deleted', function(){
+        var router = this.fixture.routers.at(0);
+        router.destroy();
+        expect(AlterMap.Map.routersLayer.features.length).toEqual(router_count-1);
       });
-      it('shows links between associated nodes', function(){
-        expect(AlterMap.Map.wifiLinksLayer.features.length).toEqual(node_count-1);
+      it('shows links between associated routers', function(){
+        expect(AlterMap.Map.wifiLinksLayer.features.length).toEqual(router_count-1);
       });
-      it('filters displayed node markers when a community is selected', function(){
-        addOneNodeNetToFixture(this.fixture);
+      it('filters displayed router markers when a community is selected', function(){
+        addOneRouterNetToFixture(this.fixture);
         $("#community-select option:last").attr('selected','selected').change();
-        expect(AlterMap.Map.nodesLayer.features.length).toEqual(1);
+        expect(AlterMap.Map.routersLayer.features.length).toEqual(1);
       });
     });
   });
