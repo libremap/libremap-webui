@@ -1,0 +1,5 @@
+[
+  ".*\\.swp$",
+  "sample_docs",
+  ".couchappignore"
+]
