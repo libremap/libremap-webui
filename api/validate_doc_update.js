@@ -109,11 +109,11 @@ function validate(newDoc, oldDoc, userCtx, secObj) {
       throw({forbidden: 'invalid range: longitude should be between -90 and 90'});
     }
 
-    if ('elev' in newDoc['location']) {
+    if (exists('elev', newDoc['location'])) {
       isNumber('elev', newDoc['location']);
     }
 
-    if ('aliases' in newDoc) {
+    if (exists('aliases')) {
       isObject('aliases');
       for (var alias in newDoc['aliases']) {
         var aliasobj = newDoc['aliases'][alias];
@@ -122,35 +122,35 @@ function validate(newDoc, oldDoc, userCtx, secObj) {
       }
     }
 
-    if ('links' in newDoc) {
+    if (exists('links')) {
       isObject('links');
       for (var link in newDoc['links']) {
         var linkobj = newDoc['links'][link];
-        if ('type' in linkobj) {
+        if (exists('type', linkobj)) {
           isString('type', linkobj);
         }
-        if ('quality' in linkobj) {
+        if (exists('quality', linkobj)) {
           isNumber('quality', linkobj);
           var quality = linkobj['quality'];
           if (quality<0 || quality>1) {
             throw({forbidden: 'invalid range: link quality should be between 0 and 1'});
           }
         }
-        if ('attributes' in linkobj) {
+        if (exists('attributes', linkobj)) {
           isObject('attributes', linkobj);
         }
       }
     }
 
-    if ('site' in newDoc) {
+    if (exists('site')) {
       isString('site');
     }
 
-    if ('community' in newDoc) {
+    if (exists('community')) {
       isString('community');
     }
 
-    if ('attributes' in newDoc) {
+    if (exists('attributes')) {
       isObject('attributes');
     }
   } else {
