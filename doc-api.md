@@ -1,17 +1,17 @@
 # LibreMap API documentation
 
 This document describes the current **API revision 1.0** and contains documentation for:
-* [Nodes](#nodes)
+* [Router](#routers)
 * [History](#history) (todo!)
 
-## Nodes
+## Routers
 
 ### Fields:
 * `_id`: (required, string) a unique identifier; it's recommended to let CouchDB assign a uuid).
 * `_rev`: (required, string) revision of the document (needed for CouchDB replication).
 * `api_rev`: (required, string) currently `1.0`.
-* `type`: (required, string) has to be `"nodes"` for nodes.
-* `name`: (required, string) displayed name of the node.
+* `type`: (required, string) has to be `"router"` for routers.
+* `name`: (required, string) displayed name of the router.
 * `ctime`: (required, string) creation time in UTC of the form `"2013-05-11T13:05:22.000Z"` (is set automatically by update handler).
 * `mtime`: (required, string) modification time, see `ctime`.
 * `location`: (required, object)
@@ -19,15 +19,17 @@ This document describes the current **API revision 1.0** and contains documentat
   * `lon`: (required, number) longitude in degrees, range [-90,90], EPSG:3857.
   * `elev`: (optional, number) elevation in meters above mean sea level.
 * `aliases`: (optional, object): 
-  * keys: aliases under which the node is known (for example in OLSR- or BATMAN-networks). Note that MAC-addresses or other information may be stored here. You may want to use a hash of MAC-addresses for privacy reasons. If you do that, just make sure that the same hash function is used for the `links`, see below.
-  * values: the value is an object with currently only one optional key `type`. Its value may, for example, describe the routing protocol where the node is known under this alias, see the [example](#json-example) below. 
+  * keys: aliases under which the router is known (for example in OLSR- or BATMAN-networks). Note that MAC-addresses or other information may be stored here. You may want to use a hash of MAC-addresses for privacy reasons. If you do that, just make sure that the same hash function is used for the `links`, see below.
+  * values: the value is an object with currently only one optional key `type`. Its value may, for example, describe the routing protocol where the router is known under this alias, see the [example](#json-example) below. 
 * `links`: (optional, object)
-  * keys: an alias name of the remote node.
+  * keys: an alias name of the remote router.
   * values: (required, object):
-    * `type`: (optional, string) the alias type of the remote node, see `aliases` above.
+    * `type`: (optional, string) the alias type of the remote router, see `aliases` above.
     * `quality`: (optional, number) quality of the link, in range [0, 1] where 0 is the poorest and 1 is the best link quality.
     * `attributes`: (optional, object) you may store arbitrary information for a link here, e.g. link information that depends on the routing protocol (like LQ, NLQ and ETX values in OLSR).
-* `attributes`: (optional, object) you may store arbitrary information for the node here.
+* `site`: (optional, string) a site this router belongs to, e.g. `"roof town hall"`.
+* `community`: (optional, string) a community this router belongs to, e.g. `"Freifunk/Berlin"`.
+* `attributes`: (optional, object) you may store arbitrary information for the router here.
 
 ### JSON Example
 ```javascript
@@ -35,8 +37,8 @@ This document describes the current **API revision 1.0** and contains documentat
   "_id": "3f667d6dfb498947e4c365d74900529f",
   "_rev": "3-37410011998c58fefb630bcb7d566f9e",
   "api_rev": "1.0",
-  "type": "node",
-  "name": "awesome-node",
+  "type": "router",
+  "name": "awesome-router",
   "ctime": "2013-05-11T13:05:22.000Z",
   "mtime": "2013-09-12T11:14:12.000Z",
   "location": {
@@ -48,7 +50,7 @@ This document describes the current **API revision 1.0** and contains documentat
     "104.201.0.29": {
       "type": "olsr"
     },
-    "awesome-node.olsr": {
+    "awesome-router.olsr": {
       "type": "olsr"
     },
     "21:13:f1:a5:a2:20": {
