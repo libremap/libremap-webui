@@ -11,7 +11,7 @@ This document describes the current **API revision 1.0** and contains documentat
 * `_rev`: (required, string) revision of the document (needed for CouchDB replication).
 * `api_rev`: (required, string) currently `1.0`.
 * `type`: (required, string) has to be `"router"` for routers.
-* `name`: (required, string) displayed name of the router.
+* `hostname`: (required, string) displayed name of the router.
 * `ctime`: (required, string) creation time in UTC of the form `"2013-05-11T13:05:22.000Z"` (is set automatically by update handler).
 * `mtime`: (required, string) modification time, see `ctime`.
 * `location`: (required, object)
@@ -38,7 +38,7 @@ This document describes the current **API revision 1.0** and contains documentat
   "_rev": "3-37410011998c58fefb630bcb7d566f9e",
   "api_rev": "1.0",
   "type": "router",
-  "name": "awesome-router",
+  "hostname": "awesome-router",
   "ctime": "2013-05-11T13:05:22.000Z",
   "mtime": "2013-09-12T11:14:12.000Z",
   "location": {

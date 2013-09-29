@@ -74,8 +74,8 @@ function validate(newDoc, oldDoc, userCtx, secObj) {
   isString('type');
 
   if (newDoc.type == 'router') {
-    required('name');
-    isString('name');
+    required('hostname');
+    isString('hostname');
 
     required('ctime');
     unchanged('ctime');
