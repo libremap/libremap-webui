@@ -1,5 +1,35 @@
 # LibreMap API documentation
 
+This document describes the current **API revision 1.0** and contains documentation for:
+* [Nodes](#nodes)
+* [History](#history) (todo!)
+
+## Nodes
+
+### Fields:
+* `_id`: (required, string) a unique identifier; it's recommended to let CouchDB assign a uuid).
+* `_rev`: (required, string) revision of the document (needed for CouchDB replication).
+* `api_rev`: (required, string) currently `1.0`.
+* `type`: (required, string) has to be `"nodes"` for nodes.
+* `name`: (required, string) displayed name of the node.
+* `ctime`: (required, string) creation time in UTC of the form `"2013-05-11T13:05:22.000Z"` (is set automatically by update handler).
+* `mtime`: (required, string) modification time, see `ctime`.
+* `location`: (required, object)
+  * `lat`: (required, number) latitude in degrees, range [-180,180], EPSG:3857.
+  * `lon`: (required, number) longitude in degrees, range [-90,90], EPSG:3857.
+  * `elev`: (optional, number) elevation in meters above mean sea level.
+* `aliases`: (optional, object): 
+  * keys: aliases under which the node is known (for example in OLSR- or BATMAN-networks). Note that MAC-addresses or other information may be stored here. You may want to use a hash of MAC-addresses for privacy reasons. If you do that, just make sure that the same hash function is used for the `links`, see below.
+  * values: the value is an object with currently only one optional key `type`. Its value may, for example, describe the routing protocol where the node is known under this alias, see the [example](#json-example) below. 
+* `links`: (optional, object)
+  * keys: an alias name of the remote node.
+  * values: (required, object):
+    * `type`: (optional, string) the alias type of the remote node, see `aliases` above.
+    * `quality`: (optional, number) quality of the link, in range [0, 1] where 0 is the poorest and 1 is the best link quality.
+    * `attributes`: (optional, object) you may store arbitrary information for a link here, e.g. link information that depends on the routing protocol (like LQ, NLQ and ETX values in OLSR).
+* `attributes`: (optional, object) you may store arbitrary information for the node here.
+
+### JSON Example
 ```javascript
 {
   "_id": "3f667d6dfb498947e4c365d74900529f",
