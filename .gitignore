@@ -1,6 +1,5 @@
 syntax: glob
 *~
 *.bak
-.couchapprc
 *.orig
 .*.swp
