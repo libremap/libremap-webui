@@ -69,7 +69,7 @@ This document describes the current **API revision 1.0** and contains documentat
     },
     "52:23:61:a7:a1:56": {
       "type": "batman-adv",
-      "quality": 0.78,
+      "quality": 0.78
     }
   },
   "site": "roof town hall",
