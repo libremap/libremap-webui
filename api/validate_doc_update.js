@@ -1,6 +1,10 @@
 function (newDoc, oldDoc, userCtx, secObj) {
-  function required(field, message /* optional */) {
-    if (!newDoc[field]) {
+  // validation according to
+  // https://github.com/libre-mesh/libremap/blob/master/doc-api.md
+
+  function required(field, base, message) {
+    var base = base ? base : newDoc;
+    if (!(field in base)) {
       throw({forbidden: message || "Document must have a " + field});
     }
   }
@@ -10,18 +14,38 @@ function (newDoc, oldDoc, userCtx, secObj) {
       throw({forbidden: "Field can't be changed: " + field});
   }
 
-  function isNumber(field, message) {
-    if (typeof(newDoc[field]) != "number") {
-      throw({forbidden: "Field must be a number: " + field});
+  function isType(type, field, base) {
+    var base = base ? base : newDoc;
+    if (typeof(base[field]) != type) {
+      throw({forbidden: "Field must be a "+type+": " + field);
+      }
     }
+  }
+
+  function isNumber(field, base) {
+    isType("number", field, base);
+  }
+
+  function isString(field, base) {
+    isType("string", field, base);
+  }
+
+  function isObject(field, base) {
+    isType("object", field, base);
+
+  function isVersionString(field, base) {
+    var base = base ? base : newDoc;
+    isString(field, base);
+    // TODO
   }
 
   // tests if the field is a valid date
   // by checking invariance under ( new Date(...) ).toISOString()
-  function isDate(field, message) {
-    var date = (new Date(newDoc[field])).toISOString();
-    if (newDoc[field] != date) {
-      throw({forbidden: (message 
+  function isDate(field, base, message) {
+    var base = base ? base : newDoc;
+    var date = (new Date(base[field])).toISOString();
+    if (base[field] != date) {
+      throw({forbidden: (message
         || "Field "+field+" has to be invariant under (new Date(...)).toISOString() (evaluates to "+date+")") });
     }
     return date;
@@ -39,36 +63,24 @@ function (newDoc, oldDoc, userCtx, secObj) {
     }
   }
 
+  required('api_rev');
+  isVersionString('api_rev');
+
   required('type');
+  isString('type');
 
   if (newDoc.type == 'node') {
-    // cf. https://github.com/andrenarchy/openwifimap
-    required('hostname');
+    required('name');
+    isString('name')
 
-    required('longitude');
-    isNumber('longitude');
-    if (newDoc['longitude'] < -90 || newDoc['longitude'] > 90) {
-      throw({forbidden: 'invalid range: longitude should be between -90 and 90'});
-    }
-
-    required('latitude');
-    isNumber('latitude');
-    if (newDoc['latitude'] < -180 || newDoc['latitude'] > 180) {
-      throw({forbidden: 'invalid range: latitude should be between -180 and 180'});
-    }
-
-    required('updateInterval');
-    isNumber('updateInterval');
-
-    required('ctime');
+    required('ctime')
     unchanged('ctime');
-    // check ctime and mtime (we allow the date to be 5 minutes in the future).
-    var compare_time = (new Date( (new Date()).getTime() + 5*60*1000 )).toISOString();
     var ctime = isDate('ctime');
+    var compare_time = (new Date( (new Date()).getTime() + 5*60*1000 )).toISOString();
     if (ctime > compare_time) {
       throw({forbidden: 'future dates not allowed in field ctime: ' + newDoc['ctime']})
     }
-    
+
     required('mtime');
     var mtime = isDate('mtime');
     if (mtime > compare_time) {
@@ -77,10 +89,63 @@ function (newDoc, oldDoc, userCtx, secObj) {
     if (mtime < ctime) {
       throw({forbidden: 'mtime < ctime not allowed'});
     }
-  } else if (newDoc.type == 'node_stats') {
-    required('time');
-    isDate('time');
-    required('node_id');
+
+    required('location');
+    isObject('location');
+
+    required('lat', newDoc['location']);
+    isNumber('lat', newDoc['location']);
+    if (newDoc['location']['lat'] < -180 || newDoc['location']['lat'] > 180) {
+      throw({forbidden: 'invalid range: longitude should be between -180 and 180'});
+    }
+
+    required('lon', newDoc['location']);
+    isNumber('lon', newDoc['location']);
+    if (newDoc['location']['lon'] < -90 || newDoc['location']['lon'] > 90) {
+      throw({forbidden: 'invalid range: longitude should be between -90 and 90'});
+    }
+
+    if ('elev' in newDoc['location']) {
+      isNumber('elev', newDoc['location']);
+    }
+
+    if ('aliases' in newDoc) {
+      isObject('aliases');
+      for (var alias in newDoc['aliases']) {
+        required('type', alias);
+        isString('type', alias);
+      }
+    }
+
+    if ('links' in newDoc) {
+      isObject('links');
+      for (var link in newDoc['links']) {
+        if ('type' in link) {
+          isString('type', link);
+        }
+        if ('quality' in link) {
+          isNumber('quality', link);
+          var quality = link['quality'];
+          if (quality<0 || quality>1) {
+            throw({forbidden: 'invalid range: link quality should be between 0 and 1'});
+        }
+        if ('attributes' in link) {
+          isObject('attributes', link);
+        }
+      }
+    }
+
+    if ('site' in newDoc) {
+      isString('site');
+    }
+
+    if ('community' in newDoc) {
+      isString('community');
+    }
+
+    if ('attributes' in newDoc) {
+      isObject('attributes');
+    }
   } else {
     throw({forbidden: 'unrecognized type: ' + newDoc.type});
   }
