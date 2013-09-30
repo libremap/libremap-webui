@@ -1,0 +1,20 @@
+#map {
+    background-color: #f2efe9;
+}
+.olControlAttribution {
+    bottom: 3px;
+    left: 10px;
+    line-height: 9px;
+    font-size: 9px;
+    color: #ccc;
+}
+.toolbox{
+    float: left;
+}
+#main-container {
+    padding:0;
+}
+#kml{
+    width:100%;
+    height: 300px;
+}

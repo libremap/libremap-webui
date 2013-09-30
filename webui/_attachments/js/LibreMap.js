@@ -1,6 +1,6 @@
 // see http://lostechies.com/derickbailey/2012/04/17/managing-a-modal-dialog-with-backbone-and-marionette/
 var ModalRegion = Backbone.Marionette.Region.extend({
-  el: "#modal",
+  el: "#modaldiv",
 
   constructor: function(){
     _.bindAll(this);
@@ -43,14 +43,7 @@ LibreMap.addRegions({
 
 
 LibreMap.routerFromMAC = function (macaddr){
-//TODO: this does not scale at all and needs to be implemented in a clean optimized way.
   var router, matched;
-
-// possible server-side option...
-// router_id = $.couch.db("libremap").view("libremap/routerByMAC",{success: function(data){console.log(data.rows[0].id)}, keys:["01:35:5C:B3:73:D4"]});
-//LibreMap.routers.where({'_id': router_id})
-//return router
-
   for (var i=0; i<LibreMap.routers.length; i++){ 
     router = LibreMap.routers.at(i)
     interfaces = router.get('interfaces')
@@ -210,6 +203,8 @@ LibreMap.CommunitySelectView = Backbone.Marionette.CompositeView.extend({
 LibreMap.CommunityToolboxView = Backbone.Marionette.ItemView.extend({
 //  id: 'community-toolbox',
 //  className: 'toolbox',
+  className: 'nav',
+  tagName: 'ul',
   events: {
     'click #add-router-link': 'addRouter',
     'click #export-kml-link': 'exportKML',
@@ -250,7 +245,6 @@ LibreMap.CommunityExportKMLView = Backbone.Marionette.ItemView.extend({
 
 LibreMap.RouterRowView = Backbone.Marionette.ItemView.extend({
   tagName: "li",
-  className: "router-row",
   events: {
     "click": "selectRouter"
   },
@@ -275,7 +269,8 @@ LibreMap.RouterRowView = Backbone.Marionette.ItemView.extend({
 LibreMap.RouterListView = Backbone.Marionette.CollectionView.extend({
   itemView: LibreMap.RouterRowView,
   tagName: 'ul',
-  id: 'routerlist',
+  className: 'nav nav-list nav-stacked',
+//  id: 'routerlist',
   initialize : function(){
     this.collection.on("change", this.updateMarker);
     _.bindAll(this, 'updateMarker');
@@ -530,7 +525,6 @@ LibreMap.addInitializer(function(options){
         }
     }});
   }});
-
 
 });
 

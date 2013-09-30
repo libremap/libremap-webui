@@ -1,11 +1,19 @@
 <script type="text/template" id="community-select">
-  <select id="community-select" class="control"></select>
+  <select id="community-select"></select>
 </script>
 
 <script type="text/template" id="community-export-kml">
-  <h4 class="modal-title">KML data</h4>
-  <a class="close" data-dismiss="modal">x</a>
-  <textarea id="kml"><%= kml_data %></textarea>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h4 class="modal-title">KML data</h4>
+      </div>
+      <div class="modal-body">
+        <textarea id="kml"><%= kml_data %></textarea>
+      </div>
+    </div>
+  </div>
 </script>
 
 <script type="text/template" id="router-row-template">
@@ -13,40 +21,52 @@
 </script>
 
 <script type="text/template" id="router-detail-template">
-  <h4 class="modal-title"><%= router.hostname %></h4>
-  <a class="close" data-dismiss="modal">x</a>
-  <div id="router-detail" class="modal-content">
-    location: <%= router.location.lon %>, <%= router.location.lat %>
-    <h4>wifi links:</h4>
-    <% _.each(links, function(link){ %>
-      <div class="link-data">
-        <p><%= link.station_name %></p>
-        <p>
-          channel: <%= link.attributes.channel %>
-          signal: <%= link.attributes.signal %>
-        </p>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h4 class="modal-title"><%= router.hostname %></h4>
       </div>
-    <% }); %>
+      <div class="modal-body">
+        location: <%= router.location.lon %>, <%= router.location.lat %>
+        <h4>wifi links:</h4>
+        <% _.each(links, function(link){ %>
+        <div class="link-data">
+          <p><%= link.station_name %></p>
+          <p>
+            channel: <%= link.attributes.channel %>
+            signal: <%= link.attributes.signal %>
+          </p>
+        </div>
+        <% }); %>
+      </div>
+      <div class="modal-footer">
+       <a href="#" data-dismiss="modal" class="btn" id="new-placement">move router</a>
+       <a href="#" data-dismiss="modal" class="btn" id="delete-router">delete router</a>
+       <a href="#" data-dismiss="modal" class="btn btn-primary">Close</a>
+      </div>
+    </div>
   </div>
-  <input type="button" id="new-placement" class="control bottom-right" value="move router >" />
-  <input type="button" id="delete-router" class="control bottom-right" value="delete router" />
 </script>
+
 <script type="text/template" id="community-toolbox-template">
-  <h3 class="toolbox-title"><%= community_name %></h3>
-  <span class="control">
+  <li>
     <a id="add-router-link" href="#add-router?community_id=<%= community_id %>">add router</a>
-  </span>
-  <span class="control">
+  </li>
+  <li>
     <a id="export-kml-link" href="#export-kml?community_id=<%= community_id %>">export KML</a>
-  </span>
+  </li>
 </script>
+
 <script type="text/template" id="router-add-template">
-  <h4 class="modal-title">Add router</h4>
+<div class="modal-dialog">
+  <h4 class="modal-header">Add router</h4>
   <a class="close" data-dismiss="modal">x</a>
   <form id="new-router-form" class="modal-content">
     <label>router name:</label><input id="router_hostname" name="router_hostname" value=""></input>
     <input type="button" id="pick-location" class="control bottom-right" value="pick location >" />
   </form>
+</div>
 </script>
 
 <script type="text/template" id="wifilink-summary-template">

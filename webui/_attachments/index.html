@@ -3,45 +3,55 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LibreMap</title>
-    <link rel="stylesheet" href="css/bootstrap-modal.css">
-    <link rel="stylesheet" href="css/main.css">
+
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/local.css">
   </head>
 
   <body>
-<!-- regions -->
-  <div id="logo"><img width="40" src="images/logo_40px.png"></img></><div>
-  <div class="region" id="toolbar">
-      <div class="region toolbox" id="global-toolbox"></div>
-      <div class="region toolbox" id="community-toolbox"></div>
-      <div class="region toolbox" id="router-toolbox"></div>
+
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner" id="main-navbar">
+        <div class="container-fluid">
+          <a class="brand" href="/">LibreMap</a>
+          <div class="region" id="toolbar">
+            <div class="region toolbox" id="global-toolbox"></div>
+            <div class="region toolbox" id="community-toolbox"></div>
+            <div class="region toolbox" id="router-toolbox"></div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="region" id="map"></div>
-    <div class="region" id="sidebar">
-      <div class="region" id="sidebar-top"></div>
-      <div class="region" id="sidebar-main"></div>
+
+    <div class="container-fluid" id="main-container">
+      <div class="row-fluid"> 
+        <div class="span9">
+          <div id="map"></div>
+        </div>
+
+        <div class="span2">
+          <div class="region" id="sidebar">
+            <div class="region" id="sidebar-top"></div>
+            <div class="region" id="sidebar-main"></div>
+          </div>
+        </div>
+      </div>
     </div>
-  <div class="region" id="status"></div>
-  <div class="region" id="modal"></div>
 
-<!-- Templates -->
-
-
-<!-- End Templates -->
+    <div class="region" id="modaldiv"></div>
 
 
     <script src="http://maps.google.com/maps/api/js?v=3.2&sensor=false"></script>
     <script src="http://openlayers.org/api/OpenLayers.js"></script>
-<!--    <script src="http://openlayers.org/api/2.12/OpenLayers.js"></script> -->
     <script src="js/lib/json2.js"></script>
     <script src="js/lib/underscore-min.js"></script>
     <script src="js/lib/jquery-1.8.1.min.js"></script>
     <script src="js/lib/jquery.couch.js"></script>
-<!--    <script src="js/lib/mustache.js"></script>-->
-    <script src="js/lib/bootstrap-modal.js"></script>
+    <script src="js/lib/bootstrap.min.js"></script>
     <script src="js/lib/backbone-min.js"></script>
 
-<!--    <script src="js/lib/backbone.eventbinder.min.js"></script> -->
     <script src="js/lib/backbone.wreqr.min.js"></script>
     <script src="js/lib/backbone.babysitter.min.js"></script>
     <script src="js/lib/backbone.marionette.min.js"></script>
@@ -50,24 +60,30 @@
     <script src="js/LibreMap.js"></script>
     <script src="js/LibreMap.Map.js"></script>
 
-<!-- uncomment to import data generator for js console experimentation -->
     <script src="test/LibreMap.DataGen.js"></script>
 
-    <script>
-  $(function(){
+<script>
 
-    LibreMap.Map.draw();
+$(function(){
 
-// templates are in a separate file to facilitate testing
-// we load them and on success start the app.
-    $.get('templates.html', function(templates) {
-      $('body').append(templates);
-      LibreMap.start();
-    });
+  LibreMap.Map.draw();
+  
+  // templates are in a separate file to facilitate testing
+  // we load them and on success start the app.
+  $.get('templates.html', function(templates) {
+    $('body').append(templates);
+    LibreMap.start();
   });
+});
 
-    </script>
+$(window).resize(function(){
+  var h = $(window).height();
+  var offsetTop = $('#main-navbar').height();
+  $('body').css('padding-top', (offsetTop));
+  $('#map').css('height', (h - offsetTop));
+}).resize();
 
+</script>
 
   </body>
 </html>
