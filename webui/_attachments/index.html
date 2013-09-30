@@ -3,7 +3,7 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>AlterMap</title>
+    <title>LibreMap</title>
     <link rel="stylesheet" href="css/bootstrap-modal.css">
     <link rel="stylesheet" href="css/main.css">
   </head>
@@ -47,22 +47,22 @@
     <script src="js/lib/backbone.marionette.min.js"></script>
     <script src="js/lib/backbone-couchdb.js"></script>
 
-    <script src="js/AlterMap.js"></script>
-    <script src="js/AlterMap.Map.js"></script>
+    <script src="js/LibreMap.js"></script>
+    <script src="js/LibreMap.Map.js"></script>
 
 <!-- uncomment to import data generator for js console experimentation -->
-    <script src="test/AlterMap.DataGen.js"></script>
+    <script src="test/LibreMap.DataGen.js"></script>
 
     <script>
   $(function(){
 
-    AlterMap.Map.draw();
+    LibreMap.Map.draw();
 
 // templates are in a separate file to facilitate testing
 // we load them and on success start the app.
     $.get('templates.html', function(templates) {
       $('body').append(templates);
-      AlterMap.start();
+      LibreMap.start();
     });
   });
 

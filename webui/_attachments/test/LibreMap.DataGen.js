@@ -1,5 +1,5 @@
 
-AlterMap.DataGen = {
+LibreMap.DataGen = {
 
   default_location: {
     'lat': -31.803275545018444,
@@ -58,7 +58,7 @@ AlterMap.DataGen = {
       name: name,
       location: location
     }
-    var community = new AlterMap.Community(completed_attrs);
+    var community = new LibreMap.Community(completed_attrs);
     this._save(community);
     return community;
   },
@@ -114,7 +114,7 @@ AlterMap.DataGen = {
   generateRouter: function(attrs){
     var attrs = attrs || {};
     completed_attrs = this._newRouter(attrs);
-    var router = new AlterMap.Router(completed_attrs);
+    var router = new LibreMap.Router(completed_attrs);
     this._save(router);
     return router;
   },
@@ -122,7 +122,7 @@ AlterMap.DataGen = {
   _newFullRouter: function(attrs){
     var attrs = attrs || {};
     var completed_attrs = this._newRouter(attrs);
-    var router = new AlterMap.Router(completed_attrs);
+    var router = new LibreMap.Router(completed_attrs);
     var iface = this._newInterface();
     router.set({'interfaces': [iface]})
     return router
@@ -166,8 +166,8 @@ AlterMap.DataGen = {
 
   generateFixture: function(attrs){
     var router_count = attrs.router_count || 10;
-    var communities = new AlterMap.CommunityCollection();
-    var routers = new AlterMap.RouterCollection();
+    var communities = new LibreMap.CommunityCollection();
+    var routers = new LibreMap.RouterCollection();
     var wifilinks = [];
 
     var community = this.generateCommunity();

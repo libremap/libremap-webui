@@ -1,4 +1,4 @@
-AlterMap.Map = {
+LibreMap.Map = {
   _map: null,
   draw: function(){
     this._map = new OpenLayers.Map('map', {
@@ -20,7 +20,7 @@ AlterMap.Map = {
           'featureselected': function(evt){
             var marker = evt.feature;
             var router = marker.router;
-            AlterMap.vent.trigger('router:selected', router.id);
+            LibreMap.vent.trigger('router:selected', router.id);
           },
           'featureunselected': function(evt){
           },
@@ -89,7 +89,7 @@ AlterMap.Map = {
     // a feature will be drawn when the router is saved
     feature.destroy();
     delete feature;
-    AlterMap.vent.trigger('router:coords-picked', coords)
+    LibreMap.vent.trigger('router:coords-picked', coords)
   },
 
   selectRouterMarker: function(router){
@@ -168,7 +168,7 @@ AlterMap.Map = {
       'extractStyles':true,
       'internalProjection': this._map.projection,
       'externalProjection': new OpenLayers.Projection("EPSG:4326"),
-      'foldersName': 'AlterMap KML export',
+      'foldersName': 'LibreMap KML export',
       'foldersDesc': '', 
     })
     return kmlFormat.write(this.routersLayer.features.concat(this.wifiLinksLayer.features))
