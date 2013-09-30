@@ -2,62 +2,26 @@ function validate(newDoc, oldDoc, userCtx, secObj) {
   // validation according to
   // https://github.com/libre-mesh/libremap/blob/master/doc-api.md
 
-  function exists(field, base) {
-    var base = base ? base : newDoc;
-    return base.hasOwnProperty(field);
+  var common = require('views/lib/common');
+
+  function err(msg) {
+    throw({forbidden: msg});
   }
 
-  function required(field, base, message) {
-    if (!exists(field, base)) {
-      throw({forbidden: message || "Document must have a " + field});
+  function required(obj, key) {
+    if (!key) {
+      key = obj;
+      obj = newDoc;
+    }
+    if (!common.exists(obj, key)) {
+      err("key is required in object: " + key);
     }
   }
 
-  function unchanged(field) {
-    if (oldDoc && toJSON(oldDoc[field]) != toJSON(newDoc[field])) {
-      throw({forbidden: "Field can't be changed: " + field});
+  function unchanged(key) {
+    if (oldDoc && toJSON(oldDoc[key]) != toJSON(newDoc[key])) {
+      err("key can't be changed: " + key);
     }
-  }
-
-  function isType(type, field, base) {
-    var base = base ? base : newDoc;
-    if (typeof(base[field]) != type) {
-      throw({forbidden: "Field must be a "+type+": " + field});
-    }
-  }
-
-  function isNumber(field, base) {
-    isType("number", field, base);
-  }
-
-  function isString(field, base) {
-    isType("string", field, base);
-  }
-
-  function isObject(field, base) {
-    isType("object", field, base);
-  }
-
-  function isArray(field, base) {
-    var base = base ? base : newDoc;
-    Object.prototype.toString.call(base[field]) === '[object Array]';
-  }
-
-  function isVersionString(field, base) {
-    var base = base ? base : newDoc;
-    isString(field, base);
-    // TODO
-  }
-
-  // tests if the field is a valid date
-  // by checking invariance under ( new Date(...) ).toISOString()
-  function isDate(field, base, message) {
-    var base = base ? base : newDoc;
-    var date = (new Date(base[field])).toISOString();
-    if (base[field] != date) {
-      throw({forbidden: (message || "Field "+field+" has to be invariant under (new Date(...)).toISOString() (evaluates to "+date+")") });
-    }
-    return date;
   }
 
   function user_is(role) {
@@ -68,100 +32,102 @@ function validate(newDoc, oldDoc, userCtx, secObj) {
     if (user_is('_admin')) {
       return;
     } else {
-      throw({forbidden: 'Only admins are allowed to delete docs.'});
+      err('Only admins are allowed to delete docs.');
     }
   }
 
   required('api_rev');
-  isVersionString('api_rev');
+  common.assertVersionString(newDoc.api_rev, err);
 
   required('type');
-  isString('type');
+  common.assertString(newDoc.type, err);
 
   if (newDoc.type == 'router') {
     required('hostname');
-    isString('hostname');
+    common.assertString(newDoc.hostname, err);
 
     required('ctime');
     unchanged('ctime');
-    var ctime = isDate('ctime');
+    var ctime = newDoc.ctime;
+    common.assertDate(ctime, err);
     var compare_time = (new Date( (new Date()).getTime() + 5*60*1000 )).toISOString();
     if (ctime > compare_time) {
-      throw({forbidden: 'future dates not allowed in field ctime: ' + newDoc['ctime']})
+      err('future dates not allowed in field ctime: ' + newDoc['ctime']);
     }
 
     required('mtime');
-    var mtime = isDate('mtime');
+    var mtime = newDoc.mtime;
+    common.assertDate(mtime, err);
     if (mtime > compare_time) {
-      throw({forbidden: 'future dates not allowed in field mtime: ' + newDoc['mtime']})
+      err('future dates not allowed in field mtime: ' + newDoc['mtime']);
     }
     if (mtime < ctime) {
-      throw({forbidden: 'mtime < ctime not allowed'});
+      err('mtime < ctime not allowed');
     }
 
     required('location');
-    isObject('location');
+    common.assertObject(newDoc.location, err);
 
-    required('lat', newDoc['location']);
-    isNumber('lat', newDoc['location']);
-    if (newDoc['location']['lat'] < -180 || newDoc['location']['lat'] > 180) {
-      throw({forbidden: 'invalid range: longitude should be between -180 and 180'});
+    required(newDoc.location, 'lat');
+    common.assertNumber(newDoc.location.lat, err);
+    if (newDoc.location.lat < -180 || newDoc.location.lat > 180) {
+      err('invalid range: longitude should be between -180 and 180');
     }
 
-    required('lon', newDoc['location']);
-    isNumber('lon', newDoc['location']);
-    if (newDoc['location']['lon'] < -90 || newDoc['location']['lon'] > 90) {
-      throw({forbidden: 'invalid range: longitude should be between -90 and 90'});
+    required(newDoc.location, 'lon');
+    common.assertNumber(newDoc.location.lon, err);
+    if (newDoc.location.lon < -90 || newDoc.location.lon > 90) {
+      err('invalid range: longitude should be between -90 and 90');
     }
 
-    if (exists('elev', newDoc['location'])) {
-      isNumber('elev', newDoc['location']);
+    if (common.exists(newDoc.location, 'elev')) {
+      common.assertNumber(newDoc.location.elev, err);
     }
 
-    if (exists('aliases')) {
-      isArray('aliases');
+    if (common.exists('aliases')) {
+      common.assertArray(newDoc.aliases, err);
       for (var i=0, alias; alias=newDoc['aliases'][i++];) {
-        required('alias', alias);
-        isString('alias', alias);
-        if (exists('type', alias)) {
-          isString('type', alias);
+        required(alias, 'alias');
+        common.assertString(alias.alias, err);
+        if (common.exists(alias, 'type')) {
+          common.assertString(alias.type, err);
         }
       }
     }
 
-    if (exists('links')) {
-      isArray('links');
+    if (common.exists('links')) {
+      common.assertArray(newDoc.links, err);
       for (var i=0, link; link=newDoc['links'][i++];) {
-        required('alias', link);
-        isString('alias', link);
-        if (exists('type', link)) {
-          isString('type', link);
+        required(link, 'alias');
+        common.assertString(link.alias, err);
+        if (common.exists(link, 'type')) {
+          common.assertString(link.type);
         }
-        if (exists('quality', link)) {
-          isNumber('quality', link);
-          var quality = link['quality'];
+        if (common.exists(link, 'quality')) {
+          common.assertNumber(link.quality, err);
+          var quality = link.quality;
           if (quality<0 || quality>1) {
-            throw({forbidden: 'invalid range: link quality should be between 0 and 1'});
+            err('invalid range: link quality should be between 0 and 1');
           }
         }
-        if (exists('attributes', link)) {
-          isObject('attributes', link);
+        if (common.exists(link, 'attributes')) {
+          common.assertObject(link.attributes, err);
         }
       }
     }
 
-    if (exists('site')) {
-      isString('site');
+    if (common.exists('site')) {
+      common.assertString(newDoc.site, err);
     }
 
-    if (exists('community')) {
-      isString('community');
+    if (common.exists('community')) {
+      common.assertString(newDoc.community, err);
     }
 
-    if (exists('attributes')) {
-      isObject('attributes');
+    if (common.exists('attributes')) {
+      common.assertObject(newDoc.attributes, err);
     }
   } else {
-    throw({forbidden: 'unrecognized type: ' + newDoc.type});
+    err('unrecognized type: ' + newDoc.type);
   }
 }

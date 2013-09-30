@@ -6,6 +6,11 @@
     "query": { "key": ":id" }
   },
   {
+    "from": "router/",
+    "method": "POST",
+    "to": "_update/router/"
+  },
+  {
     "from": "router/:id",
     "method": "POST",
     "to": "_update/router/:id"

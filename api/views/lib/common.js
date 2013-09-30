@@ -28,3 +28,49 @@ exports.strip = strip;
 exports.router_coords = function(doc) {
   return {type: 'Point', coordinates: [doc.location.lon, doc.location.lat]};
 }
+
+exports.exists = function(obj, key) {
+  return obj.hasOwnProperty(key);
+}
+
+exports.assertType = function(v, type, err) {
+  if (typeof(v) != type) {
+    err(type+' expected: '+v);
+  }
+}
+
+exports.assertNumber = function (v, err) {
+  return exports.assertType(v, "number", err);
+}
+
+exports.assertString = function (v, err) {
+  return exports.assertType(v, "string", err);
+}
+
+exports.assertObject = function (v, err) {
+  return exports.assertType(v, "object", err);
+}
+
+exports.assertArray = function (v, err) {
+  if (Object.prototype.toString.call(v) !== '[object Array]') {
+    err('Array expected: '+v);
+  }
+}
+
+exports.assertVersionString = function(v, err) {
+  exports.assertString(v, err);
+  // TODO
+}
+
+// tests if the field is a valid date
+// by checking invariance under ( new Date(...) ).toISOString()
+exports.assertDate = function(v, err) {
+  var date = (new Date(v)).toISOString();
+  if (v != date) {
+    err("Date expected: "+v);
+  }
+}
+
+exports.getDate = function () {
+  return (new Date()).toISOString();
+}
