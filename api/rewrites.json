@@ -1,8 +1,9 @@
 [
   {
     "from": "router/:id",
-    "method": "GET"
-    "to": "_view/routers_by_name/:id"
+    "method": "GET",
+    "to": "_view/routers_by_id/",
+    "query": { "key": ":id" }
   },
   {
     "from": "router/:id",
