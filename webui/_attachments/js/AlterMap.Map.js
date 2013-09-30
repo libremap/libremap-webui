@@ -61,8 +61,8 @@ AlterMap.Map = {
   },
 
   createRouterMarker: function(router){
-    var location = router.get('location');
-    var point = new OpenLayers.Geometry.Point(location.lon, location.lat).transform(
+    var coords = router.get('location');
+    var point = new OpenLayers.Geometry.Point(coords.lon, coords.lat).transform(
       this._map.displayProjection, this._map.projection);
     var marker = new OpenLayers.Feature.Vector(point);
     marker.router = router;
@@ -82,14 +82,14 @@ AlterMap.Map = {
 
   _positionRouterMarker: function(feature){
     var map = feature.layer.map;
-    var mouse_location = feature.geometry.getBounds().getCenterLonLat()
-    location = mouse_location.transform(map.projection,
-                                    map.displayProjection);
+    var mouse_coords = feature.geometry.getBounds().getCenterLonLat()
+    var coords = mouse_coords.transform(map.projection,
+                                       map.displayProjection);
     map.routerDraw.deactivate();
     // a feature will be drawn when the router is saved
     feature.destroy();
     delete feature;
-    AlterMap.vent.trigger('router:location-picked', location)
+    AlterMap.vent.trigger('router:coords-picked', coords)
   },
 
   selectRouterMarker: function(router){

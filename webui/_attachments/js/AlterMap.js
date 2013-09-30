@@ -315,13 +315,13 @@ AlterMap.RouterListView = Backbone.Marionette.CollectionView.extend({
 AlterMap.RouterAddView = Backbone.Marionette.ItemView.extend({
   className: "modal",
   events: {
-    'click #pick-location': 'pickLocation'
+    'click #pick-coords': 'pickCoords'
   },
   initialize: function(){
     this.template = _.template($("#router-add-template").html());
-    _.bindAll(this, 'pickLocation');
+    _.bindAll(this, 'pickCoords');
   },
-  pickLocation: function(){
+  pickCoords: function(){
     routerName = $('#new-router-form #router_hostname').val();
     if (routerName!=""){
       AlterMap.currentRouter = new AlterMap.Router({'name': routerName, 'community_id': AlterMap.currentCommunity.id});
@@ -420,9 +420,11 @@ AlterMap.addNewRouter = function(community_id){
   AlterMap.modalRegion.show(routerAddView);
 }
 
-AlterMap.saveRouterToLocation = function(router, location){
-  router.set({location: location});
-  AlterMap.brokenRouter = router;
+AlterMap.saveRouterToCoords = function(router, coords){
+  var loc = router.get("location")
+  loc.lat = coords.lat
+  loc.lon = coords.lon
+  router.set({location: loc});
   router.save();
   if (router == AlterMap.currentRouter){
     AlterMap.currentRouter = null;
@@ -504,8 +506,8 @@ AlterMap.addInitializer(function(options){
     AlterMap.addNewRouter(community_id);
   });
 
-  AlterMap.vent.on("router:location-picked", function(location){
-    AlterMap.saveRouterToLocation(AlterMap.currentRouter, location);
+  AlterMap.vent.on("router:coords-picked", function(coords){
+    AlterMap.saveRouterToCoords(AlterMap.currentRouter, coords);
   });
 
   AlterMap.vent.on("router:destroyed", function(router_id){
