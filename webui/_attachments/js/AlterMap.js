@@ -284,7 +284,7 @@ AlterMap.RouterListView = Backbone.Marionette.CollectionView.extend({
     // if a community is selected only show router markers for that community
     var router = itemView.model
     if (AlterMap.currentCommunity == null || router.isInCurrentCommunity()){
-      if(router.get('coords')!=undefined){
+      if(router.get('location')!=undefined){
         router.marker = AlterMap.Map.createRouterMarker(router);
       }
       else{
@@ -315,13 +315,13 @@ AlterMap.RouterListView = Backbone.Marionette.CollectionView.extend({
 AlterMap.RouterAddView = Backbone.Marionette.ItemView.extend({
   className: "modal",
   events: {
-    'click #pick-coords': 'pickCoords'
+    'click #pick-location': 'pickLocation'
   },
   initialize: function(){
     this.template = _.template($("#router-add-template").html());
-    _.bindAll(this, 'pickCoords');
+    _.bindAll(this, 'pickLocation');
   },
-  pickCoords: function(){
+  pickLocation: function(){
     routerName = $('#new-router-form #router_hostname').val();
     if (routerName!=""){
       AlterMap.currentRouter = new AlterMap.Router({'name': routerName, 'community_id': AlterMap.currentCommunity.id});
@@ -420,8 +420,8 @@ AlterMap.addNewRouter = function(community_id){
   AlterMap.modalRegion.show(routerAddView);
 }
 
-AlterMap.saveRouterToCoords = function(router, coords){
-  router.set({coords: coords});
+AlterMap.saveRouterToLocation = function(router, location){
+  router.set({location: location});
   AlterMap.brokenRouter = router;
   router.save();
   if (router == AlterMap.currentRouter){
@@ -441,10 +441,10 @@ AlterMap.refreshRouterLinks = function(router){
         // only show links for the currently selected community
         if (router.isInCurrentCommunity()){
           linkData  = wifilink;
-          stationRouter = AlterMap.routerFromMAC(wifilink.attributes.station_mac)
+          stationRouter = AlterMap.routerFromMAC(wifilink.alias)
           if (stationRouter){
-            linkData.source_coords = router.get('coords');
-            linkData.target_coords = stationRouter.get('coords');
+            linkData.source_location = router.get('location');
+            linkData.target_location = stationRouter.get('location');
 
             if (wifilink.line == undefined){
               wifilink.line = AlterMap.Map.createLinkLine(linkData);
@@ -504,8 +504,8 @@ AlterMap.addInitializer(function(options){
     AlterMap.addNewRouter(community_id);
   });
 
-  AlterMap.vent.on("router:coords-picked", function(coords){
-    AlterMap.saveRouterToCoords(AlterMap.currentRouter, coords);
+  AlterMap.vent.on("router:location-picked", function(location){
+    AlterMap.saveRouterToLocation(AlterMap.currentRouter, location);
   });
 
   AlterMap.vent.on("router:destroyed", function(router_id){

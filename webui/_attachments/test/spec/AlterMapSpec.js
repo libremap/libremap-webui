@@ -64,8 +64,8 @@ describe('AlterMap', function(){
       AlterMap.addNewRouter(community_id);
     });
     
-    AlterMap.vent.on("router:coords-picked", function(coords){
-      AlterMap.saveRouterToCoords(AlterMap.currentRouter, coords);
+    AlterMap.vent.on("router:location-picked", function(location){
+      AlterMap.saveRouterToLocation(AlterMap.currentRouter, location);
     });
     
     AlterMap.vent.on("router:destroyed", function(router_id){
@@ -102,9 +102,9 @@ describe('AlterMap', function(){
       it('can be created with center coordinates', function(){
         var community = AlterMap.DataGen.generateCommunity(
           {name: 'mycommunity',
-           coords: {lon: -64.43404197692871, lat: -31.803275545018444}
+           location: {lon: -64.43404197692871, lat: -31.803275545018444}
           });
-        expect(community.get('coords')).toEqual(
+        expect(community.get('location')).toEqual(
           {lon: -64.43404197692871, lat: -31.803275545018444}
         );
       });
@@ -133,23 +133,28 @@ describe('AlterMap', function(){
         var router = AlterMap.DataGen.generateRouter({hostname: 'myrouter', community: 'mycommunity'});
         expect(router.get('community')).toEqual('mycommunity');
       });
-      it('has a node name set to the hostname by default', function(){
-        expect(this.router.get('node')).toEqual(this.router.get('hostname'));
+      it('has a site name set to the hostname by default', function(){
+        expect(this.router.get('site')).toEqual(this.router.get('hostname'));
       });
-      it('can have a node name that is different from the hostname', function(){
-        var router = AlterMap.DataGen.generateRouter({hostname: 'myrouter', node: 'mynode'});
+      it('can have a site name that is different from the hostname', function(){
+        var router = AlterMap.DataGen.generateRouter({hostname: 'myrouter', site: 'mysite'});
         expect(router.get('hostname')).toEqual('myrouter');
-        expect(router.get('node')).toEqual('mynode');
+        expect(router.get('site')).toEqual('mysite');
       });
-      it('has a set of coordinates', function(){
-        expect(this.router.get('coords')).not.toBeUndefined();
+      it('has a location', function(){
+        expect(this.router.get('location')).not.toBeUndefined();
       });
-      it('is near community center', function(){
-        var lat_diff = this.router.get('coords').lat - AlterMap.DataGen.default_coords.lat;
-        var lon_diff = this.router.get('coords').lon - AlterMap.DataGen.default_coords.lon;
+      it('is located near the community center', function(){
+        var lat_diff = this.router.get('location').lat - AlterMap.DataGen.default_location.lat;
+        var lon_diff = this.router.get('location').lon - AlterMap.DataGen.default_location.lon;
         var distance = Math.sqrt(Math.pow(2,lat_diff)+Math.pow(2,lon_diff))
         // this was an empirical value taken from routers near map edge at zoom lvl 15
         expect(distance).toBeLessThan(1.425);
+      });
+      it('has an api_rev, ctime and mtime attributes', function(){
+        expect(this.router.get('api_rev')).not.toBeUndefined();
+        expect(this.router.get('ctime')).not.toBeUndefined();
+        expect(this.router.get('mtime')).not.toBeUndefined();
       });
       it('can have interfaces added', function(){
         AlterMap.DataGen.addInterface(this.router);
@@ -161,14 +166,11 @@ describe('AlterMap', function(){
     describe('Generated WifiLink', function() {
       beforeEach(function(){
         this.router = AlterMap.DataGen.generateRouter();
-        this.local_mac = AlterMap.DataGen.randomMAC();
         this.station_mac = AlterMap.DataGen.randomMAC();
-        AlterMap.DataGen.addWifiLink(this.router, {local_mac: this.local_mac, station_mac: this.station_mac});
-        this.wifilink = this.router.get('links')[0]
+        AlterMap.DataGen.addWifiLink(this.router, {station_mac: this.station_mac});
       });
-      it('can be created with a given local and station macaddress pair', function(){
-        expect(this.wifilink.attributes.local_mac).toEqual(this.local_mac);
-        expect(this.wifilink.attributes.station_mac).toEqual(this.station_mac);
+      it('can be created with a given station macaddress', function(){
+        expect(this.router.get('links')[0].alias).toEqual(this.station_mac);
       });
     });
 
@@ -198,7 +200,7 @@ describe('AlterMap', function(){
 //      startPersistance();
       this.fixture = AlterMap.DataGen.generateFixture({ router_count: router_count });
       // the RouterListView calls map methods so we draw it
-      AlterMap.Map.draw(AlterMap.DataGen.default_coords);
+      AlterMap.Map.draw(AlterMap.DataGen.default_location);
     });
     afterEach(function() {
       AlterMap.Map.destroy();

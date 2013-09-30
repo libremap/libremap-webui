@@ -16,7 +16,7 @@
   <h4 class="modal-title"><%= router.hostname %></h4>
   <a class="close" data-dismiss="modal">x</a>
   <div id="router-detail" class="modal-content">
-    coords: <%= router.coords.lon %>, <%= router.coords.lat %>
+    location: <%= router.location.lon %>, <%= router.location.lat %>
     <h4>wifi links:</h4>
     <% _.each(links, function(link){ %>
       <div class="link-data">
@@ -45,7 +45,7 @@
   <a class="close" data-dismiss="modal">x</a>
   <form id="new-router-form" class="modal-content">
     <label>router name:</label><input id="router_hostname" name="router_hostname" value=""></input>
-    <input type="button" id="pick-coords" class="control bottom-right" value="pick coords >" />
+    <input type="button" id="pick-location" class="control bottom-right" value="pick location >" />
   </form>
 </script>
 
