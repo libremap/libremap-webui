@@ -1,27 +1,38 @@
 [
-    {
-        "from": "update_node/*",
-        "to": "_update/node/*"
-    },
-    {
-        "from": "view_nodes_spatial",
-        "to": "_spatial/nodes"
-    },
-    {
-        "from": "view_nodes_coarse",
-        "to": "_view/nodes_coarse",
-        "query": {"group": "true"}
-    },
-    {
-        "from": "view_nodes",
-        "to": "_view/nodes"
-    },
-    {
-        "from": "db",
-        "to": "../../"
-    },
-    {
-        "from": "db/*",
-        "to": "../../*"
-    }
+  {
+    "from": "router/:id",
+    "method": "GET"
+    "to": "_view/routers_by_name/:id"
+  },
+  {
+    "from": "router/:id",
+    "method": "POST",
+    "to": "_update/router/:id"
+  },
+  {
+    "from": "router/:id",
+    "method": "PUT",
+    "to": "_update/router/:id"
+  },
+  {
+    "from": "router/:id",
+    "method": "PUT",
+    "to": "_update/router/:id"
+  },
+  {
+    "from": "routers_by_location",
+    "to": "_spatial/routers_by_location"
+  },
+  {
+    "from": "routers_by_location_stripped",
+    "to": "_spatial/routers_by_location_stripped"
+  },
+  {
+    "from": "db",
+    "to": "../../"
+  },
+  {
+    "from": "db/*",
+    "to": "../../*"
+  }
 ]
