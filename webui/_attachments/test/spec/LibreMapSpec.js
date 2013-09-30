@@ -219,17 +219,17 @@ describe('LibreMap', function(){
       });
 
       it('shows a list of the existing routers', function(){
-        expect($('#routerlist .router-row').length).toEqual(router_count);
+        expect($('#routerlist li').length).toEqual(router_count);
       });
       it('adds a list row when a new router is added', function(){
           var router = LibreMap.DataGen.generateRouter({hostname: 'myrouter'});
           this.fixture.routers.add(router);
-          last_item = $('#routerlist li.router-row a').last()
+          last_item = $('#routerlist li a').last()
           expect(last_item).toHaveText('myrouter');
       });
       it('shows the router detail when a router row is clicked', function(){
-        $(".router-row a").last().trigger("click");
-        expect($('#modal #router-detail')).toExist();      
+        $("#routerlist li a").last().click();
+        expect($('#router-detail')).toExist()
       });
     });
     describe('CommunitySelectView', function(){
@@ -254,8 +254,8 @@ describe('LibreMap', function(){
         addOneRouterNetToFixture(this.fixture);
         fakeInit(this.fixture);
         $("#community-select option:last").attr('selected','selected').change();
-        expect($('#routerlist li.router-row').length).toEqual(1);
-        last_item = $('#routerlist li.router-row a').last()
+        expect($('#routerlist li').length).toEqual(1);
+        last_item = $('#routerlist li a').last()
         expect(last_item).toHaveText('arouter');
       });  
     });
@@ -276,7 +276,7 @@ describe('LibreMap', function(){
         the_net = this.fixture.communities.models[0];
         LibreMap.vent.trigger("community:selected", this.fixture.communities.models[0].id)
         LibreMap.vent.trigger("router:add-new", LibreMap.currentCommunity.id);
-        expect($('#modal #new-router-form')).toExist();
+        expect($('#modaldiv #new-router-form')).toExist();
       });
       it('activates router positioning when the form is submitted', function(){
       });

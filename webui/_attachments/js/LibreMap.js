@@ -270,7 +270,7 @@ LibreMap.RouterListView = Backbone.Marionette.CollectionView.extend({
   itemView: LibreMap.RouterRowView,
   tagName: 'ul',
   className: 'nav nav-list nav-stacked',
-//  id: 'routerlist',
+  id: 'routerlist',
   initialize : function(){
     this.collection.on("change", this.updateMarker);
     _.bindAll(this, 'updateMarker');
@@ -333,6 +333,7 @@ render: function(){
 
 LibreMap.RouterDetailView = Backbone.Marionette.ItemView.extend({
   className: "modal",
+  id: "router-detail",
   events: {
     'click #new-placement': 'newPlacement',
     'click #delete-router': 'destroyCurrentRouter'
