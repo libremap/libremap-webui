@@ -1,5 +1,9 @@
 [
   {
+    "from": "",
+    "to": "index.html"
+  },
+  {
     "from": "router/:id",
     "method": "GET",
     "to": "../../:id"
