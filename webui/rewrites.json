@@ -4,15 +4,15 @@
     "to": "index.html"
   },
   {
-    "from": "libremap/*",
-    "to": "../../../libremap/*"
+    "from": "/api/*",
+    "to": "../../_design/libremap-api/_rewrite/*"
   },
   {
-    "from": "libremap/",
-    "to": "../../../libremap/"
+    "from": "/api/",
+    "to": "../../_design/libremap-api/_rewrite/"
   },
   {
     "from": "/*",
     "to": "/*"
-  }
+  },
 ]
