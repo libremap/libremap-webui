@@ -1,4 +1,4 @@
-# LibreMap installation guide
+# LibreMap install documentation
 
 ## Prerequisites
 * [CouchDB](https://couchdb.apache.org/) 1.3 or newer.
