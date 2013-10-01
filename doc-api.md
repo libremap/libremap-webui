@@ -15,8 +15,8 @@ This document describes the current **API revision 1.0** and contains documentat
 * `ctime`: (required, string) creation time in UTC of the form `"2013-05-11T13:05:22.000Z"` (is set automatically by update handler).
 * `mtime`: (required, string) modification time, see `ctime`.
 * `location`: (required, object)
-  * `lat`: (required, number) latitude in degrees, range [-180,180], EPSG:3857.
-  * `lon`: (required, number) longitude in degrees, range [-90,90], EPSG:3857.
+  * `lat`: (required, number) latitude in degrees, range [-90,90], EPSG:3857.
+  * `lon`: (required, number) longitude in degrees, range [-180,180], EPSG:3857.
   * `elev`: (optional, number) elevation in meters above mean sea level.
 * `aliases`: (optional, array): each element is an object with the following keys:
   * `alias`: (required, string): alias name under which the router is known (for example in OLSR- or BATMAN-networks). Note that MAC-addresses or other information may be stored here. You may want to use a hash of MAC-addresses for privacy reasons. If you do that, just make sure that the same hash function is used for the `links`, see below.
@@ -41,8 +41,8 @@ This document describes the current **API revision 1.0** and contains documentat
   "ctime": "2013-05-11T13:05:22.000Z",
   "mtime": "2013-09-12T11:14:12.000Z",
   "location": {
-    "lon": -64.424677,
     "lat": -31.805412,
+    "lon": -64.424677,
     "elev": 50
   },
   "aliases": [

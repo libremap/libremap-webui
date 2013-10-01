@@ -70,14 +70,14 @@ function validate(newDoc, oldDoc, userCtx, secObj) {
 
     required(newDoc.location, 'lat');
     common.assertNumber(newDoc.location.lat, err);
-    if (newDoc.location.lat < -180 || newDoc.location.lat > 180) {
-      err('invalid range: longitude should be between -180 and 180');
+    if (newDoc.location.lat < -90 || newDoc.location.lat > 90) {
+      err('invalid range: longitude should be between -90 and 90');
     }
 
     required(newDoc.location, 'lon');
     common.assertNumber(newDoc.location.lon, err);
-    if (newDoc.location.lon < -90 || newDoc.location.lon > 90) {
-      err('invalid range: longitude should be between -90 and 90');
+    if (newDoc.location.lon < -180 || newDoc.location.lon > 180) {
+      err('invalid range: longitude should be between -180 and 180');
     }
 
     if (common.exists(newDoc.location, 'elev')) {
