@@ -1,8 +1,8 @@
-# libremap
+# LibreMap
 
-Map for free (wifi) networks such as guifi, libre-mesh, freifunk, ...
+Map for free (wifi) networks such as guifi, libre-mesh, funkfeuer, ninux, freifunk, ...
 
-libremap is split in two parts: the database API and the html webui.
+LibreMap is split in two parts: the database API (`/api/`) and the html webui (`/webui/`).
 
 ## Documentation
 
