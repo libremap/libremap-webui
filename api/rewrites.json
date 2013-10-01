@@ -2,8 +2,7 @@
   {
     "from": "router/:id",
     "method": "GET",
-    "to": "_view/routers_by_id/",
-    "query": { "key": ":id" }
+    "to": "../../:id"
   },
   {
     "from": "router/",
@@ -12,17 +11,12 @@
   },
   {
     "from": "router/:id",
-    "method": "POST",
-    "to": "_update/router/:id"
-  },
-  {
-    "from": "router/:id",
     "method": "PUT",
     "to": "_update/router/:id"
   },
   {
     "from": "router/:id",
-    "method": "PUT",
+    "method": "DELETE",
     "to": "_update/router/:id"
   },
   {
