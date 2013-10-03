@@ -2,6 +2,39 @@
 
 ## Router
 
+### Read
+Send a GET request to `/api/router/:id`:
+```
+curl -X GET http://libremap.net/api/router/d3e7183695687af88617e253d702ccf6
+```
+
+### Create
+Assume that a valid router doc (see [below](#fields)) is stored in the file `router.json`. Then you send a POST request to `/api/router/`
+```
+curl -X POST -d @router.json http://libremap.net/api/router/
+```
+and you will receive an automatically generated ID
+```
+{"ok":true,"id":"d3e7183695687af88617e253d702ccf6"}
+```
+**Note:** The `_id`, `_rev`, `ctime` and `mtime` fields will be set automatically when creating a new router doc.
+
+### Update
+Assume that a valid router doc (see [below](#fields))is stored in the file `router.json`. Then you send a PUT request to `/api/router/:id`:
+```
+curl -X PUT -d @router.json http://libremap.net/api/router/d3e7183695687af88617e253d702ccf6
+```
+**Note 1:** The `mtime` field will be updated automatically.
+
+**Note 2:** The `_rev` field in your provided data has to match the current `_rev` field on the server. This revision field is needed for replication.
+
+### Delete
+Send a DELETE request to `/api/router/:id`:
+```
+curl -X DELETE http://libremap.net/api/router/d3e7183695687af88617e253d702ccf6
+```
+**Note:** This currently requires admin privileges.
+
 ### Fields:
 * `_id`: (required, string) a unique identifier; it's recommended to let CouchDB assign a uuid).
 * `_rev`: (required, string) revision of the document (needed for CouchDB replication).
