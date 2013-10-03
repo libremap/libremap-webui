@@ -4,6 +4,9 @@ This document describes the current **API revision 1.0** and contains documentat
 * [Router](doc-api-router.md)
 * [History](#history) (todo!)
 
+
+Feel free to use the API of the [libremap.net](http://libremap.net) instance, which is located at `http://libremap.net/api/`.
+
 ## HTTP API overview
 
 | URL                  | HTTP method | Documentation link             | Description  | 
