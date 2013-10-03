@@ -22,4 +22,5 @@
   * section: `vhosts`.
   * option: `DOMAIN`.
   * value: `/DB/_design/libremap-webui/_rewrite`.
-  Enjoy libremap at `http://DOMAIN/`!
+  
+  Enjoy libremap at `http://DOMAIN/`! The API of your instance is located at `http://DOMAIN/api`, see the [API documentation](doc-api.md).
