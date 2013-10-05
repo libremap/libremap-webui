@@ -4,8 +4,6 @@ LibreMap is a **scalable**, **global** and **decentralized** router database and
 
 **See the map in action at the [libremap.net](http://libremap.net) instance!**
 
-If you're interested in setting up an LibreMap instance, then head over to the [docs](#documentation) and don't be shy if you have questions -- [get in touch](#contact) with us!.
-
 ## Goals of LibreMap:
 * show the state of all community networks, both on a global and local scale.
 * decentralized.
@@ -14,9 +12,13 @@ If you're interested in setting up an LibreMap instance, then head over to the [
 * scale up to global level (>100k routers).
 * share open data for community networks.
 
+## Join the LibreMap network!
+
+If you're interested in setting up an LibreMap instance, then head over to the [docs](#documentation) and don't be shy if you have questions -- [get in touch](#contact) with us!. When your instance is up and running, please include it in the [libremap-instances.json](libremap-instances.json) file of this repo.
+
 ## Overview
 
-There's a presentation ([slides](http://libre-mesh.github.io/libremap-talk-2013-is4cwn/)) from the [is4cwn](http://2013.wirelesssummit.org/) that explains the concept and some details. 
+There's a presentation ([slides](http://libre-mesh.github.io/libremap-talk-2013-is4cwn/)) from the [is4cwn](http://2013.wirelesssummit.org/) that explains the concept and some details.
 
 ### Database
 * The database API code resides under `/api`.
