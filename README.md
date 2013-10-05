@@ -23,7 +23,8 @@ There's a presentation ([slides](http://libre-mesh.github.io/libremap-talk-2013-
 * Built with [CouchDB](http://couchdb.apache.org) and [GeoCouch](https://github.com/couchbase/geocouch/).
 * HTTP REST API.
 * Decentralized/federated with CouchDB's built-in replication.
-* Each community can set up its own LibreMap instance (see the [install docs](doc-install.md)) and let it replicate to/from existing instances (see the list of [LibreMap instances](libremap-instances.json)).
+* Each community can set up its own LibreMap instance (see the [install docs](doc-install.md)) and let it replicate to/from existing instances (see the list of [LibreMap instances](libremap-instances.json)). The replication may look like this:
+![Replication illustration](http://libre-mesh.github.io/libremap-talk-2013-is4cwn/images/replication.svg)
 
 ### HTML webui
 * The HTML webui code resides under `/webui`.
