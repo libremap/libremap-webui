@@ -157,3 +157,16 @@ Additional options can be passed to the view with GET-style `?` and `&`:
 * `count=true`: only returns the number of rows that would be returned. The returned JSON looks is of the form `{"count":4711}`.
 * `limit`: limit number of rows that should be returned, e.g. `limit=10`.
 * `skip`: return rows at the given offset, e.g. `skip=50`.
+
+**Note:** this view is realized with the spatial views from [GeoCouch](https://github.com/couchbase/geocouch/).
+
+#### Standard views
+
+Most views are standard CouchDB views and can take all query options that are defined in the [CouchDB view API](https://wiki.apache.org/couchdb/HTTP_view_API#Querying_Options). Usually a GET request is the method of choice (note that the parameters have to be URL encoded with GET).
+
+When querying for a large set of given keys a POST request should be used with the body:
+```{"keys": ["key1", "key2",...]}```
+
+#### By alias
+
+A [Standard view](#standard-views) where the keys are objects with the fields `alias` and `type`, e.g. `{"alias":"awesome-router","type":"olsr"}`.
