@@ -1,20 +1,20 @@
-LibreMap.SpatialCollection = Backbone.Collection.extend({
-  initialize: function (latlng_sw, latlng_ne) {
-    this.latlng_sw = latlng_sw;
-    this.latlng_ne = latlng_ne;
+LibreMap.BboxCollection = Backbone.Collection.extend({
+  initialize: function (models, options) {
+    this.bbox = options.bbox;
     Backbone.Collection.prototype.initialize.call(this, arguments);
   },
   fetch: function (options) {
-    var bbox = [
-        this.latlng_sw[1], this.latlng_sw[0],
-        this.latlng_ne[1], this.latlng_ne[0] 
-      ];
     options = _.extend(options ? options : {}, {
       data: { 
-        bbox: bbox.toString()
+        bbox: this.bbox.toString()
       }
     });
     Backbone.Collection.prototype.fetch.call(this, options);
+  },
+  parse: function (response, options) {
+    return _.map(response.rows, function(row) { 
+      return row.value;
+    });
   },
   set_bbox: function(latlng_sw, latlng_ne, options) {
     this.latlng_sw = latlng_sw;
@@ -23,7 +23,7 @@ LibreMap.SpatialCollection = Backbone.Collection.extend({
   }
 });
 
-LibreMap.RouterLocationCollection =  LibreMap.SpatialCollection.extend({
-  url: '/api/routers_by_location',
+LibreMap.RouterBboxCollection =  LibreMap.BboxCollection.extend({
+  url: 'http://libremap.net/api/routers_by_location',
   model: LibreMap.Router
 });
