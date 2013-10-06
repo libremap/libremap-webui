@@ -103,12 +103,56 @@ LibreMap.BboxCollection = Backbone.Collection.extend({
   set_bbox: function(bbox, options) {
     this.bbox = bbox;
     this.fetch( _.extend(options||{}, {remove: false}));
+  },
+  fetch_links: function() {
+    var models_inbbox = this.filter(function(model) {
+      var loc = model.get('location');
+      return LibreMap.isInBbox(loc.lat, loc.lon, this.bbox);
+    }.bind(this));
+    var links = _.without(
+      _.map(models_inbbox, function(model){
+        return model.get('links');
+      }), undefined);
+    var aliases = _.map(_.flatten(links), function(link) {
+      return _.pick(link, 'alias', 'type');
+    });
+
+    var known_aliases_strings = _.map(_.flatten(
+        _.without(this.pluck('aliases'), undefined)
+      ), JSON.stringify).sort();
+
+    var unknown_aliases = _.reject(aliases, function (alias) {
+      return _.indexOf(known_aliases_strings, JSON.stringify(alias))>=0;
+    });
+
+    console.log('debug: fetch missing links: '+JSON.stringify(unknown_aliases));
+
+    return $.ajax({
+      url: this.byAliasUrl,
+      // use POST because GET potentially has a low maximal length of the
+      // query string
+      type: "post",
+      data: JSON.stringify({"keys": unknown_aliases}),
+      dataType: "json",
+      contentType: "application/json",
+      success: function(data) {
+        var docs = _.pluck(data.rows, 'value');
+        this.set(docs, {remove: false});
+        this.watch_abort();
+        this.watch();
+      }.bind(this),
+      error: function(jqxhr, msg_status, msg_err) {
+        console.log('fetch_links: failed ('+msg_status+'): '+msg_err);
+      }
+    });
   }
 });
 
+var api_base_url = 'http://libremap.net/api';
 LibreMap.RouterBboxCollection =  LibreMap.BboxCollection.extend({
-  url: 'http://libremap.net/api/routers_by_location_stripped',
-  changesUrl: 'http://libremap.net/api/changes',
+  url: api_base_url + '/routers_by_location_stripped',
+  byAliasUrl: api_base_url + '/routers_by_alias_stripped',
+  changesUrl: api_base_url + '/changes',
   changesFilter: 'libremap-api/by_id_or_bbox',
   model: LibreMap.RouterStripped
 });
