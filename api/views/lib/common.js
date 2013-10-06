@@ -74,3 +74,9 @@ exports.assertDate = function(v, err) {
 exports.getDate = function () {
   return (new Date()).toISOString();
 }
+
+exports.isInBbox = function (lat, lon, bbox) {
+  exports.assertArray(bbox, function () {
+    bbox = [0,0,0,0];
+  });
+}
