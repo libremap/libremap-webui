@@ -124,11 +124,13 @@ Most views come in two flavors in order to let you control how much data is retu
 * `routers_by_location_stripped` omits all `attributes` fields in the router document. Use the stripped view if you only need the [basic fields](#fields).
 
 #### By Location
-Send a GET request to `/api/routers_by_location/:bbox`
+Send a GET request to `/api/routers_by_location/:bbox` or `/api/routers_by_location_stripped/:bbox`:
 ```
 curl http://libremap.net/api/routers_by_location/13,52,14,53
 ```
-The answer looks like this:
+**Note:** the `bbox` parameter takes the form `lon_sw,lat_sw,lon_ne,lat_ne` where the first two describe the south-west corner and the last two describe the north-east corner of the bounding box.
+
+The (prettyfied) answer looks like this:
 ```
 {
   "update_seq":581,
