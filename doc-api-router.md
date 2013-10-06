@@ -116,3 +116,42 @@ curl -X DELETE http://libremap.net/api/router/d3e7183695687af88617e253d702ccf6
   }
 }
 ```
+
+### Views
+
+Most views come in two flavors in order to let you control how much data is returned from the database. This is described here on the basis of the view `routers_by_location`.
+* `routers_by_location` returns the full router documents.
+* `routers_by_location_stripped` omits all `attributes` fields in the router document. Use the stripped view if you only need the [basic fields](#fields).
+
+#### By Location
+Send a GET request to `/api/routers_by_location/:bbox`
+```
+curl http://libremap.net/api/routers_by_location/13,52,14,53
+```
+The answer looks like this:
+```
+{
+  "update_seq":581,
+  "rows": [
+    {
+      "id": "d3e7183695687af88617e253d702ccf6",
+      "bbox":[13.3849, 52.4930,13.3849, 52.4930],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.3849,52.4930]
+      },
+      "value": {
+        "_id": "d3e7183695687af88617e253d702ccf6",
+        ...
+      }
+    },
+    ...
+  ]
+}
+```
+The documents' content can be found in the `value` field of each object in the `rows` array.
+
+Additional options can be passed to the view with GET-style `?` and `&`:
+* `count=true`: only returns the number of rows that would be returned. The returned JSON looks is of the form `{"count":4711}`.
+* `limit`: limit number of rows that should be returned, e.g. `limit=10`.
+* `skip`: return rows at the given offset, e.g. `skip=50`.
