@@ -24,12 +24,18 @@
     "to": "_update/router/:id"
   },
   {
-    "from": "routers_by_location",
-    "to": "_spatial/routers_by_location"
+    "from": "routers_by_location/:bbox",
+    "to": "_spatial/routers_by_location",
+    "query": {
+      "bbox": ":bbox"
+    }
   },
   {
-    "from": "routers_by_location_stripped",
-    "to": "_spatial/routers_by_location_stripped"
+    "from": "routers_by_location_stripped/:bbox",
+    "to": "_spatial/routers_by_location_stripped",
+    "query": {
+      "bbox": ":bbox"
+    }
   },
   {
     "from": "db",
@@ -38,5 +44,16 @@
   {
     "from": "db/*",
     "to": "../../*"
+  },
+  {
+    "from": "communities_by_name",
+    "to": "_view/communities_by_name",
+    "query": {
+      "group": "true"
+    }
+  },
+  {
+    "from": "*",
+    "to": "_view/*"
   }
 ]
