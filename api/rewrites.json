@@ -24,6 +24,14 @@
     "to": "_update/router/:id"
   },
   {
+    "from": "routers_by_location",
+    "to": "_spatial/routers_by_location"
+  },
+  {
+    "from": "routers_by_location_stripped",
+    "to": "_spatial/routers_by_location_stripped"
+  },
+  {
     "from": "routers_by_location/:bbox",
     "to": "_spatial/routers_by_location",
     "query": {
@@ -51,6 +59,10 @@
     "query": {
       "group": "true"
     }
+  },
+  {
+    "from": "changes",
+    "to": "../../_changes"
   },
   {
     "from": "*",
