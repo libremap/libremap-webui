@@ -35,8 +35,12 @@ exports.exists = function(obj, key) {
 
 exports.assertType = function(v, type, err) {
   if (typeof(v) != type) {
-    err(type+' expected: '+v);
+    if (err) {
+      err(type+' expected: '+v);
+    }
+    return false;
   }
+  return true;
 }
 
 exports.assertNumber = function (v, err) {
@@ -53,8 +57,12 @@ exports.assertObject = function (v, err) {
 
 exports.assertArray = function (v, err) {
   if (Object.prototype.toString.call(v) !== '[object Array]') {
-    err('Array expected: '+v);
+    if (err) {
+      err('Array expected: '+v);
+    }
+    return false;
   }
+  return true;
 }
 
 exports.assertVersionString = function(v, err) {
@@ -67,16 +75,40 @@ exports.assertVersionString = function(v, err) {
 exports.assertDate = function(v, err) {
   var date = (new Date(v)).toISOString();
   if (v != date) {
-    err("Date expected: "+v);
+    if (err) {
+      err("Date expected: "+v);
+    }
+    return false;
   }
+  return true;
 }
 
 exports.getDate = function () {
   return (new Date()).toISOString();
 }
 
+exports.assertBbox = function(bbox, err) {
+  var msg = "bounding box expected: " + bbox;
+  if (!exports.assertArray(bbox) || bbox.length!=4) {
+    if (err) {
+      err(msg);
+    }
+    return false;
+  }
+  for (var i=0; i<4; i++) {
+    if (!exports.assertNumber(bbox[i])) {
+      if (err) {
+        err(msg);
+      }
+      return false;
+    }
+  }
+  return true;
+}
+
 exports.isInBbox = function (lat, lon, bbox) {
-  exports.assertArray(bbox, function () {
-    bbox = [0,0,0,0];
-  });
+  if (!exports.assertBbox(bbox)) {
+    return false;
+  }
+  return bbox[0]<=lon && lon<=bbox[2] && bbox[1]<=lat && lat<=bbox[3];
 }
