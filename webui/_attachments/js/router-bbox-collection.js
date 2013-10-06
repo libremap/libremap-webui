@@ -40,6 +40,17 @@ LibreMap.BboxCollection = Backbone.Collection.extend({
   // bounding box to the filter function
   watch: function () {
     (function poll() {
+      // gather all ids of routers that are inside the collection but outside
+      // the current bounding box
+      var ids_outside = _.map(
+        this.filter(function(model) {
+          var loc = model.get('location');
+          return !LibreMap.isInBbox(loc.lat, loc.lon, this.bbox);
+        }.bind(this)),
+        function(model) {
+          return model.id;
+        });
+      // create a new request to the changes feed
       this.changes_request = $.ajax({
         url: this.changesUrl + '?' + $.param({
           filter: this.changesFilter,
@@ -47,15 +58,19 @@ LibreMap.BboxCollection = Backbone.Collection.extend({
           include_docs: 'true',
           since: this.update_seq || 0
         }),
+        // use POST because GET potentially has a low maximal length of the
+        // query string
         type: "post",
         data: JSON.stringify({
-          "ids": [],
+          "ids": ids_outside,
           "bbox": LibreMap.bbox2couch(this.bbox)
         }),
         dataType: "json",
         contentType: "application/json",
         timeout: 65000,
         success: function(data) {
+          // update update_seq, merge the changes and set up a new changes
+          // request
           this.update_seq = data.last_seq;
           var docs = _.map(data.results, function(row) {
             return row.doc;
@@ -65,6 +80,7 @@ LibreMap.BboxCollection = Backbone.Collection.extend({
         }.bind(this),
         error: function(jqxhr, msg_status, msg_err) {
           // if not aborted via watch_abort: retry after 10s
+          // otherwise: do nothing :)
           if (this.changes_request) {
             this.changes_request = null;
             console.log('changes feed: failed ('+msg_status+'): '+msg_err);
@@ -86,13 +102,13 @@ LibreMap.BboxCollection = Backbone.Collection.extend({
   // change the bounding box and fetch
   set_bbox: function(bbox, options) {
     this.bbox = bbox;
-    this.fetch(options);
+    this.fetch( _.extend(options||{}, {remove: false}));
   }
 });
 
 LibreMap.RouterBboxCollection =  LibreMap.BboxCollection.extend({
-  url: 'http://libremap.net/api/routers_by_location',
+  url: 'http://libremap.net/api/routers_by_location_stripped',
   changesUrl: 'http://libremap.net/api/changes',
   changesFilter: 'libremap-api/by_id_or_bbox',
-  model: LibreMap.Router
+  model: LibreMap.RouterStripped
 });
