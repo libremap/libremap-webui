@@ -44,7 +44,7 @@ There's a presentation ([slides](http://libre-mesh.github.io/libremap-talk-2013-
 Please use the issues tracker if you found a bug or have an idea how to improve LibreMap!
 
 ## Contact
-LibreMap is maintained by [André](https://github.com/andrenarchy) and [Nico](https://github.com/nicoechaniz). There is a mailing list (TODO! :) ) for questions and discussions about LibreMap, so feel free to drop a line there!
+LibreMap is maintained by [André](https://github.com/andrenarchy) and [Nico](https://github.com/nicoechaniz). There is a **[mailing list](http://lists.libremap.net/mailman/listinfo/discussion)** for questions and discussions about LibreMap, so feel free to drop a line there!
 
 ## License
 
