@@ -1,0 +1,17 @@
+{
+  "name": "libremap-webui",
+  "version": "0.1.0",
+  "description": "webui for the wifi community network map LibreMap",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/libre-mesh/libremap"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-jshint": "~0.6.4",
+    "grunt-contrib-uglify": "~0.2.4"
+  },
+  "dependencies": {
+    "backbone": "~1.0.0"
+  }
+}
