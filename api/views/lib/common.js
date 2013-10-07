@@ -1,29 +1,22 @@
-function strip(obj) {
+var _ = require('views/lib/underscore-min')._;
+
+exports.strip = function strip(d) {
   /* walks through the obj and removes all 'attributes' */
-  var newObj = {};
-
-  for (var key in obj) {
-    if (key != 'attributes') {
-      var type = typeof(obj[key]);
-      if (type == 'object') {
-        newObj[key] = strip(obj[key]);
-      } else if (type == 'array') {
-        newObj[key] = [];
-        for (var i=0, cur; cur=obj[key][i++];) {
-          if (typeof(cur)=='object') {
-            cur = strip(cur);
-          }
-          newObj[key].push(cur);
-        }
-      } else {
-        newObj[key] = obj[key];
-      }
+  if (_.isArray(d)) {
+    var arr=[];
+    for (var i=0, cur; cur=d[i++];) {
+      arr.push(strip(cur));
     }
+    return arr;
+  } else if (_.isObject(d)) {
+    var obj = _.omit(d, 'attributes');
+    for (k in obj) {
+      obj[k] = strip(obj[k]);
+    }
+    return obj;
   }
-
-  return newObj;
+  return d;
 }
-exports.strip = strip;
 
 exports.router_coords = function(doc) {
   return {type: 'Point', coordinates: [doc.location.lon, doc.location.lat]};
