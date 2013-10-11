@@ -2,6 +2,10 @@
   "name": "libremap-webui",
   "version": "0.1.0",
   "description": "webui for the wifi community network map LibreMap",
+  "authors": [
+    "André Gaul <gaul@web-yard.de>",
+    "Nicolás Echániz <nicoechaniz@altermundi.net>"
+  ],
   "repository": {
     "type": "git",
     "url": "http://github.com/libre-mesh/libremap"
