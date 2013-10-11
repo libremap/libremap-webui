@@ -24,11 +24,24 @@ module.exports = function(grunt) {
           }
         ]
       }
+    },
+    concat: {
+      vendor: {
+        files: {
+          'build/js/vendor.js': [
+            'bower_components/bootstrap/dist/js/bootstrap.min.js'
+          ],
+          'build/css/vendor.css': [
+            'bower_components/bootstrap/dist/css/bootstrap.min.css'
+          ]
+        }
+      }
     }
   });
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-copy');
+  grunt.loadNpmTasks('grunt-contrib-concat');
 
   // Default task(s).
   grunt.registerTask('default', ['jshint', 'copy']);
