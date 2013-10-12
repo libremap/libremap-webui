@@ -1,0 +1,16 @@
+{
+  "name": "libremap-webui",
+  "version": "0.1.0",
+  "homepage": "https://github.com/libre-mesh/libremap",
+  "authors": [
+    "André Gaul <gaul@web-yard.de>"
+  ],
+  "description": "webui for the wifi community network map LibreMap",
+  "license": "GPLv3",
+  "private": true,
+  "dependencies": {
+    "jquery": "~2.0.3",
+    "bootstrap": "~3.0.0",
+    "leaflet": "~0.6.4"
+  }
+}
