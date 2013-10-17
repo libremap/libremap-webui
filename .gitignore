@@ -3,3 +3,6 @@ syntax: glob
 *.bak
 *.orig
 .*.swp
+node_modules
+bower_components
+build
