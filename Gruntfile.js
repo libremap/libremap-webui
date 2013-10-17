@@ -1,9 +1,18 @@
+var webui_static = [ '*.html', 'images/**', 'css/**'];
 module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     // lint js files
     jshint: {
       files: ['src/js/**/*.js']
+    },
+    connect: {
+      webui: {
+        options: {
+          port: 9000,
+          base: 'build'
+        }
+      }
     },
     // minify js files
     uglify: {
@@ -17,12 +26,12 @@ module.exports = function(grunt) {
     },
     // copy static files
     copy: {
-      webui: {
+      webui_static: {
         files: [
           {
             expand: true,
             cwd: 'src',
-            src: [ '*.html', 'images/**', 'css/**'],
+            src: webui_static,
             dest: 'build/'
           }
         ]
@@ -69,14 +78,33 @@ module.exports = function(grunt) {
           }
         }
       }
+    },
+    watch: {
+      webui_static: {
+        files: webui_static,
+        tasks: ['copy'],
+        options: {
+          cwd: 'src'
+        }
+      },
+      webui_js: {
+        files: ['src/**/*.js'],
+        tasks: ['browserify']
+      },
+      webui_css: {
+        files: ['src/**/*.css'],
+        tasks: ['concat']
+      }
     }
   });
+  grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-contrib-connect');
+  grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-contrib-copy');
-  grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-browserify');
 
   // Default task(s).
-  grunt.registerTask('default', ['copy', 'concat', 'browserify']);
+  grunt.registerTask('default', ['copy', 'concat', 'browserify', 'connect', 'watch']);
 };
