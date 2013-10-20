@@ -49,18 +49,9 @@ module.exports = function(grunt) {
       }
     },
     browserify: {
-      // browserify libremap.js -> bundle.js
-      libremap: {
-        dest: 'build/js/libremap.js',
-        src: [ 'src/js/libremap.js' ],
-        options: {
-          debug: grunt.option('debug'),
-          external: ['jquery', 'bootstrap', 'leaflet']
-        }
-      },
       vendor: {
-        dest: 'build/vendor/vendor.js',
         src: [],
+        dest: 'build/vendor/vendor.js',
         options: {
           shim: {
             jquery: {
@@ -73,9 +64,21 @@ module.exports = function(grunt) {
             },
             leaflet: {
               path: 'vendor/leaflet/leaflet.js',
-              exports: 'L'
-            },
+              exports: 'L',
+              depends: {
+                'jquery': '$'
+              }
+            }
           }
+        }
+      },
+      // browserify libremap.js -> bundle.js
+      libremap: {
+        dest: 'build/js/libremap.js',
+        src: [ 'src/js/libremap.js' ],
+        options: {
+          debug: grunt.option('debug'),
+          external: ['jquery', 'bootstrap', 'leaflet']
         }
       }
     },

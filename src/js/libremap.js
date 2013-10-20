@@ -1,12 +1,6 @@
 (function() {
-  // include the shimmed modules first
-  // (they make trouble otherwise)
-  var $ = require('jquery');
-  var bootstrap = require('bootstrap');
-  var L = require('leaflet');
+  require('./config_vendor');
 
-  Backbone = require('backbone');
-  var _ = require('underscore');
-
-  console.log(Backbone);
+  BboxCollection = require('libremap-backbone/collections/bbox');
+  common = require('libremap-common');
 })();

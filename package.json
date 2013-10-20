@@ -23,6 +23,8 @@
     "grunt-contrib-connect": "~0.5.0"
   },
   "dependencies": {
-    "backbone": "~1.0.0"
+    "libremap-common": "libremap/libremap-common",
+    "libremap-backbone": "libremap/libremap-backbone",
+    "backbone": "~1.1.0"
   }
 }
