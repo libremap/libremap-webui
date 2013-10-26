@@ -55,6 +55,12 @@ module.exports = function(grunt) {
             cwd: 'src',
             src: webui_static,
             dest: 'build/'
+          },
+          {
+            expand: true,
+            cwd: 'bower_components/bootstrap/dist',
+            src: 'fonts/*',
+            dest: 'build/'
           }
         ]
       },
