@@ -1,10 +1,32 @@
 var webui_static = [ '*.html', 'images/**', 'css/**'];
+
 module.exports = function(grunt) {
+  // read couch.json if it exists
+  var couchconfig = grunt.file.exists('couch.json') ?
+        grunt.file.readJSON('couch.json') : null;
+  var couchpushopts = null;
+  if (couchconfig) {
+    var couch = grunt.option('couch') || 'localhost';
+    if (couch) {
+      couchpushopts = {
+        options: {
+          user: couchconfig.couches[couch].user,
+          pass: couchconfig.couches[couch].pass
+        }
+      };
+      couchpushopts[couch] = {};
+      var files = {};
+      files[couchconfig.couches[couch].database] = 'tmp/libremap-webui.json';
+      couchpushopts[couch] = { files: files};
+    }
+  }
+
+
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     // lint js files
     jshint: {
-      files: ['src/js/**/*.js']
+      files: ['Gruntfile.js'], //, 'src/js/**/*.js']
     },
     connect: {
       webui: {
@@ -26,13 +48,29 @@ module.exports = function(grunt) {
     },
     // copy static files
     copy: {
-      webui_static: {
+      build: {
         files: [
           {
             expand: true,
             cwd: 'src',
             src: webui_static,
             dest: 'build/'
+          }
+        ]
+      },
+      'build-ddoc': {
+        files: [
+          {
+            expand: true,
+            cwd: 'template_ddoc',
+            src: '**/*',
+            dest: 'build-ddoc/'
+          },
+          {
+            expand: true,
+            cwd: 'build',
+            src: '**/*',
+            dest: 'build-ddoc/_attachments/'
           }
         ]
       }
@@ -92,13 +130,21 @@ module.exports = function(grunt) {
       },
       webui_js: {
         files: ['src/**/*.js'],
-        tasks: ['browserify']
+        tasks: ['browserify:libremap']
       },
       webui_css: {
         files: ['src/**/*.css'],
         tasks: ['concat']
       }
-    }
+    },
+    'couch-compile': {
+      'libremap-webui': {
+        files: {
+          'tmp/libremap-webui.json': 'build-ddoc'
+        }
+      }
+    },
+    'couch-push': couchpushopts
   });
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-connect');
@@ -107,7 +153,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-browserify');
+  grunt.loadNpmTasks('grunt-couch');
+
+  grunt.registerTask('build', ['jshint', 'copy:build', 'concat', 'browserify']);
+  grunt.registerTask('push', ['build', 'copy:build-ddoc', 'couch']);
 
   // Default task(s).
-  grunt.registerTask('default', ['copy', 'concat', 'browserify', 'connect', 'watch']);
+  grunt.registerTask('default', ['build', 'connect', 'watch']);
 };

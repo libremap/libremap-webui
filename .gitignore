@@ -6,4 +6,7 @@ syntax: glob
 node_modules
 bower_components
 build
+build-ddoc
+tmp
 config.json
+couch.json

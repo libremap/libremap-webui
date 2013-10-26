@@ -1,0 +1,18 @@
+{
+  "couches": {
+    "localhost": {
+      "database": "http://localhost:5984/libremap"
+    },
+    "dev": {
+      "database": "http://couch.libremap.net/libremap-dev",
+      "user": "us0r",
+      "pass": "t3st"
+    },
+    "production": {
+      "database": "http://couch.libremap.net/libremap",
+      "user": "us0r",
+      "pass": "t3st"
+    }
+  }
+}
+
