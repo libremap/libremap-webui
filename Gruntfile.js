@@ -1,4 +1,4 @@
-var webui_static = [ '*.html', 'images/**', 'css/**'];
+var webui_static = [ 'index.html', 'images/**', 'css/**'];
 
 module.exports = function(grunt) {
   // read couch.json if it exists
@@ -92,6 +92,18 @@ module.exports = function(grunt) {
         }
       }
     },
+    jst: {
+      compile: {
+        options: {
+          processName: function (filename) {
+            return filename.replace(/src\/templates\/(.*)\.html/, '$1');
+          }
+        },
+        files: {
+          'build-jst/templates.js': ['src/templates/**/*.html']
+        }
+      }
+    },
     browserify: {
       vendor: {
         src: [],
@@ -122,7 +134,16 @@ module.exports = function(grunt) {
         src: [ 'src/js/libremap.js' ],
         options: {
           debug: grunt.option('debug'),
-          external: ['jquery', 'bootstrap', 'leaflet']
+          external: ['jquery', 'bootstrap', 'leaflet'],
+          shim: {
+            templates: {
+              path: 'build-jst/templates.js',
+              exports: 'JST',
+              depends: {
+                'underscore': '_'
+              }
+            }
+          }
         }
       }
     },
@@ -133,6 +154,10 @@ module.exports = function(grunt) {
         options: {
           cwd: 'src'
         }
+      },
+      webui_jst: {
+        files: ['src/templates/**/*.html'],
+        tasks: ['jst', 'browserify:libremap']
       },
       webui_js: {
         files: ['src/**/*.js'],
@@ -157,11 +182,12 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-contrib-jst');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-couch');
 
-  grunt.registerTask('build', ['jshint', 'copy:build', 'concat', 'browserify']);
+  grunt.registerTask('build', ['jshint', 'copy:build', 'concat', 'jst', 'browserify']);
   grunt.registerTask('push', ['build', 'copy:build-ddoc', 'couch']);
 
   // Default task(s).
