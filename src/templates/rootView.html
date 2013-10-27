@@ -1,0 +1,45 @@
+<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+      <span class="sr-only">Toggle navigation</span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="#"><span class="glyphicon glyphicon-globe"></span> LibreMap<%
+      if (typeof(title)!="undefined") { %> &ndash; <%=title%> <% } %></a>
+  </div>
+  <div class="collapse navbar-collapse navbar-ex1-collapse">
+    <ul class="nav navbar-nav">
+      <li><a href="#" class="about"><span class="glyphicon glyphicon-question-sign"></span> About</a></li>
+      <li><a href="https://github.com/libremap/libremap-webui" class="github">github</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="modal fade about">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">About LibreMap</h4>
+      </div>
+      <div class="modal-body">
+        <p>LibreMap is a scalable, global and decentralized router database and
+          map visualization for community networks, such as guifi, Altermundi,
+          FunkFeuer, ninux, freifunk, Commotion&hellip;</p>
+        <h4>Run your own LibreMap server and let it sync!</h4>
+        <p>Because LibreMap relies on <a
+            href="http://couchdb.apache.org">CouchDB</a>, you can install a
+          CouchDB server for your community and let it replicate to/from
+          existing servers. The documentation on how to set up your own
+          LibreMap server can be found in the <a
+            href="https://github.com/libremap/libremap-api">libremap-api</a>
+          repository.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
