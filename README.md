@@ -15,7 +15,7 @@ You need the following:
 
 ### Installation
 1. Clone the repo: ```git clone git@github.com:libremap/libremap-webui.git``` and change to the repo dir: ```cd libremap-webui```.
-2. Download dependencies: ```npm install```.
+2. Download dependencies: ```npm install``` and ```bower install```.
 3. Copy `config.json.example` to `config.json` and configure your LibreMap API URL there. If you don't have your own [LibreMap API](https://github.com/libremap/libremap-api) you can use an existing one, for example ```http://libremap.net/api```.
 4. Run ```grunt``` and open ```http://127.0.0.1:9000``` in your browser.
 5. Deployment: you have 2 options:
