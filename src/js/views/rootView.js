@@ -9,7 +9,7 @@ module.exports = Backbone.View.extend({
     var template = require('templates').rootView;
     this.$el.html(template({title: config.title}));
     this.$('a.about').on('click', function() {
-      this.$('div.about').modal('show');
+      this.$('div.about').modal();
       return false;
     }.bind(this) );
     return this;
