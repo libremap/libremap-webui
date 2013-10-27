@@ -3,7 +3,7 @@
   color: white;
 }
 
-html, body, .lm-root-content, .lm-content, .lm-content div {
+html, body, .lm-root-content, .lm-content, .lm-content > div {
   height: 100%;
   margin: 0;
 }
@@ -16,6 +16,11 @@ body {
   background-color: gray;
 }
 
-.lm-content div {
-  height: 100%;
+.lm-sidebar {
+  background-color: white;
+  padding-top: 10px;
+}
+
+.lm-sidebar > .tab-content {
+  padding-top: 10px;
 }

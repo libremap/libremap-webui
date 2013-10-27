@@ -1,4 +1,15 @@
 {
   "api_url": "http://libremap.net/api",
-  "title": "Freifunk Berlin"
+  "title": "Freifunk Berlin",
+  "layers": {
+    "Cloudmade OSM": {
+      "type": "tileLayer",
+      "url": "http://{s}.tile.cloudmade.com/{key}/{styleId}/256/{z}/{x}/{y}.png",
+      "options": {
+        "key": 'e4e152a60cc5414eb81532de3d676261',
+        "styleId": 997,
+        "attribution": "Map data &copy; <a href=\"http://openstreetmap.org\">OpenStreetMap</a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery &copy; <a href=\"http://cloudmade.com\">CloudMade</a>"
+      }
+    }
+  }
 }

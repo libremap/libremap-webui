@@ -1,5 +1,7 @@
 var Backbone = require('backbone');
 var config = require('../../../config.json');
+var SidebarView = require('./sidebarView');
+var MapView = require('./mapView');
 
 module.exports = Backbone.View.extend({
   initialize: function () {
@@ -12,6 +14,8 @@ module.exports = Backbone.View.extend({
       this.$('div.about').modal();
       return false;
     }.bind(this) );
+    this.sidebarView = new SidebarView({el: this.$('.lm-sidebar')});
+    this.mapView = new MapView({el: this.$('.lm-map')});
     return this;
   }
 });
