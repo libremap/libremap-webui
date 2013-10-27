@@ -18,6 +18,19 @@ $(document).ready(function() {
   routers.fetch({success: function() {console.log(routers.toJSON())}});
   */
 
+  var Backbone = require('backbone');
+
+  // router fires events
+  var LibreMapRouter = Backbone.Router.extend({
+    routes: {
+      "": "bbox",
+      "bbox/:bbox": "bbox"
+    }
+  });
+  var router = new LibreMapRouter();
+
   var RootView = require('./views/rootView');
-  var root = new RootView({el: 'body'});
+  var root = new RootView({el: 'body', router: router});
+
+  Backbone.history.start();
 });
