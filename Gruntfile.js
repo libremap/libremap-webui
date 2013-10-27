@@ -31,6 +31,7 @@ module.exports = function(grunt) {
       webui: {
         options: {
           port: 9000,
+          hostname: '*',
           base: 'build',
           livereload: 31337
         }
