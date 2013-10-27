@@ -2,3 +2,20 @@
   font-weight: bold;
   color: white;
 }
+
+html, body, .lm-root-content, .lm-content, .lm-content div {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  padding-top: 50px;
+}
+
+.lm-root-content {
+  background-color: gray;
+}
+
+.lm-content div {
+  height: 100%;
+}
