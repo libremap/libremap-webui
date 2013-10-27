@@ -11,6 +11,7 @@
   "dependencies": {
     "jquery": "~2.0.3",
     "bootstrap": "~3.0.0",
-    "leaflet": "~0.6.4"
+    "leaflet": "~0.6.4",
+    "font-awesome": "~4.0.0"
   }
 }
