@@ -21,7 +21,6 @@ module.exports = function(grunt) {
     }
   }
 
-
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     // lint js files
@@ -32,7 +31,8 @@ module.exports = function(grunt) {
       webui: {
         options: {
           port: 9000,
-          base: 'build'
+          base: 'build',
+          livereload: 31337
         }
       }
     },
@@ -116,14 +116,14 @@ module.exports = function(grunt) {
             },
             bootstrap: {
               path: 'bower_components/bootstrap/dist/js/bootstrap.min.js',
-              exports: 'bootstrap'
+              exports: 'bootstrap',
+              depends: {
+                'jquery': 'jQuery'
+              }
             },
             leaflet: {
               path: 'vendor/leaflet/leaflet.js',
-              exports: 'L',
-              depends: {
-                'jquery': '$'
-              }
+              exports: 'L'
             }
           }
         }
@@ -148,6 +148,13 @@ module.exports = function(grunt) {
       }
     },
     watch: {
+      options: {
+        livereload: 31337
+      },
+      webui_config: {
+        files: ['config.json'],
+        tasks: ['build']
+      },
       webui_static: {
         files: webui_static,
         tasks: ['copy'],
