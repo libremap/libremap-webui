@@ -1,10 +1,10 @@
 LibreMap.bbox2couch = function (bbox) {
   return [bbox[0][1],bbox[0][0],bbox[1][1],bbox[1][0]];
-}
+};
 
 LibreMap.isInBbox = function(lat, lon, bbox) {
   return bbox[0][0]<=lat && lat<=bbox[1][0] && bbox[0][1]<=lon && lon<=bbox[1][1];
-}
+};
 
 LibreMap.BboxCollection = Backbone.Collection.extend({
   // stores options.bbox for later use and hands over to backbone's

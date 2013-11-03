@@ -23,7 +23,7 @@ module.exports = Backbone.View.extend({
         "attribution": "Map data &copy; <a href=\"http://openstreetmap.org\">OpenStreetMap</a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery &copy; <a href=\"http://cloudmade.com\">CloudMade</a>"
         });
     }
-    this.layers = layers
+    this.layers = layers;
 
     // init map
     this.map = L.map(this.el, {layers: _.values(layers)});
@@ -34,7 +34,7 @@ module.exports = Backbone.View.extend({
       bbox = common.bbox(bbox);
       if (bbox) {
         // valid bbox
-        var bbox = common.toLeaflet();
+        bbox = common.toLeaflet();
         var lat = bbox[1][0] - bbox[0][0];
         var lon = bbox[1][1] - bbox[0][1];
         var ratio = 0.01;

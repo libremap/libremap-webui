@@ -25,7 +25,7 @@ module.exports = function(grunt) {
     pkg: grunt.file.readJSON('package.json'),
     // lint js files
     jshint: {
-      files: ['Gruntfile.js'], //, 'src/js/**/*.js']
+      files: ['Gruntfile.js', 'src/js/**/*.js']
     },
     connect: {
       webui: {
