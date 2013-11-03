@@ -1,9 +1,52 @@
 <ul class="nav nav-tabs">
   <li class="active"><a href="#sidebar-layers" data-toggle="tab">Layers</a></li>
+  <li><a href="#sidebar-edit" data-toggle="tab">Edit</a></li>
   <li><a href="#sidebar-config" data-toggle="tab">Config</a></li>
 </ul>
 <div class="tab-content">
-  <div class="tab-pane active" id="sidebar-layers">Layer stuff</div>
-  <div class="tab-pane" id="sidebar-config">Config stuff</div>
+  <div class="tab-pane active" id="sidebar-layers">
+    <h4>Base Layer</h4>
+    <div class="radio">
+      <label>
+        <input type="radio" name="base" id="base-osm" value="option1" checked>
+        Cloudmade OSM
+      </label>
+    </div>
+    <div class="radio">
+      <label>
+        <input type="radio" name="base" id="base-bing" value="option2">
+        Bing satellite
+      </label>
+    </div>
+    
+    <h4>Data Layers</h4>
+    <div class="checkbox">
+      <label>
+        <input type="checkbox" id="data-routers" value="">
+        Routers
+      </label>
+    </div>
+    <div class="checkbox">
+      <label>
+        <input type="checkbox" id="data-links" value="">
+        Links
+      </label>
+    </div>
+  </div>
+
+  <div class="tab-pane" id="sidebar-edit">Edit stuff</div>
+
+  <div class="tab-pane" id="sidebar-config">
+    <div class="form-group">
+      <label for="api_url">API URL</label>
+      <input type="url" class="form-control" id="api_url" placeholder="Enter API URL" value="<%=config.api_url%>">
+    </div>
+    <dl class="dl-horizontal">
+      <dt>Server API rev</dt>
+      <dd>dunno</dd>
+      <dt>Client API rev</dt>
+      <dd><%=package._libremap.api_rev%></dd>
+    </dl>
+  </div>
 </div>
 
