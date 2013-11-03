@@ -9,7 +9,7 @@ module.exports = Backbone.View.extend({
     this.render();
   },
   render: function () {
-    var template = require('templates').sidebarView;
+    var template = require('templates').controlView;
     this.$el.html(template());
     return this;
   }
