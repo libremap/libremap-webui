@@ -1,4 +1,4 @@
-var webui_static = [ 'index.html', 'images/**', 'css/**'];
+var webui_static = [ 'index.html', 'images/**'];
 
 module.exports = function(grunt) {
   // read couch.json if it exists
@@ -88,13 +88,18 @@ module.exports = function(grunt) {
         ]
       }
     },
+    less: {
+      libremap: {
+        files: {
+          'build/css/libremap.css': 'src/less/libremap.less'
+        }
+      }
+    },
     concat: {
       // concat vendor css files
-      vendor: {
+      vendorcss: {
         files: {
-          'build/vendor/vendor.css': [
-            'bower_components/bootstrap/dist/css/bootstrap.min.css',
-            'bower_components/font-awesome/css/font-awesome.min.css',
+          'build-css/vendor.less': [
             'vendor/leaflet/leaflet.css'
           ]
         }
@@ -178,9 +183,9 @@ module.exports = function(grunt) {
         files: ['src/**/*.js'],
         tasks: ['browserify:libremap']
       },
-      webui_css: {
-        files: ['src/**/*.css'],
-        tasks: ['concat']
+      webui_less: {
+        files: ['src/**/*.less', 'src/**/*.css'],
+        tasks: ['less']
       }
     },
     'couch-compile': {
@@ -195,14 +200,15 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-contrib-copy');
-  grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-jst');
+  grunt.loadNpmTasks('grunt-contrib-less');
+  grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-couch');
 
-  grunt.registerTask('build', ['jshint', 'copy:build', 'concat', 'jst', 'browserify']);
+  grunt.registerTask('build', ['jshint', 'copy:build', 'concat', 'less', 'jst', 'browserify']);
   grunt.registerTask('push', ['build', 'copy:build-ddoc', 'couch']);
 
   // Default task(s).
