@@ -2,13 +2,26 @@ var Backbone = require('backbone');
 var _ = require('underscore');
 var L = require('leaflet');
 var common = require('libremap-common');
+var couchmap_common = require('couchmap-common');
 var config = require('../../../config.json');
+var MapView = require('couchmap-leaflet/views/map');
 
 // pass 'collection' and 'el' to constructor (gets stored automatically)
-module.exports = Backbone.View.extend({
+module.exports = MapView.extend({
   initialize: function (options) {
     this.router = options.router;
 
+    MapView.prototype.initialize.call(this, _.extend({
+      addDefaultLayer: false,
+      zoomTo: false
+    }, options || {}));
+    
+    L.tileLayer('http://{s}.tile.cloudmade.com/{key}/{styleId}/256/{z}/{x}/{y}.png', {
+        "key": 'e4e152a60cc5414eb81532de3d676261',
+        "styleId": 997,
+        "attribution": "Map data &copy; <a href=\"http://openstreetmap.org\">OpenStreetMap</a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery &copy; <a href=\"http://cloudmade.com\">CloudMade</a>"
+        }).addTo(this.map);
+    /*
     var layers = {};
     _.each(config.layers, function(layer, name) {
       if (layer.type=="tileLayer") {
@@ -24,17 +37,28 @@ module.exports = Backbone.View.extend({
         });
     }
     this.layers = layers;
+    */
 
-    // init map
-    this.map = L.map(this.el, {layers: _.values(layers)});
-    this.map.fitWorld();
+
+    // add layer views
+    /*
+    this.libreMap.get('baseLayers').each(function(layer) {
+      var view = new this.layer_plugins[layer.get('type')].view({mapView: this, model: layer});
+    }, this);
+    this.libreMap.get('overlays').each(function(e){console.log(e);});
+    */
+
+
+    var world_bounds = [[-60,-180],[75,180]];
+    // init map bounds (will be reset via router if bbox was provided)
+    this.map.fitBounds(world_bounds);
 
     // bind to router bbox event
     this.router.on('route:bbox', function(bbox) {
-      bbox = common.bbox(bbox);
+      bbox = couchmap_common.bbox(bbox);
       if (bbox) {
         // valid bbox
-        bbox = common.toLeaflet();
+        bbox = couchmap_common.toLeaflet();
         var lat = bbox[1][0] - bbox[0][0];
         var lon = bbox[1][1] - bbox[0][1];
         var ratio = 0.01;
@@ -42,19 +66,17 @@ module.exports = Backbone.View.extend({
         bbox[1][0] -= ratio*lat;
         bbox[0][1] += ratio*lon;
         bbox[1][1] -= ratio*lon;
-        this.map.fitBounds(common.bbox(bbox).toLeaflet());
+        console.log(bbox);
+        this.map.fitBounds(bbox);
       } else {
-        this.map.fitWorld();
+        this.map.fitBounds(world_bounds);
       }
-    }.bind(this));
+    }, this);
     this.map.on('moveend', function(e) {
-      function bounds2bbox(bounds) {
-        var sw = bounds.getSouthWest();
-        var ne = bounds.getNorthEast();
-        return [[sw.lat,sw.lng],[ne.lat,ne.lng]];
-      }
-      var bbox = common.bbox(bounds2bbox(this.map.getBounds()));
+      var bbox = couchmap_common.bbox(this.map.getBounds());
+      this.trigger('bbox', bbox);
       this.router.navigate('bbox/'+bbox.toString());
-    }.bind(this));
-  },
+    }, this);
+
+  }
 });

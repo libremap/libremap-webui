@@ -14,7 +14,7 @@ module.exports = Backbone.View.extend({
   render: function () {
     var template = require('templates').controlView;
     this.$el.html(template({
-      config: this.config.toJSON(),
+      config: appconfig,
       package: package
     }));
     return this;

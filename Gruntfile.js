@@ -68,6 +68,12 @@ module.exports = function(grunt) {
             cwd: 'bower_components/font-awesome',
             src: 'fonts/*',
             dest: 'build/'
+          },
+          {
+            expand: true,
+            cwd: 'bower_components/leaflet/dist/images',
+            src: '**/*',
+            dest: 'build/images/vendor/leaflet'
           }
         ]
       },
@@ -100,7 +106,10 @@ module.exports = function(grunt) {
       vendorcss: {
         files: {
           'build-css/vendor.less': [
-            'vendor/leaflet/leaflet.css'
+            'vendor/leaflet/leaflet.css',
+            'vendor/leaflet.markercluster/MarkerCluster.css',
+            'vendor/leaflet.markercluster/MarkerCluster.Default.css',
+            'node_modules/couchmap-leaflet/css/couchmap-leaflet.css'
           ]
         }
       }
@@ -137,6 +146,13 @@ module.exports = function(grunt) {
             leaflet: {
               path: 'vendor/leaflet/leaflet.js',
               exports: 'L'
+            },
+            'leaflet-markercluster': {
+              path: 'vendor/leaflet.markercluster/leaflet.markercluster.js',
+              exports: 'L',
+              depends: {
+                'leaflet': 'L'
+              }
             }
           }
         }
@@ -147,7 +163,7 @@ module.exports = function(grunt) {
         src: [ 'src/js/libremap.js' ],
         options: {
           debug: grunt.option('debug'),
-          external: ['jquery', 'bootstrap', 'leaflet'],
+          external: ['jquery', 'bootstrap', 'leaflet', 'leaflet-markercluster'],
           shim: {
             templates: {
               path: 'build-jst/templates.js',

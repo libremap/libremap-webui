@@ -27,7 +27,9 @@
   },
   "dependencies": {
     "libremap-common": "libremap/libremap-common",
-    "libremap-backbone": "libremap/libremap-backbone",
+    "couchmap-backbone": "libremap/couchmap-backbone",
+    "couchmap-leaflet": "libremap/couchmap-leaflet",
+    "couchmap-common": "libremap/couchmap-common",
     "backbone": "~1.1.0"
   },
   "_libremap": {
