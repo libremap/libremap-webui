@@ -1,13 +1,9 @@
 var $ = require('jquery');
-var config = require('../../config.json');
-
-var L = require('leaflet');
-// Leaflet has to know where the images reside
-L.Icon.Default.imagePath = 'images/vendor/leaflet';
 
 $(document).ready(function() {
   require('./config_vendor');
 
+  var config = require('../../config.json');
   // set title
   var title = "LibreMap";
   if (typeof(config.title)!="undefined") {
@@ -15,15 +11,14 @@ $(document).ready(function() {
   }
   document.title = title;
 
-  /*
-  var RouterCollection = require('./collections/router');
-  var common = require('libremap-common');
-  var routers = new RouterCollection(null, {bbox: common.bbox([0,0,60,20])});
-  routers.fetch({success: function() {console.log(routers.toJSON())}});
-  */
+  // create ConfigModel
+  // TODO: read config that is stored in browser
+  var ConfigModel = require('./models/config');
+  var configModel = new ConfigModel(null, {
+    config: config
+  });
 
   var Backbone = require('backbone');
-
   // router fires events
   var LibreMapRouter = Backbone.Router.extend({
     routes: {
@@ -33,8 +28,12 @@ $(document).ready(function() {
   });
   var router = new LibreMapRouter();
 
-  var RootView = require('./views/rootView');
-  var root = new RootView({el: 'body', router: router});
+  var RootView = require('./views/root');
+  var root = new RootView({
+    el: 'body',
+    router: router,
+    configModel: configModel
+  });
 
   Backbone.history.start();
 });
