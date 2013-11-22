@@ -17,7 +17,7 @@
     "grunt-contrib-watch": "~0.5.3",
     "grunt-contrib-copy": "~0.4.1",
     "grunt-contrib-concat": "~0.3.0",
-    "browserify": "~2.33.1",
+    "browserify": "~2.35",
     "grunt-browserify": "~1.2.8",
     "underscore": "~1.5.2",
     "grunt-contrib-connect": "~0.5.0",
