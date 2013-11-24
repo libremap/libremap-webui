@@ -14,12 +14,20 @@ module.exports = Backbone.View.extend({
   render: function() {
     this.remove();
     var layerModel = this.model.coll.get(this.model.get('active_id'));
-    this.layer = L.tileLayer(layerModel.get('url'), layerModel.get('options').toJSON()).addTo(this.mapView.map);
+    var plugins = require('../plugins');
+    var plugin = plugins[layerModel.get('plugin')];
+    if (plugin.view) {
+      this.subview = new (plugin.view)({
+        model: layerModel,
+        mapView: this.mapView
+      });
+    }
     return this;
   },
   remove: function() {
-    if (this.layer) {
-      this.mapView.map.removeLayer(this.layer);
+    if (this.subview) {
+      this.subview.remove();
+      this.subview = undefined;
     }
   }
 });

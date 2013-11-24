@@ -11,6 +11,9 @@ $(document).ready(function() {
   }
   document.title = title;
 
+  // read plugins (generated via grunt)
+  config.plugins = require('./plugins');
+
   // create ConfigModel
   // TODO: read config that is stored in browser
   var ConfigModel = require('./models/config');

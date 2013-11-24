@@ -9,9 +9,17 @@ module.exports = Backbone.Model.extend({
   defaults: {
     'active_id': undefined
   },
-  initialize: function(attributes) {
+  initialize: function(attributes, options) {
     this.coll = new Backbone.Collection(attributes.layers, {
-      model: require('./configLayer')
+      model: function(attrs, opts) {
+        var model = Backbone.Model;
+        var plugins = require('../plugins');
+        var plugin = plugins[attrs.plugin];
+        if (plugin.model) {
+          model = plugin.model;
+        }
+        return new model(attrs, opts);
+      }
     });
     this.listenTo(this.coll, 'add remove', function(model) {
       if (this.coll.length===0) {
