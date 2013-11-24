@@ -32,19 +32,6 @@ module.exports = Backbone.View.extend({
       mapView: this.mapView
     });
 
-    /*
-    var ProxyModel = require('../models/proxy');
-    this.proxyModel = new ProxyModel(null, {
-      configModel: this.configModel
-    });
-
-    var ProxyView = require('./proxy');
-    this.proxyView = new ProxyView({
-      mapView: this.mapView,
-      model: this.proxyModel,
-      configModel: this.configModel
-    });
-    */
     this.controlsView = new ControlsView({
       el: this.$('.lm-sidebar'),
       mapView: this.mapView,
