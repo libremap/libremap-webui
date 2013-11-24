@@ -15,6 +15,7 @@ module.exports = Backbone.View.extend({
     this.remove();
     var layerModel = this.model.coll.get(this.model.get('active_id'));
     this.layer = L.tileLayer(layerModel.get('url'), layerModel.get('options').toJSON()).addTo(this.mapView.map);
+    return this;
   },
   remove: function() {
     if (this.layer) {

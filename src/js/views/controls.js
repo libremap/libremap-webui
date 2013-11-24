@@ -7,7 +7,7 @@ var package = require('../../../package.json');
 // pass 'collection' and 'el' to constructor (gets stored automatically)
 module.exports = Backbone.View.extend({
   initialize: function(options) {
-    this.config = options.config;
+    this.configModel = options.configModel;
     this.mapView = options.mapView;
     this.render();
   },
@@ -17,6 +17,15 @@ module.exports = Backbone.View.extend({
       config: appconfig,
       package: package
     }));
+    this.baseLayersControls = new (require('./baseLayersControls'))({
+      el: this.$('.baseLayers'),
+      model: this.configModel.baseLayersModel
+    });
     return this;
+  },
+  remove: function() {
+    if (this.baseLayersControls) {
+      this.baseLayersControls.remove();
+    }
   }
 });
