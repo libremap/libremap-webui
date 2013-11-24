@@ -2,13 +2,17 @@
   "api_url": "http://libremap.net/api",
   "title": "Freifunk Berlin",
   "init_bbox": [[-60,-180],[75,180]],
+  "plugins": {
+    "tileLayer": "./plugins/tileLayer",
+    "tileLayerBing": "./plugins/tileLayerBing"
+  },
   "baseLayers": {
     "active_id": "osm_cloudmade",
     "layers": [
       {
+        "plugin": "tileLayer",
         "id": "osm_cloudmade",
         "name": "OSM Cloudmade",
-        "type": "tile",
         "url": "http://{s}.tile.cloudmade.com/{key}/{styleId}/256/{z}/{x}/{y}.png",
         "options": {
           "key": "e4e152a60cc5414eb81532de3d676261",
@@ -17,13 +21,19 @@
         }
       },
       {
+        "plugin": "tileLayer",
         "id": "osm_standard",
         "name": "OSM Standard",
-        "type": "tile",
         "url": "http://{s}.tile.osm.org/{z}/{x}/{y}.png",
         "options": {
           "attribution": "Map data &copy; <a href=\"http://openstreetmap.org\">OpenStreetMap</a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>"
         }
+      },
+      {
+        "plugin": "tileLayerBing",
+        "id": "bing_satellite",
+        "name": "Bing satellite",
+        "key": "ArewtcSllazYp52r7tojb64N94l-OrYWuS1GjUGeTavPmJP_jde3PIdpuYm24VpR"
       }
     ]
   }
