@@ -1,11 +1,12 @@
 {
   "api_url": "http://libremap.net/api",
   "title": "Freifunk Berlin",
+  "init_bbox": [[-60,-180],[75,180]],
   "baseLayers": {
-    "active_id": "osm_standard",
+    "active_id": "osm_cloudmade",
     "layers": [
       {
-        "id": "osm_cloudmade_997",
+        "id": "osm_cloudmade",
         "name": "OSM Cloudmade",
         "type": "tile",
         "url": "http://{s}.tile.cloudmade.com/{key}/{styleId}/256/{z}/{x}/{y}.png",

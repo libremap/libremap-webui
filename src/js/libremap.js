@@ -14,9 +14,7 @@ $(document).ready(function() {
   // create ConfigModel
   // TODO: read config that is stored in browser
   var ConfigModel = require('./models/config');
-  var configModel = new ConfigModel(null, {
-    config: config
-  });
+  var configModel = new ConfigModel(config);
 
   var Backbone = require('backbone');
   // router fires events

@@ -3,13 +3,13 @@ var _ = require('underscore');
 var L = require('leaflet');
 var common = require('libremap-common');
 var couchmap_common = require('couchmap-common');
-var config = require('../../../config.json');
 var MapView = require('couchmap-leaflet/views/map');
 
 // pass el, router and configModel to constructor (gets stored automatically)
 module.exports = MapView.extend({
   initialize: function (options) {
     this.router = options.router;
+    this.configModel = options.configModel;
 
     MapView.prototype.initialize.call(this, _.extend({
       addDefaultLayer: false,
@@ -17,8 +17,8 @@ module.exports = MapView.extend({
     }, options || {}));
 
     // init map bounds (will be reset via router if bbox was provided)
-    var world_bounds = [[-60,-180],[75,180]];
-    this.map.fitBounds(world_bounds);
+    var bounds = this.configModel.get('init_bbox') || [[-60,-180],[75,180]];
+    this.map.fitBounds(bounds);
 
     // add scale
     L.control.scale({
@@ -41,7 +41,7 @@ module.exports = MapView.extend({
         bbox[1][1] -= ratio*lon;
         this.map.fitBounds(bbox);
       } else {
-        this.map.fitBounds(world_bounds);
+        this.map.fitBounds(bounds);
       }
     }, this);
     this.map.on('moveend', function(e) {
