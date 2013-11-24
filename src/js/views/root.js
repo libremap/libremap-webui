@@ -22,6 +22,11 @@ module.exports = Backbone.View.extend({
       configModel: this.configModel
     });
 
+    this.baseLayersView = new (require('./baseLayers'))({
+      model: this.configModel.baseLayersModel,
+      mapView: this.mapView
+    });
+
     var ProxyModel = require('../models/proxy');
     this.proxyModel = new ProxyModel(null, {
       configModel: this.configModel

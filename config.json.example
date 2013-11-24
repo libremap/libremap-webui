@@ -1,15 +1,29 @@
 {
   "api_url": "http://libremap.net/api",
   "title": "Freifunk Berlin",
-  "layers": {
-    "Cloudmade OSM": {
-      "type": "tileLayer",
-      "url": "http://{s}.tile.cloudmade.com/{key}/{styleId}/256/{z}/{x}/{y}.png",
-      "options": {
-        "key": 'e4e152a60cc5414eb81532de3d676261',
-        "styleId": 997,
-        "attribution": "Map data &copy; <a href=\"http://openstreetmap.org\">OpenStreetMap</a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery &copy; <a href=\"http://cloudmade.com\">CloudMade</a>"
+  "baseLayers": {
+    "active_id": "osm_standard",
+    "layers": [
+      {
+        "id": "osm_cloudmade_997",
+        "name": "OSM Cloudmade",
+        "type": "tile",
+        "url": "http://{s}.tile.cloudmade.com/{key}/{styleId}/256/{z}/{x}/{y}.png",
+        "options": {
+          "key": "e4e152a60cc5414eb81532de3d676261",
+          "styleId": 997,
+          "attribution": "Map data &copy; <a href=\"http://openstreetmap.org\">OpenStreetMap</a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery &copy; <a href=\"http://cloudmade.com\">CloudMade</a>"
+        }
+      },
+      {
+        "id": "osm_standard",
+        "name": "OSM Standard",
+        "type": "tile",
+        "url": "http://{s}.tile.osm.org/{z}/{x}/{y}.png",
+        "options": {
+          "attribution": "Map data &copy; <a href=\"http://openstreetmap.org\">OpenStreetMap</a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>"
+        }
       }
-    }
+    ]
   }
 }
