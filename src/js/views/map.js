@@ -16,9 +16,15 @@ module.exports = MapView.extend({
       zoomTo: false
     }, options || {}));
 
-    var world_bounds = [[-60,-180],[75,180]];
     // init map bounds (will be reset via router if bbox was provided)
+    var world_bounds = [[-60,-180],[75,180]];
     this.map.fitBounds(world_bounds);
+
+    // add scale
+    L.control.scale({
+      position: 'bottomright',
+      imperial: false
+    }).addTo(this.map);
 
     // bind to router bbox event
     this.router.on('route:bbox', function(bbox) {
