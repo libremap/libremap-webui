@@ -4,7 +4,8 @@
   "init_bbox": [[-60,-180],[75,180]],
   "plugins": {
     "tileLayer": "./plugins/tileLayer",
-    "tileLayerBing": "./plugins/tileLayerBing"
+    "tileLayerBing": "./plugins/tileLayerBing",
+    "libremapLayer": "./plugins/libremapLayer"
   },
   "baseLayers": {
     "active_id": "osm_cloudmade",
@@ -36,5 +37,13 @@
         "key": "ArewtcSllazYp52r7tojb64N94l-OrYWuS1GjUGeTavPmJP_jde3PIdpuYm24VpR"
       }
     ]
-  }
+  },
+  "dataLayers": [
+    {
+      "plugin": "libremapLayer",
+      "id": "libremap.net",
+      "name": "Routers",
+      "api_url": "http://libremap.net/api"
+    }
+  ]
 }

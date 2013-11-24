@@ -10,17 +10,7 @@ module.exports = Backbone.Model.extend({
     'active_id': undefined
   },
   initialize: function(attributes, options) {
-    this.coll = new Backbone.Collection(attributes.layers, {
-      model: function(attrs, opts) {
-        var model = Backbone.Model;
-        var plugins = require('../plugins');
-        var plugin = plugins[attrs.plugin];
-        if (plugin.model) {
-          model = plugin.model;
-        }
-        return new model(attrs, opts);
-      }
-    });
+    this.coll = new (require('../collections/config'))(attributes.layers);
     this.listenTo(this.coll, 'add remove', function(model) {
       if (this.coll.length===0) {
         this.set('active_id', undefined);

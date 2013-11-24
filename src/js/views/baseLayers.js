@@ -1,5 +1,4 @@
 var Backbone = require('backbone');
-var L = require('leaflet');
 
 /* BaseLayersView
  *
