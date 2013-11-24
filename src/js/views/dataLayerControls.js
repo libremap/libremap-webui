@@ -2,23 +2,19 @@ var Backbone = require('backbone');
 var _ = require('underscore');
 
 module.exports = Backbone.View.extend({
-  initialize: function(options) {
-    this.mapView = options.mapView;
+  initialize: function() {
     this.subviews = {};
     this.listenTo(this.collection, 'add', this.addModel, this);
-    this.listenTo(this.collection, 'remove', this.removeModel, this);
+    this.listenTo(this.collection, 'add', this.removeModel, this);
     this.render();
   },
-  render: function() {
-    this.collection.each(this.addModel, this);
-  },
   addModel: function(model) {
-    var View = model.plugin.view;
+    var View = model.plugin.controlView;
     if (View) {
       this.subviews[model.id] = new View({
-        model: model,
-        mapView: this.mapView
+        model: model
       });
+      this.subviews[model.id].$el.appendTo(this.$el);
     }
   },
   removeModel: function(model) {
@@ -26,6 +22,9 @@ module.exports = Backbone.View.extend({
       this.subviews[model.id].remove();
       delete this.subviews[model.id];
     }
+  },
+  render: function() {
+    this.collection.each(this.addModel, this);
   },
   remove: function() {
     _.each(this.subviews, function(val) {

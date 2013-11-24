@@ -21,6 +21,10 @@ module.exports = Backbone.View.extend({
       el: this.$('.baseLayers'),
       model: this.configModel.baseLayersModel
     });
+    this.dataLayerControls = new (require('./dataLayerControls'))({
+      el: this.$('.dataLayers'),
+      collection: this.configModel.dataLayersColl
+    });
     return this;
   },
   remove: function() {

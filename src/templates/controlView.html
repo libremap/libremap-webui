@@ -2,42 +2,18 @@
   <li class="active"><a href="#sidebar-layers" data-toggle="tab">Layers</a></li>
   <li><a href="#sidebar-location" data-toggle="tab">Location</a></li>
   <li><a href="#sidebar-edit" data-toggle="tab">Edit</a></li>
-  <li><a href="#sidebar-config" data-toggle="tab">Config</a></li>
 </ul>
 <div class="tab-content">
   <div class="tab-pane active" id="sidebar-layers">
-    <h4>Base Layer</h4>
+    <h3>Base map</h3>
     <div class="baseLayers"></div>
     
-    <h4>Data Layers</h4>
-    <div class="checkbox">
-      <label>
-        <input type="checkbox" id="data-routers" value="">
-        Routers
-      </label>
-    </div>
-    <div class="checkbox">
-      <label>
-        <input type="checkbox" id="data-links" value="">
-        Links
-      </label>
-    </div>
+    <h3>Data</h3>
+    <div class="dataLayers"></div>
   </div>
 
   <div class="tab-pane" id="sidebar-location">Location stuff</div>
-  <div class="tab-pane" id="sidebar-edit">Edit stuff</div>
 
-  <div class="tab-pane" id="sidebar-config">
-    <div class="form-group">
-      <label for="api_url">API URL</label>
-      <input type="url" class="form-control" id="api_url" placeholder="Enter API URL" value="<%=config.api_url%>">
-    </div>
-    <dl class="dl-horizontal">
-      <dt>Server API rev</dt>
-      <dd>dunno</dd>
-      <dt>Client API rev</dt>
-      <dd><%=package._libremap.api_rev%></dd>
-    </dl>
-  </div>
+  <div class="tab-pane" id="sidebar-edit">Edit stuff</div>
 </div>
 
