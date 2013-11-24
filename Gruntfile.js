@@ -153,6 +153,13 @@ module.exports = function(grunt) {
               depends: {
                 'leaflet': 'L'
               }
+            },
+            'leaflet-bing': {
+              path: 'vendor/leaflet.bing/Bing.js',
+              exports: 'L',
+              depends: {
+                'leaflet': 'L'
+              }
             }
           }
         }
@@ -163,7 +170,13 @@ module.exports = function(grunt) {
         src: [ 'src/js/libremap.js' ],
         options: {
           debug: grunt.option('debug'),
-          external: ['jquery', 'bootstrap', 'leaflet', 'leaflet-markercluster'],
+          external: [
+            'jquery',
+            'bootstrap',
+            'leaflet',
+            'leaflet-markercluster',
+            'leaflet-bing'
+          ],
           shim: {
             templates: {
               path: 'build-jst/templates.js',

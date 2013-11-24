@@ -16,7 +16,8 @@ module.exports = {
     },
     render: function() {
       this.remove();
-      this.layer = L.tileLayer(this.model.get('url'),
+      this.layer = L.tileLayer(
+        this.model.get('url'),
         this.model.get('options').toJSON()
       ).addTo(this.mapView.map);
     },
