@@ -13,7 +13,10 @@ module.exports = MapView.extend({
 
     MapView.prototype.initialize.call(this, _.extend({
       addDefaultLayer: false,
-      zoomTo: false
+      zoomTo: false,
+      mapOptions: {
+        worldCopyJump: true
+      }
     }, options || {}));
 
     // init map bounds (will be reset via router if bbox was provided)
