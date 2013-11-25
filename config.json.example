@@ -34,7 +34,10 @@
         "plugin": "tileLayerBing",
         "id": "bing_satellite",
         "name": "Bing satellite",
-        "key": "ArewtcSllazYp52r7tojb64N94l-OrYWuS1GjUGeTavPmJP_jde3PIdpuYm24VpR"
+        "key": "ArewtcSllazYp52r7tojb64N94l-OrYWuS1GjUGeTavPmJP_jde3PIdpuYm24VpR",
+        "options": {
+          "minZoom": 1
+        }
       }
     ]
   },
@@ -42,7 +45,7 @@
     {
       "plugin": "libremapLayer",
       "id": "libremap.net",
-      "name": "Routers",
+      "name": "Routers and Links",
       "api_url": "http://libremap.net/api"
     }
   ]
