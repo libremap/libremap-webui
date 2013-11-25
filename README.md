@@ -3,7 +3,7 @@
 LibreMap is a **scalable**, **global** and **decentralized** router database and map visualization for community networks, such as guifi, Altermundi, FunkFeuer, ninux, freifunk, Commotion... It emerged around the [is4cwn](http://2013.wirelesssummit.org/) by merging the maps of [AlterMap](https://colectivo.altermundi.net/projects/altermap) (Altermundi) and [OpenWiFiMap](https://github.com/freifunk/openwifimap-html5) (freifunk).
 
 LibreMap consists of 2 main parts:
-* **libremap-webui (this repo!):** the HTML5 web app.
+* **libremap-webui (this repo!):** the HTML5 web app, see [libremap.net](http://libremap.net).
 * **[libremap-api](https://github.com/libremap/libremap-api):** the CouchDB server design document that exposes the *LibreMap API*.
 
 ## Goals of LibreMap:
