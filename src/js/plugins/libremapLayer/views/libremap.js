@@ -1,6 +1,6 @@
 var Backbone = require('backbone');
-var ProxyView = require('couchmap-leaflet/views/proxy');
-var LibreMapModel = require('../models/libremap');
+var LibreMapProxyModel = require('../models/proxy');
+var LibreMapProxyView = require('./proxy');
 
 module.exports = Backbone.View.extend({
   initialize: function(options) {
@@ -10,12 +10,12 @@ module.exports = Backbone.View.extend({
   },
   render: function() {
     this.remove();
-    var libreMapModel = new LibreMapModel(null, {
+    this.libreMapProxyModel = new LibreMapProxyModel(null, {
       api_url: this.model.get('api_url')
     });
-    this.subview = new ProxyView({
+    this.subview = new LibreMapProxyView({
       mapView: this.mapView,
-      model: libreMapModel
+      model: this.libreMapProxyModel
     });
     return this;
   },
@@ -23,6 +23,9 @@ module.exports = Backbone.View.extend({
     if (this.subview) {
       this.subview.remove();
       this.subview = undefined;
+    }
+    if (this.libreMapProxyModel) {
+      this.libreMapProxyModel.abort();
     }
   }
 });

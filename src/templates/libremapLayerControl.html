@@ -13,13 +13,15 @@
 </div>
 <div class="checkbox">
   <label>
-    <input type="checkbox" id="data-routers" value="">
+    <input type="checkbox" id="show_routers" value=""
+    <% if (show_routers) {%> checked <% } %>>
     Routers
   </label>
 </div>
 <div class="checkbox">
   <label>
-    <input type="checkbox" id="data-links" value="">
+    <input type="checkbox" id="show_links" value=""
+    <% if (show_links) {%> checked <% } %>>
     Links
   </label>
 </div>

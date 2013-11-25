@@ -5,6 +5,11 @@ module.exports = Backbone.View.extend({
     this.render();
   },
   template: require('templates').libremapLayerControl,
+  bindCheckbox: function(selector, attribute) {
+    this.$(selector).change(function(e) {
+      this.model.set(attribute, e.target.checked);
+    }.bind(this));
+  },
   render: function() {
     this.$el.html(this.template(this.model.toJSON()));
     this.listenTo(this.model, 'change:api_url', function(model) {
@@ -20,5 +25,7 @@ module.exports = Backbone.View.extend({
       this.$('.configuration').slideToggle();
       this.model.set('api_url', api_url);
     }.bind(this));
+    this.bindCheckbox('#show_routers', 'show_router');
+    this.bindCheckbox('#show_links', 'show_links');
   }
 });
