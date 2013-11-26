@@ -11,7 +11,8 @@ module.exports = Backbone.View.extend({
   render: function() {
     this.remove();
     this.libreMapProxyModel = new LibreMapProxyModel(null, {
-      api_url: this.model.get('api_url')
+      api_url: this.model.get('api_url'),
+      fine_max: this.model.get('fine_max')
     });
     this.subview = new LibreMapProxyView({
       mapView: this.mapView,

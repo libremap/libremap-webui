@@ -5,6 +5,7 @@ module.exports = ProxyModel.extend({
     var api_url = options.api_url;
 
     ProxyModel.prototype.initialize.call(this, null, {
+      threshold: options.fine_max,
       CoarseCollOptions: {
         url: api_url+'/routers_coarse',
         changes_url: api_url+'/db/_changes',
