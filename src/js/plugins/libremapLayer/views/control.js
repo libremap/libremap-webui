@@ -21,9 +21,12 @@ module.exports = Backbone.View.extend({
     }.bind(this));
     this.$('.configuration > form').on('submit', function(e) {
       e.preventDefault();
-      var api_url = this.$('#api_url').val();
+      var vals = {
+        api_url: this.$('#api_url').val(),
+        fine_max: Number(this.$('#fine_max').val()),
+      };
       this.$('.configuration').slideToggle();
-      this.model.set('api_url', api_url);
+      this.model.set(vals);
     }.bind(this));
     this.bindCheckbox('#show_routers', 'show_router');
     this.bindCheckbox('#show_links', 'show_links');
