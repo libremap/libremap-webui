@@ -2,10 +2,11 @@ var ProxyModel = require('couchmap-backbone/models/proxy');
 
 module.exports = ProxyModel.extend({
   initialize: function(attributes, options) {
-    var api_url = options.api_url;
+    var libreMapModel = options.libreMapModel;
+    var api_url = libreMapModel.get('api_url');
 
     ProxyModel.prototype.initialize.call(this, null, {
-      threshold: options.fine_max,
+      threshold: libreMapModel.get('fine_max'),
       CoarseCollOptions: {
         url: api_url+'/routers_coarse',
         changes_url: api_url+'/db/_changes',
