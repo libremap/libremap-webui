@@ -1,6 +1,7 @@
 var Backbone = require('backbone');
 var LibreMapProxyModel = require('../models/proxy');
 var LibreMapProxyView = require('./proxy');
+var LibreMapFineView = require('./fine');
 
 module.exports = Backbone.View.extend({
   initialize: function(options) {
@@ -15,7 +16,11 @@ module.exports = Backbone.View.extend({
     });
     this.subview = new LibreMapProxyView({
       mapView: this.mapView,
-      model: this.libreMapProxyModel
+      model: this.libreMapProxyModel,
+      FineView: LibreMapFineView,
+      fine_options: {
+        LibreMapModel: this.model
+      }
     });
     return this;
   },

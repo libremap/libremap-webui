@@ -45,7 +45,6 @@ var FiltersCollView = Backbone.View.extend({
     this.subviews[model.cid] = new FilterView({
       model: model
     });
-    console.log(this);
     this.$el.append(this.subviews[model.cid].$el);
   },
   removeModel: function(model) {
