@@ -5,7 +5,12 @@
   "plugins": {
     "tileLayer": "./plugins/tileLayer",
     "tileLayerBing": "./plugins/tileLayerBing",
-    "libremapLayer": "./plugins/libremapLayer/index"
+    "lmLayer": "./plugins/lmLayer/index",
+    "lmFilterRouterAP": "./plugins/lmLayer/filters/routerAP",
+    "lmFilterRouterCommunity": "./plugins/lmLayer/filters/routerCommunity"
+  },
+  "TODO": {
+    "lmFilterLinkType": "./plugins/libremapLayer/filters_links/type"
   },
   "baseLayers": {
     "active_id": "osm_cloudmade",
@@ -43,13 +48,81 @@
   },
   "dataLayers": [
     {
-      "plugin": "libremapLayer",
+      "plugin": "lmLayer",
       "id": "libremap.net",
       "name": "Routers and Links",
       "api_url": "http://libremap.net/api",
       "fine_max": 200,
       "show_routers": true,
-      "show_links": false
+      "routers": {
+        "cluster": true,
+        "filter_mode": "or",
+        "filters": [
+          {
+            "plugin": "lmFilterRouterAP",
+            "enabled": true,
+            "name": "Access points"
+          },
+          {
+            "plugin": "lmFilterRouterCommunity",
+            "enabled": false,
+            "name": "Community",
+            "val": "Freifunk Berlin"
+          }
+        ],
+        "TODO": [
+          {
+            "plugin": "age_max",
+            "enabled": true,
+            "name": "Maximum age",
+            "val": 259200
+          },
+          {
+            "plugin": "age_min",
+            "enabled": false,
+            "name": "Minimum age",
+            "val": 0
+          }
+        ]
+      },
+      "show_links": false,
+      "links": {
+        "filter_mode": "or",
+        "filters": [
+        ],
+        "TODO": [
+          {
+            "plugin": "lmLinkFilterType",
+            "enabled": false,
+            "name": "Type",
+            "val": "batman"
+          },
+          {
+            "plugin": "distance_max",
+            "enabled": true,
+            "name": "Maximum distance (m)",
+            "val": 50000
+          },
+          {
+            "plugin": "distance_min",
+            "enabled": false,
+            "name": "Minimum distance (m)",
+            "val": 0
+          },
+          {
+            "plugin": "quality_max",
+            "enabled": true,
+            "name": "Maximum quality",
+            "val": 1
+          },
+          {
+            "plugin": "quality_min",
+            "enabled": true,
+            "name": "Minimum quality",
+            "val": 0
+          }
+        ]
+      }
     }
   ]
 }
