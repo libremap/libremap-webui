@@ -15,16 +15,20 @@ module.exports = {
       this.render();
     },
     render: function() {
-      this.remove();
+      this.removeLayer();
       this.layer = L.tileLayer(
         this.model.get('url'),
         this.model.get('options').toJSON()
       ).addTo(this.mapView.map);
     },
-    remove: function() {
+    removeLayer: function() {
       if (this.layer) {
         this.mapView.map.removeLayer(this.layer);
       }
+    },
+    remove: function() {
+      this.removeLayer();
+      Backbone.View.prototype.remove.call(this);
     }
   }),
   controlView: undefined

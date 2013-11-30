@@ -9,7 +9,7 @@ module.exports = Backbone.View.extend({
     this.render();
   },
   render: function() {
-    this.remove();
+    this.removeSubview();
     this.libreMapProxyModel = new LibreMapProxyModel(null, {
       libreMapModel: this.model
     });
@@ -19,7 +19,7 @@ module.exports = Backbone.View.extend({
     });
     return this;
   },
-  remove: function() {
+  removeSubview: function() {
     if (this.subview) {
       this.subview.remove();
       this.subview = undefined;
@@ -27,5 +27,9 @@ module.exports = Backbone.View.extend({
     if (this.libreMapProxyModel) {
       this.libreMapProxyModel.abort();
     }
+  },
+  remove: function() {
+    this.removeSubview();
+    Backbone.View.prototype.remove.call(this);
   }
 });
