@@ -5,8 +5,7 @@ var BootstrapView = require('../../../views/bootstrap');
 module.exports = {
   model: Backbone.Model.extend({
     test: function(model) {
-      var attrs = model.get('attributes');
-      return attrs && attrs.ap;
+      return this.model.get('val')==model.get('community');
     }
   }),
   controlView: BootstrapView.extend({
@@ -17,7 +16,6 @@ module.exports = {
     template: require('templates').lmFilterRouterCommunity,
     render: function() {
       this.$el.html(this.template(this.model.toJSON()));
-      this.bindCheckbox('input.lmFilterRouterAP', 'enabled');
       return this;
     }
   })
