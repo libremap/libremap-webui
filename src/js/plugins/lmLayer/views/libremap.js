@@ -5,7 +5,7 @@ var LibreMapProxyView = require('./proxy');
 module.exports = Backbone.View.extend({
   initialize: function(options) {
     this.mapView = options.mapView;
-    this.listenTo(this.model, 'change', this.render, this);
+    this.listenTo(this.model, 'change:api_url change:fine_max', this.render, this);
     this.render();
   },
   render: function() {
