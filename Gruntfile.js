@@ -240,10 +240,10 @@ module.exports = function(grunt) {
   grunt.registerTask('build-plugins', function() {
     var config = grunt.file.readJSON('config.json');
     var _ = require('underscore');
-    var js = 'module.exports = {';
+    var js = 'module.exports = {\n';
     if (config.plugins) {
       _.each(config.plugins, function(val, key) {
-        js += '"'+key+'": require("'+val+'"),';
+        js += '  "'+key+'": require("'+val+'"),\n';
       });
     }
     js += '};';
