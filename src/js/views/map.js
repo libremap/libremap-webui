@@ -30,7 +30,7 @@ module.exports = MapView.extend({
     }).addTo(this.map);
 
     // bind to router bbox event
-    this.router.on('route:bbox', function(bbox) {
+    this.listenTo(this.router, 'route:bbox', function(bbox) {
       bbox = couchmap_common.bbox(bbox);
       if (bbox) {
         // valid bbox
@@ -52,6 +52,5 @@ module.exports = MapView.extend({
       this.trigger('bbox', bbox);
       this.router.navigate('bbox/'+bbox.toString());
     }, this);
-
   }
 });

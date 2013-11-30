@@ -27,9 +27,16 @@ module.exports = Backbone.View.extend({
     });
     return this;
   },
-  remove: function() {
+  removeSubviews: function() {
     if (this.baseLayersControls) {
       this.baseLayersControls.remove();
     }
+    if (this.dataLayersControls) {
+      this.dataLayersControls.remove();
+    }
+  },
+  remove: function() {
+    this.removeSubviews();
+    Backbone.View.prototype.remove.call(this);
   }
 });

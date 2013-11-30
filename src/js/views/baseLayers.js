@@ -11,7 +11,7 @@ module.exports = Backbone.View.extend({
     this.render();
   },
   render: function() {
-    this.remove();
+    this.removeSubview();
     var layerModel = this.model.coll.get(this.model.get('active_id'));
     var plugins = require('../plugins');
     var plugin = plugins[layerModel.get('plugin')];
@@ -23,10 +23,14 @@ module.exports = Backbone.View.extend({
     }
     return this;
   },
-  remove: function() {
+  removeSubview: function() {
     if (this.subview) {
       this.subview.remove();
       this.subview = undefined;
     }
+  },
+  remove: function() {
+    this.removeSubview();
+    Backbone.View.prototype.remove.call(this);
   }
 });

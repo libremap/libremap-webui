@@ -26,10 +26,14 @@ module.exports = Backbone.View.extend({
   render: function() {
     this.collection.each(this.addModel, this);
   },
-  remove: function() {
+  removeSubviews: function() {
     _.each(this.subviews, function(val) {
       val.remove();
     });
     this.subviews = {};
+  },
+  remove: function() {
+    this.removeSubviews();
+    Backbone.View.prototype.remove.call(this);
   }
 });

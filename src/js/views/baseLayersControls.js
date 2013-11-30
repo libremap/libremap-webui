@@ -7,7 +7,7 @@ module.exports = Backbone.View.extend({
     this.render();
   },
   render: function() {
-    this.remove();
+    this.$el.empty();
     var active_id = this.model.get('active_id');
     this.model.coll.each(function(model) {
       this.$el.append(this.template({
@@ -22,7 +22,4 @@ module.exports = Backbone.View.extend({
     }.bind(this));
     return this;
   },
-  remove: function() {
-    this.$el.empty();
-  }
 });

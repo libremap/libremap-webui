@@ -38,8 +38,12 @@ module.exports = Backbone.View.extend({
       configModel: this.configModel
     });
   },
-  remove: function() {
+  removeSubviews: function() {
     this.controlsView.remove();
     this.mapView.remove();
+  },
+  remove: function() {
+    this.removeSubviews();
+    Backbone.View.prototype.remove.call(this);
   }
 });
