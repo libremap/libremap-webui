@@ -3,34 +3,41 @@ var Backbone = require('backbone');
 var AliasModel = Backbone.Model.extend({
 });
 
-var AliasColl = Backbone.Collection.extend({
+var AliasesColl = Backbone.Collection.extend({
   model: AliasModel,
   initialize: function(models, options) {
-    this.refColl = options.refColl;
+    this.routersColl = options.routersColl;
 
-    this.listenTo(this.refColl, {
+    this.listenTo(this.routersColl, {
       'add': this.addRouter,
       'remove': this.removeRouter,
-      'change:aliases': function(model) {
+      'change': function(model) {
+        // TODO: finer granularity with change/add/remove/reset events
+        // on collection
         this.removeRouter(model);
         this.addRouter(model);
       }
     });
+    this.update();
   },
   addRouter: function(model) {
     var aliases = model.get('aliases');
-    _.each(aliases, function(alias) {
-      this.add(_.extend(alias, { router_id: model.id }));
-    }.bind(this));
+    if (aliases) {
+      aliases.each(function(alias) {
+        this.add(_.extend({}, alias.toJSON(), { router_id: model.id }));
+      }.bind(this));
+    }
   },
   removeRouter: function(model) {
     this.remove(this.where({ router_id: model.id }));
+  },
+  update: function() {
+    this.routersColl.each(this.addRouter.bind(this));
   }
 });
 
 
 var LinkModel = Backbone.Model.extend({
-
 });
 
 module.exports = Backbone.Collection.extend({
@@ -39,9 +46,18 @@ module.exports = Backbone.Collection.extend({
     // the collection of routers from which the links are pulled
     this.routersColl = options.routersColl;
 
-    //this.aliasesColl = new Backbone.Collection;
+    AA = this.aliasesColl = new AliasesColl(null, {
+      routersColl: this.routersColl
+    });
 
-    this.update();
+    this.incompleteLinks = new Backbone.Collection();
+
+    //this.update();
   },
-
+  /*
+  addRouter: function(model) {
+    var links = model.get('links');
+    if (links) {
+      links.each(function(link) {
+*/
 });
