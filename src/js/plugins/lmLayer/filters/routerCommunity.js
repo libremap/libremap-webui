@@ -5,7 +5,7 @@ var BootstrapView = require('../../../views/bootstrap');
 module.exports = {
   model: Backbone.Model.extend({
     test: function(model) {
-      return this.model.get('val')==model.get('community');
+      return this.get('val')==model.get('community');
     }
   }),
   controlView: BootstrapView.extend({
