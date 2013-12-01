@@ -1,5 +1,6 @@
 var Backbone = require('backbone');
 var FilterColl = require('../collections/filter');
+var LinksColl = require('../collections/links');
 var RoutersView = require('./routers');
 
 module.exports = Backbone.View.extend({
