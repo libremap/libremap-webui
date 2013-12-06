@@ -22,6 +22,10 @@ Backbone.Model.prototype.toJSON = function() {
   this._isSerializing = false;
   return json;
 };
+// configure deepClone for Backbone.DeepModel
+_.deepClone = function(o) {
+  return $.extend(true,{},o);
+};
 
 var bootstrap = require('bootstrap');
 var L = require('leaflet');

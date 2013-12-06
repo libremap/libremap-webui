@@ -2,6 +2,7 @@ var Backbone = require('backbone');
 var FilterColl = require('../collections/filter');
 var LinksColl = require('../collections/links');
 var RoutersView = require('./routers');
+var LinksView = require('./links');
 
 module.exports = Backbone.View.extend({
   initialize: function(options) {
@@ -16,7 +17,7 @@ module.exports = Backbone.View.extend({
     });
 
     // links based on filtered routers
-    var linksColl = new LinksColl(null, {
+    this.linksColl = new LinksColl(null, {
       routersColl: this.routersColl
     });
 
@@ -38,20 +39,18 @@ module.exports = Backbone.View.extend({
     if (!show_routers && this.routersView) {
       this.removeRoutersView();
     }
-    /*
     // links
     var show_links = this.configModel.get('show_links');
     if (show_links && !this.linksView) {
       this.linksView = new LinksView({
         proxyView: this.proxyView,
-        collection: this.routersColl,
+        collection: this.linksColl,
         configModel: this.configModel.get('links')
       });
     }
     if (!show_links && this.linksView) {
       this.removeLinksView();
     }
-    */
   },
   removeRoutersView: function() {
     if (this.routersView) {

@@ -1,5 +1,6 @@
 var Backbone = require('backbone');
 var _ = require('underscore');
+var BackboneDeepModel = require('backbone-deep-model');
 
 var ParseModel = Backbone.Model.extend({
   parseSubColl: function(data, attribute, Collection, Model) {
@@ -80,10 +81,6 @@ var LinkModel = ParseAllModel.extend({
   }
 });
 
-module.exports = ParseAllModel.extend({
+module.exports = Backbone.DeepModel.extend({
   idAttribute: '_id',
-  submodels: {
-    aliases: AliasModel,
-    links: LinkModel
-  }
 });
