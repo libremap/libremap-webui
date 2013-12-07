@@ -4,8 +4,10 @@ var LibreMapProxyView = require('./proxy');
 var LibreMapFineView = require('./fine');
 
 module.exports = Backbone.View.extend({
+  attribution: 'Routers+Links &copy; <a href="http://libremap.net">LibreMap</a> contributors under <a href="http://opendatacommons.org/licenses/odbl/summary/">ODbL</a>',
   initialize: function(options) {
     this.mapView = options.mapView;
+    this.mapView.map.attributionControl.addAttribution(this.attribution);
     this.listenTo(this.model, 'change:api_url change:fine_max', this.render, this);
     this.render();
   },
@@ -35,6 +37,7 @@ module.exports = Backbone.View.extend({
   },
   remove: function() {
     this.removeSubview();
+    this.mapView.map.attributionControl.removeAttribution(this.attribution);
     Backbone.View.prototype.remove.call(this);
   }
 });
