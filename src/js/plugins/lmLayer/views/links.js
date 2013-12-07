@@ -8,7 +8,6 @@ var LinkView = Backbone.View.extend({
     this.render();
   },
   render: function() {
-    console.log(this.model);
     var router1 = this.model.get('routerModel1');
     var router2 = this.model.get('routerModel2');
     this.line = L.polyline([

@@ -17,8 +17,14 @@ module.exports = Backbone.View.extend({
     });
 
     // links based on filtered routers
-    this.linksColl = new LinksColl(null, {
+    var linksCollFull = new LinksColl(null, {
       routersColl: this.routersColl
+    });
+    // filtered links
+    this.linksColl = new FilterColl(null, {
+      supersetColl: linksCollFull,
+      filtersColl: this.configModel.get('links').get('filters'),
+      configModel: this.configModel.get('links')
     });
 
     this.listenTo(this.configModel,

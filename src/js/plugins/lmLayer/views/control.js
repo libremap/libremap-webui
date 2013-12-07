@@ -100,5 +100,10 @@ module.exports = BootstrapView.extend({
 
     // links
     this.bindCheckbox('#show_links', 'show_links');
+    this.bindVisibility('.lmFiltersLinks', 'show_links');
+    this.filtersLinksView = new FiltersCollView({
+      el: this.$('.lmFiltersLinks'),
+      collection: this.model.get('links').get('filters'),
+    });
   }
 });
