@@ -1,6 +1,26 @@
 var FineView = require('couchmap-leaflet/views/fine');
+var FineMarkerView = require('couchmap-leaflet/views/fineMarker');
+
+var RouterMarkerView = FineMarkerView.extend({
+  template: require('templates').lmRouterPopup,
+  render: function() {
+    this.removeMarker();
+    this.marker = L.marker([this.model.get('lat'), this.model.get('lon')],{
+      title: this.model.get('hostname')
+    })
+      .addTo(this.layer)
+      .bindPopup(
+        L.popup().setContent(
+          this.template(_.extend({
+            api_url: 'http://libremap.net/api'
+          }, this.model.toJSON()))
+        )
+      );
+  }
+});
 
 module.exports = FineView.extend({
+  FineMarkerView: RouterMarkerView,
   initialize: function(options) {
     this.configModel = options.configModel;
     this.listenTo(this.configModel, 'change:cluster', this.render);
