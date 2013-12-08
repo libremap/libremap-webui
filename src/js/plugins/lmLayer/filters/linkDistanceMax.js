@@ -1,6 +1,5 @@
 var Backbone = require('backbone');
 var NumberView = require('../../../views/number');
-var L = require('leaflet');
 
 module.exports = {
   model: Backbone.Model.extend({
