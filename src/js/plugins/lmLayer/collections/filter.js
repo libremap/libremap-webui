@@ -16,7 +16,7 @@ module.exports = Backbone.Collection.extend({
     this.listenTo(this.supersetColl, 'add remove change', this.update_model);
     this.listenTo(this.supersetColl, 'reset', this.update);
     this.listenTo(this.filtersColl, 'add remove change reset', this.update);
-    this.listenTo(this.configModel, 'change:mode', this.update);
+    this.listenTo(this.configModel, 'change:filter_mode', this.update);
 
     // call super
     Backbone.Collection.prototype.initialize.apply(this, arguments);
@@ -25,7 +25,7 @@ module.exports = Backbone.Collection.extend({
   },
   test: function(model) {
     var filters = this.filtersColl.where({enabled: true});
-    var comp = (this.configModel.get('mode')=='and') ? _.every : _.some;
+    var comp = (this.configModel.get('filter_mode')=='and') ? _.every : _.some;
     return comp(filters, function(filter) {
       return filter.test(model);
     });
