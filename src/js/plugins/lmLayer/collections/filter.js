@@ -13,8 +13,12 @@ module.exports = Backbone.Collection.extend({
     // the model should have a 'mode' attribute (either 'and' or 'or')
     this.configModel = options.configModel;
 
-    this.listenTo(this.supersetColl, 'add remove change', this.update_model);
-    this.listenTo(this.supersetColl, 'reset', this.update);
+    this.listenTo(this.supersetColl, {
+      add: this.update_model,
+      change: this.update_model,
+      remove: this.remove,
+      reset: this.update
+    });
     this.listenTo(this.filtersColl, 'add remove change reset', this.update);
     this.listenTo(this.configModel, 'change:filter_mode', this.update);
 
