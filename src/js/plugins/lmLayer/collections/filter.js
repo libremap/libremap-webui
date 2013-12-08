@@ -25,6 +25,9 @@ module.exports = Backbone.Collection.extend({
   },
   test: function(model) {
     var filters = this.filtersColl.where({enabled: true});
+    if (!_.size(filters)) {
+      return true;
+    }
     var comp = (this.configModel.get('filter_mode')=='and') ? _.every : _.some;
     return comp(filters, function(filter) {
       return filter.test(model);
