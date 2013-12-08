@@ -2,17 +2,32 @@ Backbone = require('backbone');
 _ = require('underscore');
 L = require('leaflet');
 
+
 var LinkView = Backbone.View.extend({
   initialize: function(options) {
     this.layer = options.layer;
     this.render();
   },
+  getColor: function(val) {
+    var colors = ['#D50000', '#D5A200', '#CCD500', '#00D500'];
+    var index = Math.floor( colors.length * val );
+    index = Math.max(0, Math.min(colors.length-1, index));
+    return colors[index];
+  },
   render: function() {
     var router1 = this.model.get('routerModel1');
     var router2 = this.model.get('routerModel2');
+    var quality = this.model.get('quality1');
+    if (this.model.get('quality2')!== undefined && router1.get('mtime')<router2.get('mtime')) {
+      quality = this.model.get('quality2');
+    }
     this.line = L.polyline([
       [router1.get('lat'), router1.get('lon')],
-      [router2.get('lat'), router2.get('lon')]]).addTo(this.layer);
+      [router2.get('lat'), router2.get('lon')]],
+      {
+        color: this.getColor(quality),
+        opacity: 0.25 + 0.5*quality
+      }).addTo(this.layer);
   },
   remove: function() {
     if (this.line) {
