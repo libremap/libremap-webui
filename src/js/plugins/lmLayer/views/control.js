@@ -94,14 +94,16 @@ module.exports = BootstrapView.extend({
 
     // routers
     this.bindCheckbox('#show_routers', 'show_routers');
+    // bind visibility of routers panel
     this.bindVisibility('.lmPanelRouters', 'show_routers');
+    // cluster checkbox
     this.clusterRoutersView = new CheckboxView({
       el: this.$('.lmPanelRouters .lmCluster'),
       model: this.model.get('routers'),
       attribute: 'cluster',
       text: 'Cluster'
     });
-
+    // filters mode view
     this.filtersModeRoutersView = new RadioView({
       el: this.$('.lmPanelRouters .lmFiltersMode'),
       model: this.model.get('routers'),
@@ -111,16 +113,29 @@ module.exports = BootstrapView.extend({
         'and': 'match all'
       }
     });
+    // filters view
     this.filtersRoutersView = new FiltersCollView({
-      el: this.$('.lmFiltersRouters'),
+      el: this.$('.lmPanelRouters .lmFilters'),
       collection: this.model.get('routers').get('filters'),
     });
 
     // links
     this.bindCheckbox('#show_links', 'show_links');
-    this.bindVisibility('.lmFiltersLinks', 'show_links');
+    // bind visibility of links panel
+    this.bindVisibility('.lmPanelLinks', 'show_links');
+    // filters mode view
+    this.filtersModeRoutersView = new RadioView({
+      el: this.$('.lmPanelLinks .lmFiltersMode'),
+      model: this.model.get('links'),
+      attribute: 'filter_mode',
+      choices: {
+        'or': 'match some',
+        'and': 'match all'
+      }
+    });
+    // filters view
     this.filtersLinksView = new FiltersCollView({
-      el: this.$('.lmFiltersLinks'),
+      el: this.$('.lmPanelLinks .lmFilters'),
       collection: this.model.get('links').get('filters'),
     });
   },
