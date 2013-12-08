@@ -6,15 +6,20 @@ L = require('leaflet');
 var LinkView = Backbone.View.extend({
   initialize: function(options) {
     this.layer = options.layer;
+    this.listenTo(this.model, 'change', this.render());
     this.render();
   },
-  getColor: function(val) {
-    var colors = ['#D50000', '#D5A200', '#CCD500', '#00D500'];
-    var index = Math.floor( colors.length * val );
-    index = Math.max(0, Math.min(colors.length-1, index));
-    return colors[index];
+  colors: ['#D50000', '#D5A200', '#CCD500', '#00D500'],
+  getColorIndex: function(val) {
+    var index = Math.floor( this.colors.length * val );
+    return Math.max(0, Math.min(this.colors.length-1, index));
   },
+  getColor: function(val) {
+    return this.colors[this.getColorIndex(val)];
+  },
+  template: require('templates').lmLinkPopup,
   render: function() {
+    this.removeLine();
     var router1 = this.model.get('routerModel1');
     var router2 = this.model.get('routerModel2');
     var quality = this.model.get('quality1');
@@ -27,12 +32,26 @@ var LinkView = Backbone.View.extend({
       {
         color: this.getColor(quality),
         opacity: 0.25 + 0.5*quality
-      }).addTo(this.layer);
+      }).addTo(this.layer).bindPopup(
+        L.popup().setContent(this.template(_.extend(this.model.pick(
+            'type', 'alias1', 'alias2', 'quality1', 'quality2'
+          ), {
+            hostname1: router1.get('hostname'),
+            hostname2: router2.get('hostname'),
+            quality1ColorIndex: this.getColorIndex(this.model.get('quality1')||0),
+            quality2ColorIndex: this.getColorIndex(this.model.get('quality2')||0)
+          }
+        )))
+      );
   },
-  remove: function() {
+  removeLine: function() {
     if (this.line) {
       this.layer.removeLayer(this.line);
     }
+  },
+  remove: function() {
+    this.removeLine();
+    Backbone.View.prototype.remove.call(this);
   }
 });
 

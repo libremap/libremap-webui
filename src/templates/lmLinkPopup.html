@@ -1,0 +1,29 @@
+<h4><%=hostname1%> <i class="fa fa-arrows-h"></i> <%=hostname2%></h4>
+<table class="table table-condensed table-striped">
+  <thead>
+    <tr>
+      <th rowspan="2">Link Data</th>
+      <th colspan="2" class="text-center text-muted">Reported by</th>
+    </tr>
+    <tr>
+      <th><%=hostname1%></th>
+      <th><%=hostname2%></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Type</td>
+      <td colspan="2" class="text-center"><%=type%></td>
+    </tr>
+    <tr>
+      <td>Quality</td>
+      <td class="lmColor<%=quality1ColorIndex%>"><%=(quality1 || '&mdash;')%></td>
+      <td class="lmColor<%=quality2ColorIndex%>"><%=(quality2 || '&mdash;')%></td>
+    </tr>
+    <tr>
+      <td>Alias</td>
+      <td><%=alias1%></td>
+      <td><%=alias2%></td>
+    </tr>
+  </tbody>
+</table>
