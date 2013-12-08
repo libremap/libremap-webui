@@ -7,7 +7,9 @@
     "tileLayerBing": "./plugins/tileLayerBing",
     "lmLayer": "./plugins/lmLayer/index",
     "lmFilterRouterAP": "./plugins/lmLayer/filters/routerAP",
-    "lmFilterRouterCommunity": "./plugins/lmLayer/filters/routerCommunity"
+    "lmFilterRouterCommunity": "./plugins/lmLayer/filters/routerCommunity",
+    "lmFilterLinkDistanceMax": "./plugins/lmLayer/filters/linkDistanceMax",
+    "lmFilterLinkQualityMin": "./plugins/lmLayer/filters/linkQualityMin"
   },
   "TODO": {
     "lmFilterLinkType": "./plugins/libremapLayer/filters_links/type"
@@ -85,10 +87,22 @@
           }
         ]
       },
-      "show_links": false,
+      "show_links": true,
       "links": {
-        "filter_mode": "or",
+        "filter_mode": "and",
         "filters": [
+          {
+            "plugin": "lmFilterLinkDistanceMax",
+            "enabled": true,
+            "name": "Maximum distance (m)",
+            "val": 50000
+          },
+          {
+            "plugin": "lmFilterLinkQualityMin",
+            "enabled": true,
+            "name": "Minimum quality (0-1)",
+            "val": 0.5
+          }
         ],
         "TODO": [
           {
@@ -96,12 +110,6 @@
             "enabled": false,
             "name": "Type",
             "val": "batman"
-          },
-          {
-            "plugin": "distance_max",
-            "enabled": true,
-            "name": "Maximum distance (m)",
-            "val": 50000
           },
           {
             "plugin": "distance_min",
@@ -114,12 +122,6 @@
             "enabled": true,
             "name": "Maximum quality",
             "val": 1
-          },
-          {
-            "plugin": "quality_min",
-            "enabled": true,
-            "name": "Minimum quality",
-            "val": 0
           }
         ]
       }
