@@ -2,6 +2,7 @@ var Backbone = require('backbone');
 var _ = require('underscore');
 var BootstrapView = require('../../../views/bootstrap');
 var RadioView = require('../../../views/radio');
+var CheckboxView = require('../../../views/checkbox');
 
 var FilterView = BootstrapView.extend({
   initialize: function() {
@@ -94,10 +95,16 @@ module.exports = BootstrapView.extend({
     // routers
     this.bindCheckbox('#show_routers', 'show_routers');
     this.bindVisibility('.lmPanelRouters', 'show_routers');
-    this.filtersModeRouters = new RadioView({
+    this.clusterRoutersView = new CheckboxView({
+      el: this.$('.lmPanelRouters .lmCluster'),
+      model: this.model.get('routers'),
+      attribute: 'cluster',
+      text: 'Cluster'
+    });
+
+    this.filtersModeRoutersView = new RadioView({
       el: this.$('.lmPanelRouters .lmFiltersMode'),
       model: this.model.get('routers'),
-      classes: '',
       attribute: 'filter_mode',
       choices: {
         'or': 'match some',
@@ -118,14 +125,10 @@ module.exports = BootstrapView.extend({
     });
   },
   remove: function() {
-    if (this.filtersRoutersView) {
-      this.filtersRoutersView.remove();
-      this.filtersRoutersView = undefined;
-    }
-    if (this.filtersLinksView) {
-      this.filtersLinksView.remove();
-      this.filtersLinksView = undefined;
-    }
+    this.clusterRoutersView.remove();
+    this.filtersModeRoutersView.remove();
+    this.filtersRoutersView.remove();
+    this.filtersLinksView.remove();
     BootstrapView.prototype.remove.call(this);
   }
 });
