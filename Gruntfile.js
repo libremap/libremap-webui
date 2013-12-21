@@ -71,7 +71,7 @@ module.exports = function(grunt) {
           },
           {
             expand: true,
-            cwd: 'bower_components/leaflet/dist/images',
+            cwd: 'vendor/leaflet/images',
             src: '**/*',
             dest: 'build/images/vendor/leaflet'
           }
