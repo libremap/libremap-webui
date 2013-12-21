@@ -250,7 +250,7 @@ module.exports = function(grunt) {
     grunt.file.write('tmp/plugins.js', js);
   });
 
-  grunt.registerTask('build', ['jshint', 'build-plugins', 'copy:build', 'concat', 'less', 'jst', 'browserify']);
+  grunt.registerTask('build', ['build-plugins', 'jshint', 'copy:build', 'concat', 'less', 'jst', 'browserify']);
   grunt.registerTask('push', ['build', 'copy:build-ddoc', 'couch']);
 
   // Default task(s).
