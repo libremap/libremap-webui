@@ -62,7 +62,7 @@
         "filters": [
           {
             "plugin": "lmFilterRouterAP",
-            "enabled": true,
+            "enabled": false,
             "name": "Access points"
           },
           {
