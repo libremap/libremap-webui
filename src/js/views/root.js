@@ -1,5 +1,4 @@
 var Backbone = require('backbone');
-var appconfig = require('../../../config.json');
 var ControlsView = require('./controls');
 var MapView = require('./map');
 
@@ -9,7 +8,7 @@ module.exports = Backbone.View.extend({
     this.configModel = options.configModel;
 
     var template = require('templates').rootView;
-    this.$el.html(template({title: appconfig.title}));
+    this.$el.html(template({title: this.configModel.get('title')}));
     this.$('a.about').on('click', function() {
       this.$('div.about').modal();
       return false;
