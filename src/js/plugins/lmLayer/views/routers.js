@@ -1,5 +1,6 @@
 var FineView = require('couchmap-leaflet/views/fine');
 var FineMarkerView = require('couchmap-leaflet/views/fineMarker');
+var appconfig = require('../../../../../config.json');
 
 var RouterMarkerView = FineMarkerView.extend({
   template: require('templates').lmRouterPopup,
@@ -12,7 +13,7 @@ var RouterMarkerView = FineMarkerView.extend({
       .bindPopup(
         L.popup().setContent(
           this.template(_.extend({
-            api_url: 'http://libremap.net/api'
+            api_url: appconfig.api_url
           }, this.model.toJSON()))
         )
       );
