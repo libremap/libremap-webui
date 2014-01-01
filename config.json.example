@@ -8,6 +8,7 @@
     "lmLayer": "./plugins/lmLayer/index",
     "lmFilterRouterAP": "./plugins/lmLayer/filters/routerAP",
     "lmFilterRouterCommunity": "./plugins/lmLayer/filters/routerCommunity",
+    "lmFilterRouterLastUpdate": "./plugins/lmLayer/filters/routerLastUpdate",
     "lmFilterLinkDistanceMax": "./plugins/lmLayer/filters/linkDistanceMax",
     "lmFilterLinkQualityMin": "./plugins/lmLayer/filters/linkQualityMin"
   },
@@ -61,6 +62,12 @@
         "filter_mode": "or",
         "filters": [
           {
+            "plugin": "lmFilterRouterLastUpdate",
+            "enabled": true,
+            "name": "Time since update (days)",
+            "val": 7
+          },
+          {
             "plugin": "lmFilterRouterAP",
             "enabled": false,
             "name": "Access points"
@@ -70,20 +77,6 @@
             "enabled": false,
             "name": "Community",
             "val": "Freifunk Berlin"
-          }
-        ],
-        "TODO": [
-          {
-            "plugin": "age_max",
-            "enabled": true,
-            "name": "Maximum age",
-            "val": 259200
-          },
-          {
-            "plugin": "age_min",
-            "enabled": false,
-            "name": "Minimum age",
-            "val": 0
           }
         ]
       },
