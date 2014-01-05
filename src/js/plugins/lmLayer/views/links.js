@@ -6,7 +6,7 @@ L = require('leaflet');
 var LinkView = Backbone.View.extend({
   initialize: function(options) {
     this.layer = options.layer;
-    this.listenTo(this.model, 'change', this.render());
+    this.listenTo(this.model, 'change', this.render);
     this.render();
   },
   colors: ['#D50000', '#D5A200', '#CCD500', '#00D500'],
@@ -22,10 +22,7 @@ var LinkView = Backbone.View.extend({
     this.removeLine();
     var router1 = this.model.get('routerModel1');
     var router2 = this.model.get('routerModel2');
-    var quality = this.model.get('quality1');
-    if (this.model.get('quality2')!== undefined && router1.get('mtime')<router2.get('mtime')) {
-      quality = this.model.get('quality2');
-    }
+    var quality = this.model.getQuality();
     this.line = L.polyline([
       [router1.get('lat'), router1.get('lon')],
       [router2.get('lat'), router2.get('lon')]],

@@ -22,5 +22,15 @@ module.exports = Backbone.Model.extend({
     var latlng1 = L.latLng([router1.get('lat'), router1.get('lon')]);
     var latlng2 = L.latLng([router2.get('lat'), router2.get('lon')]);
     return latlng1.distanceTo(latlng2);
+  },
+  getQuality: function() {
+    var router1 = this.get('routerModel1');
+    var router2 = this.get('routerModel2');
+    var quality1 = this.get('quality1');
+    var quality2 = this.get('quality2');
+    if (quality1 && quality2) {
+      return router1.get('mtime')<router2.get('mtime') ? quality2 : quality1;
+    }
+    return quality1 ? quality1 : quality2;
   }
 });
