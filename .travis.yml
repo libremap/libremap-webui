@@ -1,10 +1,19 @@
 language: node_js
+node_js:
+  - iojs
 before_script:
   - cp config.json.example config.json
   - npm install -g bower
   - npm install -g gulp
-  - bower install
-  - npm install
+  # use update+prune for caching
+  - bower update
+  - bower prune
+  - npm update
+  - npm prune
 script:
   - gulp
 sudo: false
+cache:
+  directories:
+    - node_modules
+    - bower_components
