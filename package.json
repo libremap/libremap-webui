@@ -40,7 +40,9 @@
   "browser": {
     "angular": "./bower_components/angular/angular.js",
     "angular-bootstrap-tpls": "./node_modules/angular-bootstrap/dist/ui-bootstrap-tpls.js",
+    "angular-leaflet-directive": "./bower_components/angular-leaflet-directive/dist/angular-leaflet-directive.js",
     "angular-route": "./bower_components/angular-route/angular-route.js",
+    "leaflet": "./bower_components/leaflet/dist/leaflet.js",
     "jquery": "./bower_components/jquery/dist/jquery.js"
   },
   "browserify-shim": {
@@ -56,11 +58,21 @@
         "angular"
       ]
     },
+    "angular-leaflet-directive": {
+      "exports": null,
+      "depends": [
+        "angular",
+        "leaflet"
+      ]
+    },
     "angular-route": {
       "exports": null,
       "depends": [
         "angular"
       ]
+    },
+    "leaflet": {
+      "exports": "L"
     },
     "jquery": {
       "exports": "$"
