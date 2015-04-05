@@ -1,18 +1,56 @@
 <!DOCTYPE html>
 
-<html>
+<html data-ng-app="libreMap">
   <head>
     <title>LibreMap</title>
 
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <link rel="stylesheet" href="css/libremap.css">
-
-    <script src="vendor/vendor.js"></script>
-    <script src="js/libremap.js"></script>
+    <link rel="stylesheet" href="index.css">
+    <script src="index.js"></script>
   </head>
 
   <body>
+    <!-- navbar -->
+    <div data-ng-include="'templates/navbar.html'"></div>
+
+    <!-- content -->
+    <div data-ng-view></div>
+    <!--div class="lm-root-content">
+      <div class="row lm-content">
+        <div class="col-sm-9 lm-map"></div>
+        <div class="col-sm-3 lm-sidebar"></div>
+      </div>
+    </div>
+
+    <div class="modal fade about">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title">About LibreMap</h4>
+          </div>
+          <div class="modal-body">
+            <p>LibreMap is a scalable, global and decentralized router database and
+              map visualization for community networks, such as guifi, Altermundi,
+              FunkFeuer, ninux, freifunk, Commotion&hellip;</p>
+            <h4>Run your own LibreMap server and let it sync!</h4>
+            <p>Because LibreMap relies on <a
+                href="http://couchdb.apache.org">CouchDB</a>, you can install a
+              CouchDB server for your community and let it replicate to/from
+              existing servers. The replication could look like this:
+              <img class="img-responsive" src="images/replication.svg">
+              The documentation on how to set up your own LibreMap server can be
+              found in the <a
+                href="https://github.com/libremap/libremap-api">libremap-api</a>
+              repository.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div-->
   </body>
 </html>
