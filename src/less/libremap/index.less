@@ -3,66 +3,44 @@
   color: white;
 }
 
-html, body, .lm-root-content, .lm-content, .lm-content > div {
-  height: 100%;
-  margin: 0;
+// full height on large devices
+.lm-full-height(@minwidth: @screen-sm-min) {
 }
 
 body {
-  padding-top: 50px;
+  padding-top: @navbar-height;
+  margin: 0;
 }
 
-.lm-root-content {
-  background-color: gray;
+// set parents of lm-map-col to 100% height
+html, body, .lm-view, .lm-map-container, .lm-map-row,
+    .lm-map-col > .leaflet-container {
+  height: 100%;
 }
 
-.lm-sidebar {
-  box-shadow: inset 10px 0px 20px -10px rgba(0, 0, 0, 0.8);
-  background-color: white;
-  padding-top: 10px;
-  overflow: auto;
+// map column
+.lm-map-col {
+  // overwrite padding for map column
+  padding: 0;
+  // height for small devices
+  height: 80%;
 }
 
-.lm-sidebar > .tab-content {
-  padding-top: 10px;
-}
-
-@media (max-width: @screen-xs-max) {
-  .lm-content > div {
-    height: 80%;
-    box-shadow: inset 0px 10px 20px -10px rgba(0, 0, 0, 0.8);
+// map has full height on large devices
+.lm-map-col, .lm-map-sidebar {
+  @media (min-width: @screen-sm-min) {
+    height: 100%;
   }
 }
 
-.configuration {
-  display: none;
+.lm-map-sidebar {
+  padding-top: 10px;
+  @media (min-width: @screen-sm-min) {
+    box-shadow: inset 10px 0px 20px -10px rgba(0, 0, 0, 0.8);
+    overflow: auto;
+  }
 }
 
-.configuration > form {
-  padding-bottom: 10px;
-  border-bottom: 1px solid #dddddd;
-}
-
-.lmPanelRouters .checkbox,
- .lmFiltersLinks > div > .checkbox {
-  margin-top: 5px;
-  margin-bottom: 5px;
-}
-
-.lmFiltersModeLabel {
-  vertical-align: top;
-}
-.lmFiltersMode {
-  display: inline-block;
-}
-.lmFiltersMode .radio {
-  display: inline-block;
-  margin-bottom: 0;
-  margin-top: 0;
-}
-.lmCenter {
-  text-align: center;
-}
 // colors for links
 .lmColor0 { // terrible
   background-color: #D50000;
