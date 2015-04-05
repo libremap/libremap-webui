@@ -11,10 +11,9 @@
       'ui.bootstrap',
       'ngRoute',
       'templates'
-    ]).
-    constant('config', require('../../config.json'))
-    ;
+    ]);
 
+  require('./config')(libremap);
   require('./controllers')(libremap);
 })();
 
