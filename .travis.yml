@@ -6,5 +6,5 @@ before_script:
   - bower install
   - npm install
 script:
-  - gulp test
+  - gulp
 sudo: false
