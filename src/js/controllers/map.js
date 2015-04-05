@@ -6,7 +6,7 @@ module.exports = function(app) {
   app.controller('mapCtrl', [
     '$scope', '$window', '$timeout', function($scope, $window, $timeout) {
       var resize = function() {
-        $scope.broadcast('invalidateSize');
+        $scope.$broadcast('invalidateSize');
       };
 
       angular.element($window).on('resize', resize);
