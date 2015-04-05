@@ -1,6 +1,6 @@
 {
   "api_url": "http://libremap.net/api",
-  "title": "global",
+  "title": "LibreMap – global",
   "init_bbox": [[-60,-180],[75,180]],
   "plugins": {
     "tileLayer": "./plugins/tileLayer",
