@@ -138,8 +138,8 @@ gulp.task('static', function() {
   var bootstrap = gulp.src('bower_components/bootstrap/fonts/*')
     .pipe(gulp.dest('build/assets/bootstrap/fonts'));
 
-  var fontawesome = gulp.src('bower_components/font-awesome/fonts/*')
-    .pipe(gulp.dest('build/assets/font-awesome/fonts'));
+  var fontawesome = gulp.src('bower_components/fontawesome/fonts/*')
+    .pipe(gulp.dest('build/assets/fontawesome/fonts'));
 
   return merge(html, images, bootstrap, fontawesome);
 });
