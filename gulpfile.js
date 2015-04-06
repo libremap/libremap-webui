@@ -141,7 +141,10 @@ gulp.task('static', function() {
   var fontawesome = gulp.src('bower_components/fontawesome/fonts/*')
     .pipe(gulp.dest('build/assets/fontawesome/fonts'));
 
-  return merge(html, images, bootstrap, fontawesome);
+  var leaflet = gulp.src('bower_components/leaflet/dist/images/*')
+    .pipe(gulp.dest('build/images'));
+
+  return merge(html, images, bootstrap, fontawesome, leaflet);
 });
 
 // compile less to css

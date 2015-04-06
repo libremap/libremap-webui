@@ -15,39 +15,41 @@
   "TODO": {
     "lmFilterLinkType": "./plugins/libremapLayer/filters_links/type"
   },
-  "baseLayers": {
-    "active_id": "osm_cloudmade",
-    "layers": [
-      {
-        "plugin": "tileLayer",
-        "id": "osm_cloudmade",
-        "name": "OSM Cloudmade",
-        "url": "http://{s}.tile.cloudmade.com/{key}/{styleId}/256/{z}/{x}/{y}.png",
-        "options": {
-          "key": "e4e152a60cc5414eb81532de3d676261",
-          "styleId": 997,
-          "attribution": "Map data &copy; <a href=\"http://openstreetmap.org\">OpenStreetMap</a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery &copy; <a href=\"http://cloudmade.com\">CloudMade</a>"
+  "layers": {
+    "baselayers": {
+      "mapbox": {
+        "name": "Mapbox streets",
+        "url": "https://{s}.tiles.mapbox.com/v4/{style}/{z}/{x}/{y}.png?access_token={key}",
+        "type": "xyz",
+        "layerOptions": {
+          "attribution": "<a href=\"https://www.mapbox.com/about/maps/\" target=\"_blank\">&copy; Mapbox &copy; OpenStreetMap</a> <a class=\"mapbox-improve-map\" href=\"https://www.mapbox.com/map-feedback/\" target=\"_blank\">Improve this map</a>"
+        },
+        "layerParams": {
+          "style": "mapbox.streets",
+          "key": "pk.eyJ1IjoiYW5kcmVuYXJjaHkiLCJhIjoiVVFObVl3RSJ9.ZDnJUQCH6IJzCt_EY6azKA"
         }
       },
-      {
-        "plugin": "tileLayer",
-        "id": "osm_standard",
+      "mapboxSat": {
+        "name": "Mapbox satellite",
+        "url": "https://{s}.tiles.mapbox.com/v4/{style}/{z}/{x}/{y}.png?access_token={key}",
+        "type": "xyz",
+        "layerOptions": {
+          "attribution": "<a href=\"https://www.mapbox.com/about/maps/\" target=\"_blank\">&copy; Mapbox &copy; OpenStreetMap</a> <a class=\"mapbox-improve-map\" href=\"https://www.mapbox.com/map-feedback/\" target=\"_blank\">Improve this map</a>"
+        },
+        "layerParams": {
+          "style": "mapbox.satellite",
+          "key": "pk.eyJ1IjoiYW5kcmVuYXJjaHkiLCJhIjoiVVFObVl3RSJ9.ZDnJUQCH6IJzCt_EY6azKA"
+        }
+      },
+      "osm": {
         "name": "OSM Standard",
         "url": "http://{s}.tile.osm.org/{z}/{x}/{y}.png",
-        "options": {
+        "type": "xyz",
+        "layerOptions": {
           "attribution": "Map data &copy; <a href=\"http://openstreetmap.org\">OpenStreetMap</a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>"
         }
-      },
-      {
-        "plugin": "tileLayerBing",
-        "id": "bing_satellite",
-        "name": "Bing satellite",
-        "key": "ArewtcSllazYp52r7tojb64N94l-OrYWuS1GjUGeTavPmJP_jde3PIdpuYm24VpR",
-        "options": {
-          "minZoom": 1
-        }
       }
-    ]
+    }
   },
   "dataLayers": [
     {
