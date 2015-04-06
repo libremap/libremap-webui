@@ -47,7 +47,6 @@ module.exports = function(app) {
             return [value._id, marker];
           }));
           angular.extend($scope.map.markers, newMarkers);
-          console.log($scope.map.markers);
         });
       });
     }
