@@ -10,7 +10,6 @@ module.exports = function(app) {
       $scope.center = angular.copy(config.center);
 
       $scope.$on('centerUrlHash', function(event, centerHash) {
-        console.log(centerHash);
         $location.search({c: centerHash});
       });
       // take care of resize events
