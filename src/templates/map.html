@@ -2,9 +2,10 @@
   <div class="row lm-map-row" data-ng-controller="mapCtrl">
     <div class="col-sm-9 lm-map-col">
       <leaflet
-          center="center"
+          center="map.center"
           url-hash-center="yes"
-          layers="layers"
+          layers="map.layers"
+          bounds="map.bounds"
           ></leaflet>
     </div>
     <div class="col-sm-3 lm-map-sidebar">

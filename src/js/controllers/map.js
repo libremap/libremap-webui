@@ -6,11 +6,13 @@ module.exports = function(app) {
   app.controller('mapCtrl', [
     '$scope', '$window', '$timeout', '$location', 'config',
     function($scope, $window, $timeout, $location, config) {
-      // set up layers
-      $scope.layers = angular.copy(config.layers);
-
-      // set initial map center and zoom
-      $scope.center = angular.copy(config.center);
+      // set up map
+      $scope.map = {
+        // layer config
+        layers: angular.copy(config.layers),
+        // initial map center and zoom
+        center: angular.copy(config.center)
+      };
 
       // update location with center parameter
       $scope.$on('centerUrlHash', function(event, centerHash) {
