@@ -1,7 +1,11 @@
 {
   "api_url": "http://libremap.net/api",
   "title": "LibreMap – global",
-  "init_bbox": [[-60,-180],[75,180]],
+  "center": {
+    "lat": 19.971760624680257,
+    "lng": 0,
+    "zoom": 2
+  },
   "plugins": {
     "tileLayer": "./plugins/tileLayer",
     "tileLayerBing": "./plugins/tileLayerBing",
